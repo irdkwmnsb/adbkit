@@ -23,4 +23,8 @@ export { default as Client } from './src/adb/client';
 export { default as DeviceClient } from './src/adb/DeviceClient';
 export { default as ShellCommand } from './src/adb/command/host-transport/shell';
 
+// export android key enumeration
 export { KeyCodes } from './src/adb/keycode';
+
+// give access to Utils class ( readAll and parsePublicKey)
+export { default as Utils } from './src/adb/util';
