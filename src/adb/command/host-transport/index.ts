@@ -25,3 +25,4 @@ export { default as TrackJdwpCommand } from './trackjdwp';
 export { default as UninstallCommand } from './uninstall';
 export { default as UsbCommand } from './usb';
 export { default as WaitBootCompleteCommand } from './waitbootcomplete';
+export { default as PsCommand, PsEntry } from './ps';

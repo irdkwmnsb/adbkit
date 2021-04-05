@@ -34,6 +34,8 @@ import {
   UninstallCommand,
   UsbCommand,
   WaitBootCompleteCommand,
+  PsCommand,
+  PsEntry,
 } from './command/host-transport';
 import {
   ForwardCommand,
@@ -129,6 +131,16 @@ export default class DeviceClient {
    */
   public getPackages(flags?: string): Bluebird<string[]> {
     return this.transport().then((transport) => new GetPackagesCommand(transport).execute(flags));
+  }
+
+  /**
+   * Retrieves the list of running Process
+   *
+   * @param flags TODO
+   * @returns a PsEntry array
+   */
+  public getPs(...flags: string[]): Bluebird<Array<Partial<PsEntry>>> {
+    return this.transport().then((transport) => new PsCommand(transport).execute(...flags));
   }
 
   /**
