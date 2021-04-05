@@ -31,7 +31,11 @@ import Bluebird from 'bluebird';
  */
 export default class PsCommand extends Command<Array<Partial<PsEntry>>> {
   execute(...args: string[]): Bluebird<Array<Partial<PsEntry>>> {
-    this._send(`shell:ps ${args.join(' ')} 2>/dev/null`);
+    if (!args.length) {
+      this._send(`shell:ps`); //  2>/dev/null
+    } else {
+      this._send(`shell:ps ${args.join(' ')}`); //  2>/dev/null
+    }
     return this.parser.readAscii(4).then((reply) => {
       switch (reply) {
         case Protocol.OKAY:
