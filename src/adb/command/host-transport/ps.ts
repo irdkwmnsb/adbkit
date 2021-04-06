@@ -52,19 +52,22 @@ export default class PsCommand extends Command<Array<Partial<PsEntry>>> {
 
   private _parsePs(value: string): Array<Partial<PsEntry>> {
     const lines: string[] = value.split(/[\r\n]+/g);
-    const titles = lines.shift().split(/\s+/g) as Array<keyof PsEntry>;
+    const titles = lines.shift().trim();
+    const cols = titles.split(/\s+/g) as Array<keyof PsEntry>;
     const result: Partial<PsEntry>[] = [];
     for (const line of lines) {
+      if (!line)
+        continue;
       const ps: Partial<PsEntry> = {};
       let p = 0;
-      const last = titles.length - 1;
+      const last = cols.length - 1;
       for (let i = 0; i < last; i++) {
         const p2 = line.indexOf(' ', p);
-        (ps as { [key: string]: string })[titles[i]] = line.substring(p, p2);
+        (ps as { [key: string]: string })[cols[i]] = line.substring(p, p2);
         p = p2 + 1;
         while (line[p] == ' ') p++;
       }
-      (ps as { [key: string]: string })[titles[last]] = line.substring(p);
+      (ps as { [key: string]: string })[cols[last]] = line.substring(p);
       result.push(ps);
     }
     return result;
@@ -79,6 +82,9 @@ export default class PsCommand extends Command<Array<Partial<PsEntry>>> {
  */
 export type ProcessState = 'R' | 'S' | 'D' | 'T' | 't' | 'X' | 'Z' | 'P' | 'I' | 'x' | 'K' | 'W';
 
+/**
+ * contains PS command line
+ */
 export interface PsEntry {
   // Command line field types:
   ARGS: string; //    CMDLINE minus initial path

@@ -16,3 +16,4 @@ export { default as StartActivityOptions } from './StartActivityOptions';
 export { default as StartServiceOptions, ExtraValue, ExtraObject, Extra } from './StartServiceOptions';
 export { default as TrackerChangeSet } from './TrackerChangeSet';
 export { default as WithToString } from './WithToString';
+export { PsEntry } from './adb/command/host-transport/ps';
