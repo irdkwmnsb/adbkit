@@ -36,6 +36,11 @@ import {
   WaitBootCompleteCommand,
   PsCommand,
   PsEntry,
+  ServicesListCommand,
+  AdbServiceInfo,
+  KnownServices,
+  ServiceCheckCommand,
+  ServiceCallCommand,
 } from './command/host-transport';
 import {
   ForwardCommand,
@@ -141,6 +146,33 @@ export default class DeviceClient {
    */
   public getPs(...flags: string[]): Bluebird<Array<Partial<PsEntry>>> {
     return this.transport().then((transport) => new PsCommand(transport).execute(...flags));
+  }
+
+  /**
+   * Retrieves the list of available services
+   *
+   * @returns a PsEntry array
+   */
+   public getServices(): Bluebird<Array<AdbServiceInfo>> {
+    return this.transport().then((transport) => new ServicesListCommand(transport).execute());
+  }
+
+  /**
+   * Retrieves the list of available services
+   *
+   * @returns a PsEntry array
+   */
+   public checkService(serviceName: KnownServices | string): Bluebird<boolean> {
+    return this.transport().then((transport) => new ServiceCheckCommand(transport).execute(serviceName));
+  }
+
+  /**
+   * Retrieves the list of available services
+   *
+   * @returns a PsEntry array
+   */
+   public callServiceRaw(serviceName: KnownServices | string, code: number | string): Bluebird<Buffer> {
+    return this.transport().then((transport) => new ServiceCallCommand(transport).execute(serviceName, code));
   }
 
   /**

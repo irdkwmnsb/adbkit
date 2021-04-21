@@ -26,3 +26,7 @@ export { default as UninstallCommand } from './uninstall';
 export { default as UsbCommand } from './usb';
 export { default as WaitBootCompleteCommand } from './waitbootcomplete';
 export { default as PsCommand, PsEntry } from './ps';
+
+export { default as ServicesListCommand, AdbServiceInfo, KnownServices } from './servicesList';
+export { default as ServiceCheckCommand } from './serviceCheck';
+export { default as ServiceCallCommand } from './serviceCall';
