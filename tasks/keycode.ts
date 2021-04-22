@@ -1,7 +1,7 @@
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
-const EOL = require('os').EOL;
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
+import { EOL } from 'os';
 
 const repo_path = '/aosp-mirror/platform_frameworks_base/master';
 const original = {
@@ -42,4 +42,4 @@ const req = https.request(original, function (res) {
 req.on('error', (e) => {
     console.error(e.message);
 });
-return req.end();
+req.end();

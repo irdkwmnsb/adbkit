@@ -37,7 +37,8 @@
     },
     "scripts": {
         "clean": "rimraf dist index.d.ts index.js",
-        "keycode": "node tasks/keycode.js",
+        "keycode": "ts-node tasks/keycode.ts",
+        "servicemap": "ts-node tasks/servicemap.ts",
         "prepublish": "npm run clean && npm run compile && npm run test",
         "compile": "tsc  -p .",
         "compile2": "tsc -p tsconfig-dist.json",
