@@ -1,6 +1,21 @@
 import https from 'https';
+import path from 'path';
+import fs from 'fs';
+import GitSource from './GitSource'
+
 // import strip from 'strip-comments';
 // import { parse, BaseJavaCstVisitor, LambdaExpressionCtx, BaseJavaCstVisitorWithDefaults } from "java-parser";
+
+// list file from repo
+// https://api.github.com/repos/${l_githubUser}/${l_githubProject}/git/trees/${l_branch}?recursive=1
+// https://api.github.com/repos/aosp-mirror/platform_frameworks_base
+// android-11.0.0_r35
+// https://api.github.com/repos/octocat/Hello-World/branches
+
+// list branches
+// https://api.github.com/repos/aosp-mirror/platform_frameworks_base/branches
+// list file from branches
+// 
 
 function getData(url: string): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -31,8 +46,9 @@ function getData(url: string): Promise<Buffer> {
 // https://android.googlesource.com/platform/frameworks/base/+/android-11.0.0_r35/core/java/android/security/keymaster/IKeyAttestationApplicationIdProvider.aidl?format=TEXT
 // https://android.googlesource.com/platform/frameworks/base/+/android-11.0.0_r35/telephony/java/android/hardware/fingerprint/IFingerprintService.aidl?format=TEXT
 
-async function getAllTags(): Promise<string[]> {
-    const data = await getData('https://android.googlesource.com/platform/frameworks/base/+refs/tags/?format=text');
+async function getAllTags2(): Promise<string[]> {
+    const data = await getData('git ls-remote --tags --sort="v:refname" https://android.googlesource.com/platform/frameworks/base.git');
+    // git ls-remote --tags --sort="v:refname" https://android.googlesource.com/platform/frameworks/base.git | cut -d'/' -f3 | cut -d'^' -f1 
     const asText = data.toString('ascii');
     const TAGS = /refs\/tags\/(android-[0-9_r.]+)\^\{\}/gm;
     const tags: string[] = [];
@@ -44,6 +60,28 @@ async function getAllTags(): Promise<string[]> {
     }
     return tags;
 }
+
+/**
+ * getAllTags from google source git
+ * @returns 
+ */
+async function getAllTags(): Promise<string[]> {
+    const data = await getData('https://android.googlesource.com/platform/frameworks/base/+refs/tags/?format=text');
+    // git ls-remote --tags --sort="v:refname" https://android.googlesource.com/platform/frameworks/base.git | cut -d'/' -f3 | cut -d'^' -f1 
+    const asText = data.toString('ascii');
+    const TAGS = /refs\/tags\/(android-[0-9_r.]+)\^\{\}/gm;
+    const tags: string[] = [];
+    for (; ;) {
+        const match = TAGS.exec(asText);
+        if (!match)
+            break;
+        tags.push(match[1]);
+    }
+    return tags;
+}
+
+
+
 
 async function getAidl(tag: string, pkgName: string) {
     const pkg = pkgName.replace(/\./g, '/');
@@ -61,7 +99,7 @@ async function getAidl(tag: string, pkgName: string) {
     const javaCode = Buffer.from(asBase64, 'base64').toString('ascii');
     console.log(javaCode);
 
-    
+
     // const cst = parse(javaCode)
     //const lambdaArrowsCollector = new LambdaArrowsPositionCollector();
     // The CST result from the previous code snippet
@@ -74,12 +112,20 @@ async function getAidl(tag: string, pkgName: string) {
 }
 
 async function main() {
-    const tags = await getAllTags();
+    const src = new GitSource('android-src', 'https://android.googlesource.com/platform/frameworks/base.git');
+    const tags = await src.listTag();
+
     for (const tag of tags) {
-        await getAidl(tag, 'android.hardware.display.IDisplayManager')
-        // await getAidl(tag, 'android.security.keymaster.IKeyAttestationApplicationIdProvider')
-        // 
+        console.log('tag:', tag);
+        await src.checkoutTag(tag);
+        break;
     }
+    // const tags = await getAllTags();
+    // for (const tag of tags) {
+    //     await getAidl(tag, 'android.hardware.display.IDisplayManager')
+    //     // await getAidl(tag, 'android.security.keymaster.IKeyAttestationApplicationIdProvider')
+    //     // 
+    // }
 }
 
 main();
