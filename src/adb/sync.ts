@@ -11,7 +11,6 @@ import Entry from './sync/entry';
 import PushTransfer from './sync/pushtransfer';
 import PullTransfer from './sync/pulltransfer';
 import Connection from './connection';
-import { Callback } from '../Callback';
 import { Readable } from 'stream';
 
 const TEMP_PATH = '/data/local/tmp';
@@ -59,10 +58,10 @@ export default class Sync extends EventEmitter {
     }
   }
 
-  public readdir(path: string): Promise<Entry[]> {
+  public async readdir(path: string): Promise<Entry[]> {
     const files: Entry[] = [];
     this._sendCommandWithArg(Protocol.LIST, path);
-    const readNext = async (): Promise<Entry[]> => {
+    while (true) {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
         case Protocol.DENT:
@@ -77,7 +76,7 @@ export default class Sync extends EventEmitter {
           if (!(nameString === '.' || nameString === '..')) {
             files.push(new Entry(nameString, mode, size, mtime));
           }
-          return readNext();
+          continue;
         case Protocol.DONE:
           await this.parser.readBytes(16)
           return files;
@@ -86,8 +85,7 @@ export default class Sync extends EventEmitter {
         default:
           return this.parser.unexpected(reply, 'DENT, DONE or FAIL');
       }
-    };
-    return readNext();
+    }
   }
 
   public push(contents: string | Readable, path: string, mode?: number): PushTransfer {
