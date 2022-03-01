@@ -124,12 +124,12 @@ export default class Sync extends EventEmitter {
   private _writeData(stream: Readable, timeStamp: number): PushTransfer {
     const transfer = new PushTransfer();
 
-    const writeData = (): Promise<unknown> => {
-      let readableListener: () => void;
-      let connErrorListener: (err: Error) => void;
-      let endListener: () => void;
-      let errorListener: (err: Error) => void;
+    let readableListener: () => void;
+    let connErrorListener: (err: Error) => void;
+    let endListener: () => void;
+    let errorListener: (err: Error) => void;
 
+    const writeData = (): Promise<unknown> => {
       let resolver = Bluebird.defer();
       const writer = Bluebird.resolve();
       endListener = () => {
@@ -139,9 +139,11 @@ export default class Sync extends EventEmitter {
         });
       };
       stream.on('end', endListener);
+      let drainListener: () => void;
+
       const waitForDrain = () => {
         resolver = Bluebird.defer();
-        const drainListener = () => {
+        drainListener = () => {
           resolver.resolve();
         };
         this.connection.on('drain', drainListener);
