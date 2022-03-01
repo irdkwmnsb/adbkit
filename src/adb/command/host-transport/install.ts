@@ -10,13 +10,12 @@ export default class InstallCommand extends Command<boolean> {
         return this.parser
           .searchLine(/^(Success|Failure \[(.*?)\])$/)
           .then(function (match) {
-            let code, err;
             if (match[1] === 'Success') {
               return true;
             } else {
-              code = match[2];
-              err = new Error(`${apk} could not be installed [${code}]`);
-              err.code = code;
+              const code = match[2];
+              const err = new Error(`${apk} could not be installed [${code}]`);
+              (err as any).code = code;
               throw err;
             }
           })

@@ -20,7 +20,7 @@ export default class GetFeaturesCommand extends Command<Features> {
   }
 
   private _parseFeatures(value: string): Features {
-    const features = {};
+    const features: Features = {};
     let match: RegExpExecArray | null;
     while ((match = RE_FEATURE.exec(value))) {
       features[match[1]] = match[2] || true;

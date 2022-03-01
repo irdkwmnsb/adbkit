@@ -16,7 +16,7 @@ interface JdwpTrackerChangeSet {
 }
 
 export default class JdwpTracker extends EventEmitter {
-  private pids = [];
+  private pids: string[] = [];
   private pidMap = Object.create(null);
   private reader: Promise<JdwpTracker | boolean>;
 

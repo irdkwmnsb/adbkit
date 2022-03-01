@@ -220,15 +220,14 @@ export default class Parser {
 
   public readUntil(code: number): Promise<Buffer> {
     let skipped = Buffer.alloc(0);
-    const read = () => {
-      return this.readBytes(1).then(function (chunk) {
-        if (chunk[0] === code) {
-          return skipped;
-        } else {
-          skipped = Buffer.concat([skipped, chunk]);
-          return read();
-        }
-      });
+    const read = async (): Promise<Buffer> => {
+      const chunk = await this.readBytes(1);
+      if (chunk[0] === code) {
+        return skipped;
+      } else {
+        skipped = Buffer.concat([skipped, chunk]);
+        return read();
+      }
     };
     return read();
   }

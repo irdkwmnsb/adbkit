@@ -2,7 +2,6 @@ import Protocol from '../../protocol';
 import Parser from '../../parser';
 import Command from '../../command';
 import StartActivityOptions from '../../../StartActivityOptions';
-
 import { Extra, ExtraObject, ExtraValue } from '../../../StartServiceOptions';
 
 const RE_ERROR = /^Error: (.*)$/;
@@ -103,11 +102,11 @@ class StartActivityCommand extends Command<boolean> {
   }
 
   private _formatShortExtra(key: string, value: ExtraValue): Array<string | number> {
-    let sugared = {
+    let sugared: Extra = {
       key: key,
-      type: '' as string,
+      type: 'null',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      value: undefined as any,
+      value: undefined,
     };
     if (value === null) {
       sugared.type = 'null';
@@ -131,19 +130,19 @@ class StartActivityCommand extends Command<boolean> {
           break;
         case 'object':
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          sugared = value as any;
+          sugared = value as any as Extra;
           sugared.key = key;
       }
     }
     return this._formatLongExtra(sugared);
   }
 
-  private _formatLongExtra(extra): Array<string | number> {
+  private _formatLongExtra(extra: Extra): Array<string | number> {
     const args: Array<string | number> = [];
     if (!extra.type) {
       extra.type = 'string';
     }
-    const type = EXTRA_TYPES[extra.type];
+    const type = EXTRA_TYPES[(extra as Extra).type];
     if (!type) {
       throw new Error(`Unsupported type '${extra.type}' for extra '${extra.key}'`);
     }

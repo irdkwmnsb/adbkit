@@ -88,42 +88,39 @@ export default class Service extends EventEmitter {
     };
   }
 
-  private _handleOpenPacket(packet): Promise<boolean> {
+  private async _handleOpenPacket(packet: Packet): Promise<boolean> {
     debug('I:A_OPEN', packet);
-    return this.client
-      .getDevice(this.serial)
-      .transport()
-      .then((transport) => {
-        this.transport = transport;
-        if (this.ended) {
-          throw new LateTransportError();
-        }
-        this.transport.write(Protocol.encodeData(packet.data.slice(0, -1))); // Discard null byte at end
-        return this.transport.parser.readAscii(4).then((reply) => {
-          switch (reply) {
-            case Protocol.OKAY:
-              debug('O:A_OKAY');
-              this.socket.write(Packet.assemble(Packet.A_OKAY, this.localId, this.remoteId, null));
-              return (this.opened = true);
-            case Protocol.FAIL:
-              return this.transport.parser.readError();
-            default:
-              return this.transport.parser.unexpected(reply, 'OKAY or FAIL');
-          }
-        });
-      })
-      .then(() => {
-        return new Promise<boolean>((resolve, reject) => {
-          this.transport.socket
-            .on('readable', () => this._tryPush())
-            .on('end', resolve)
-            .on('error', reject);
-          return this._tryPush();
-        });
-      })
-      .finally(() => {
-        return this.end();
+    try {
+      const transport = await this.client.getDevice(this.serial).transport()
+      this.transport = transport;
+      if (this.ended) {
+        throw new LateTransportError();
+      }
+      this.transport.write(Protocol.encodeData(packet.data.slice(0, -1))); // Discard null byte at end
+      const reply = await this.transport.parser.readAscii(4);
+      switch (reply) {
+        case Protocol.OKAY:
+          debug('O:A_OKAY');
+          this.socket.write(Packet.assemble(Packet.A_OKAY, this.localId, this.remoteId, null));
+          this.opened = true;
+          break;
+        case Protocol.FAIL:
+          this.transport.parser.readError();
+          break;
+        default:
+          this.transport.parser.unexpected(reply, 'OKAY or FAIL');
+          break;
+      }
+      return new Promise<boolean>((resolve, reject) => {
+        this.transport.socket
+          .on('readable', () => this._tryPush())
+          .on('end', resolve)
+          .on('error', reject);
+        return this._tryPush();
       });
+    } finally {
+      this.end();
+    }
   }
 
   private _handleOkayPacket(packet: Packet): boolean | undefined {

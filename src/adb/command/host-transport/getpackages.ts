@@ -26,7 +26,7 @@ export default class GetPackagesCommand extends Command<string[]> {
     while (true) {
       const match = RE_PACKAGE.exec(value);
       if (match) {
-        packages.push((match as unknown)[1]);
+        packages.push(match[1]);
       } else {
         break;
       }

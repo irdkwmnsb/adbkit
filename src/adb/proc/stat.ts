@@ -19,8 +19,8 @@ type Stats = { cpus: LoadsWithLine };
 class ProcStat extends EventEmitter {
   public interval = 1000;
   public stats: Stats;
-  private readonly _ignore;
-  private readonly _timer;
+  private readonly _ignore: {[key: string]: string};
+  private readonly _timer: NodeJS.Timeout;
 
   constructor(private sync?: Sync) {
     super();

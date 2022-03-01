@@ -62,7 +62,7 @@ export default class Sync extends EventEmitter {
 
   public readdir(path: string, callback?: Callback<Entry[]>): Bluebird<Entry[]> {
     const files: Entry[] = [];
-    const readNext = () => {
+    const readNext = (): Promise<any> => {
       return this.parser.readAscii(4).then((reply) => {
         switch (reply) {
           case Protocol.DENT:
@@ -92,7 +92,7 @@ export default class Sync extends EventEmitter {
       });
     };
     this._sendCommandWithArg(Protocol.LIST, path);
-    return readNext().nodeify(callback);
+    return Bluebird.resolve(readNext()).nodeify(callback);
   }
 
   public push(contents: string | Readable, path: string, mode?: number): PushTransfer {
@@ -156,7 +156,7 @@ export default class Sync extends EventEmitter {
         });
       };
       const track = () => transfer.pop();
-      const writeNext = () => {
+      const writeNext = (): Bluebird<void> => {
         let chunk: Buffer;
         if ((chunk = stream.read(DATA_MAX_LENGTH) || stream.read())) {
           this._sendCommandWithLength(Protocol.DATA, chunk.length);
@@ -233,7 +233,7 @@ export default class Sync extends EventEmitter {
 
   private _readData(): PullTransfer {
     const transfer = new PullTransfer();
-    const readNext = () => {
+    const readNext = (): Promise<any> => {
       return this.parser.readAscii(4).then((reply) => {
         switch (reply) {
           case Protocol.DATA:
@@ -252,7 +252,7 @@ export default class Sync extends EventEmitter {
         }
       });
     };
-    const reader = readNext()
+    const reader = Bluebird.resolve(readNext())
       .catch(Bluebird.CancellationError, () => this.connection.end())
       .catch((err: Error) => transfer.emit('error', err))
       .finally(function () {
@@ -265,13 +265,13 @@ export default class Sync extends EventEmitter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async _readError(): Promise<any> {
+  private async _readError(): Promise<never> {
     try {
       const length = await this.parser.readBytes(4);
       const buf = await this.parser.readBytes(length.readUInt32LE(0));
       return await Bluebird.reject(new Parser.FailError(buf.toString()));
     } finally {
-      return await this.parser.end();
+      await this.parser.end();
     }
   }
 

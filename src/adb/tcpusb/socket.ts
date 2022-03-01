@@ -141,7 +141,7 @@ export default class Socket extends EventEmitter {
     return this.write(Packet.assemble(Packet.A_SYNC, 1, this.syncToken.next()));
   }
 
-  private _handleConnectionPacket(packet): Promise<boolean> {
+  private _handleConnectionPacket(packet: Packet): Promise<boolean> {
     debug('I:A_CNXN', packet);
     this.version = Packet.swap32(packet.arg0);
     this.maxPayload = Math.min(UINT16_MAX, packet.arg1);

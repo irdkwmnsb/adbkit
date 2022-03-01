@@ -97,7 +97,7 @@ export default class PacketReader extends EventEmitter {
     }
   }
 
-  private _consume(length): Buffer {
+  private _consume(length: number): Buffer {
     const chunk = this.buffer.slice(0, length);
     this.buffer = length === this.buffer.length ? null : this.buffer.slice(length);
     return chunk;

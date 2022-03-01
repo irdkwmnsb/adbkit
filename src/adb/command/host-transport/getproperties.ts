@@ -22,7 +22,7 @@ export default class GetPropertiesCommand extends Command<any> {
   }
 
   private _parseProperties(value: string): Properties {
-    const properties = {};
+    const properties: Properties = {};
     let match: RegExpExecArray | null;
     while ((match = RE_KEYVAL.exec(value))) {
       properties[match[1]] = match[2];
