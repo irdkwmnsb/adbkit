@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEmitter } from 'events';
-import Bluebird from 'bluebird';
 import Parser from './parser';
 import Command from './command';
 
@@ -27,10 +26,6 @@ export default class JdwpTracker extends EventEmitter {
     this.pidMap = Object.create(null);
     this.reader = this.read().catch(err => {
       if (err instanceof Parser.PrematureEOFError) {
-        return this.emit('end');
-      }
-      if (err instanceof Bluebird.CancellationError) {
-        this.command.connection.end();
         return this.emit('end');
       }
       this.command.connection.end();
@@ -105,9 +100,6 @@ export default class JdwpTracker extends EventEmitter {
   }
 
   end(): JdwpTracker {
-    if ((this.reader as Bluebird<unknown>).cancel) {
-      (this.reader as Bluebird<unknown>).cancel();
-    }
     return this;
   }
 }

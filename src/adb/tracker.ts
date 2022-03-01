@@ -1,4 +1,3 @@
-import Bluebird from 'bluebird';
 import Parser from './parser';
 import { EventEmitter } from 'events';
 import Device from '../Device';
@@ -9,15 +8,12 @@ import TrackerChangeSet from '../TrackerChangeSet';
 export default class Tracker extends EventEmitter {
   private deviceList: Device[] = [];
   private deviceMap: Record<string, Device> = {};
-  private reader: Bluebird<boolean | Device[]>;
+  private reader: Promise<void | Device[]>;
 
   constructor(private readonly command: HostDevicesCommand | HostDevicesWithPathsCommand) {
     super();
-    this.reader = Bluebird.resolve(this.read()).catch((err) => {
+    this.reader = this.read().catch((err) => {
       this.emit('error', err)
-      if (err instanceof Bluebird.CancellationError) {
-        return Promise.resolve(true);
-      }
       if (err instanceof Parser.PrematureEOFError) {
         throw new Error('Connection closed');
       }
@@ -70,7 +66,7 @@ export default class Tracker extends EventEmitter {
   }
 
   public end(): Tracker {
-    this.reader.cancel();
+    // this.reader.cancel();
     return this;
   }
 }

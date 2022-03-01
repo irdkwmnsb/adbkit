@@ -1,4 +1,3 @@
-import Bluebird from 'bluebird';
 import Protocol from './protocol';
 import { Duplex } from 'stream';
 
@@ -30,17 +29,6 @@ export class UnexpectedDataError extends Error {
     Error.captureStackTrace(this, UnexpectedDataError);
   }
 }
-
-Bluebird.config({
-  // Enable warnings
-  // warnings: true,
-  // Enable long stack traces
-  // longStackTraces: true,
-  // Enable cancellation
-  cancellation: true,
-  // Enable monitoring
-  // monitoring: true,
-});
 
 export default class Parser {
   public static FailError = FailError;

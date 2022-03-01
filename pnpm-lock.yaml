@@ -2,7 +2,6 @@ lockfileVersion: 5.3
 
 specifiers:
   '@devicefarmer/adbkit-logcat': ^2.1.1
-  '@types/bluebird': ^3.5.36
   '@types/debug': ^4.1.7
   '@types/mocha': ^8.2.0
   '@types/node': ^14.14.28
@@ -12,7 +11,6 @@ specifiers:
   '@typescript-eslint/parser': ^4.15.1
   '@u4/adbkit-monkey': ^1.0.3
   bench: ~0.3.6
-  bluebird: ~3.7
   chai: ~4.3.6
   commander: ^7.1.0
   debug: ~4.3.3
@@ -34,7 +32,6 @@ specifiers:
 dependencies:
   '@devicefarmer/adbkit-logcat': 2.1.1
   '@u4/adbkit-monkey': 1.0.3
-  bluebird: 3.7.2
   commander: 7.2.0
   debug: 4.3.3
   install: 0.13.0
@@ -42,7 +39,6 @@ dependencies:
   split: 1.0.1
 
 devDependencies:
-  '@types/bluebird': 3.5.36
   '@types/debug': 4.1.7
   '@types/mocha': 8.2.3
   '@types/node': 14.18.2
@@ -172,10 +168,6 @@ packages:
 
   /@sinonjs/text-encoding/0.7.1:
     resolution: {integrity: sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==}
-    dev: true
-
-  /@types/bluebird/3.5.36:
-    resolution: {integrity: sha512-HBNx4lhkxN7bx6P0++W8E289foSu8kO8GCk2unhuVggO+cE7rh9DhZUyPhUxNRG9m+5B5BTKxZQ5ZP92x/mx9Q==}
     dev: true
 
   /@types/chai/4.3.0:
@@ -454,10 +446,6 @@ packages:
     resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
     engines: {node: '>=8'}
     dev: true
-
-  /bluebird/3.7.2:
-    resolution: {integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==}
-    dev: false
 
   /brace-expansion/1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}

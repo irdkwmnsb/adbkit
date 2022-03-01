@@ -1,5 +1,4 @@
 import Stream from 'stream';
-import Bluebird from 'bluebird';
 import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
@@ -10,14 +9,8 @@ describe('util', function () {
         it('should return a cancellable Bluebird Promise', function (done) {
             const stream = new Stream.PassThrough();
             const promise = util.readAll(stream);
-            if ((promise as any).cancel) {
-                expect(promise).to.be.an.instanceOf(Bluebird);
-                (promise as Bluebird<unknown>).cancel();
-                expect((promise as Bluebird<unknown>).isCancelled()).to.be.true;
-            } else {
-                expect(promise).to.be.an.instanceOf(Promise);
-                stream.end();
-            }
+            expect(promise).to.be.an.instanceOf(Promise);
+            stream.end();
             done();
         });
         return it('should read all remaining content until the stream ends', async () => {

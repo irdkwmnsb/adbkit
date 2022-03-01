@@ -1,6 +1,5 @@
 import Stream from 'stream';
 import Chai, { expect } from 'chai';
-import Bluebird from 'bluebird';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import Parser, { PrematureEOFError, UnexpectedDataError } from '../../src/adb/parser';
@@ -11,16 +10,9 @@ import Util from '../../src/adb/util';
  * @param promise native or bluebird Promise;
  */
 function bPromiseTest(promise: any) {
-    if ((promise as Bluebird<unknown>).cancel) {
-        (promise as Bluebird<unknown>).cancel();
-        expect((promise as Bluebird<unknown>).isCancelled()).to.be.true;
-        return true;
-    } else {
-        expect(promise).to.be.an.instanceOf(Promise);
-        return false;
-    }
+    expect(promise).to.be.an.instanceOf(Promise);
+    return false;
 }
-
 
 describe('Parser', function () {
     describe('end()', function () {

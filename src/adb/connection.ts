@@ -6,8 +6,8 @@ import dump from './dump';
 import d from 'debug';
 import { Socket } from 'net';
 import { promisify } from 'util';
-
 import { ClientOptions } from '../ClientOptions';
+// import PromiseSocket from 'promise-socket';
 
 const debug = d('adb:connection');
 
@@ -69,6 +69,18 @@ export default class Connection extends EventEmitter {
    */
   public getSocket(): unknown {
     return this.socket;
+  }
+
+  public async waitForDrain(): Promise<void> {
+    let drainListener: () => void;
+    try {
+      return await new Promise<any>((resolve) => {
+        drainListener = () => { resolve(undefined); };
+        this.on('drain', drainListener);
+      });
+    } finally {
+      this.removeListener('drain', drainListener);
+    }
   }
 
   public end(): this {
