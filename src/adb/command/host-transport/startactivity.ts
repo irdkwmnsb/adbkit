@@ -17,7 +17,7 @@ const EXTRA_TYPES = {
   component: 'cn',
 };
 
-class StartActivityCommand extends Command<boolean> {
+export default class StartActivityCommand extends Command<boolean> {
   execute(options: StartActivityOptions): Promise<boolean> {
     const args = this._intentArgs(options);
     if (options.debug) {
@@ -161,5 +161,3 @@ class StartActivityCommand extends Command<boolean> {
     return args;
   }
 }
-
-export = StartActivityCommand;

@@ -12,34 +12,32 @@ program
   .command('pubkey-convert <file>')
   .option('-f, --format <format>', 'format (pem or openssh)', String, 'pem')
   .description('Converts an ADB-generated public key into PEM format.')
-  .action(function (file, options) {
-    return Auth.parsePublicKey(fs.readFileSync(file).toString('utf8')).then((key) => {
-      switch (options.format.toLowerCase()) {
-        case 'pem':
-          return console.log(forge.pki.publicKeyToPem(key).trim());
-        case 'openssh':
-          return console.log(forge.ssh.publicKeyToOpenSSH(key, 'adbkey').trim());
-        default:
-          console.error("Unsupported format '" + options.format + "'");
-          return process.exit(1);
-      }
-    });
+  .action(async (file, options): Promise<void> => {
+    const key = await Auth.parsePublicKey(fs.readFileSync(file).toString('utf8'));
+    switch (options.format.toLowerCase()) {
+      case 'pem':
+        return console.log(forge.pki.publicKeyToPem(key).trim());
+      case 'openssh':
+        return console.log(forge.ssh.publicKeyToOpenSSH(key, 'adbkey').trim());
+      default:
+        console.error("Unsupported format '" + options.format + "'");
+        return process.exit(1);
+    }
   });
 
 program
   .command('pubkey-fingerprint <file>')
   .description('Outputs the fingerprint of an ADB-generated public key.')
-  .action(function (file) {
-    return Auth.parsePublicKey(fs.readFileSync(file).toString('utf8')).then((key) => {
-      return console.log('%s %s', key.fingerprint, key.comment);
-    });
+  .action(async (file: string) => {
+    const key = await Auth.parsePublicKey(fs.readFileSync(file).toString('utf8'));
+    return console.log('%s %s', key.fingerprint, key.comment);
   });
 
 program
   .command('usb-device-to-tcp <serial>')
   .option('-p, --port <port>', 'port number', (value: string) => String(value), '6174')
   .description('Provides an USB device over TCP using a translating proxy.')
-  .action((serial: string, options) => {
+  .action((serial: string, options: {port: string}) => {
     const adb = Adb.createClient();
     const server = adb
       .createTcpUsbBridge(serial, {

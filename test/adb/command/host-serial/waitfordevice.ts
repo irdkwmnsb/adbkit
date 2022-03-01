@@ -19,7 +19,7 @@ describe('WaitForDeviceCommand', function () {
         });
         return cmd.execute('abba');
     });
-    it('should resolve with id when the device is connected', function () {
+    it('should resolve with id when the device is connected', async () => {
         const conn = new MockConnection();
         const cmd = new WaitForDeviceCommand(conn);
         setImmediate(function () {
@@ -27,9 +27,9 @@ describe('WaitForDeviceCommand', function () {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute('abba').then(function (id) {
-            expect(id).to.equal('abba');
-        });
+        const id = await cmd.execute('abba')
+        expect(id).to.equal('abba');
+        return true;
     });
     return it('should reject with error if unable to connect', function () {
         const conn = new MockConnection();

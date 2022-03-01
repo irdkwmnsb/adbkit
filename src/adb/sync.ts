@@ -43,16 +43,15 @@ export default class Sync extends EventEmitter {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.STAT:
-        return this.parser.readBytes(12).then((stat) => {
-          const mode = stat.readUInt32LE(0);
-          const size = stat.readUInt32LE(4);
-          const mtime = stat.readUInt32LE(8);
-          if (mode === 0) {
-            return this._enoent(path);
-          } else {
-            return new Stats(mode, size, mtime);
-          }
-        });
+        const stat = await this.parser.readBytes(12);
+        const mode = stat.readUInt32LE(0);
+        const size = stat.readUInt32LE(4);
+        const mtime = stat.readUInt32LE(8);
+        if (mode === 0) {
+          return this._enoent(path);
+        } else {
+          return new Stats(mode, size, mtime);
+        }
       case Protocol.FAIL:
         return this._readError();
       default:
@@ -62,34 +61,33 @@ export default class Sync extends EventEmitter {
 
   public readdir(path: string, callback?: Callback<Entry[]>): Bluebird<Entry[]> {
     const files: Entry[] = [];
-    const readNext = (): Promise<any> => {
-      return this.parser.readAscii(4).then((reply) => {
-        switch (reply) {
-          case Protocol.DENT:
-            return this.parser.readBytes(16).then((stat) => {
-              const mode = stat.readUInt32LE(0);
-              const size = stat.readUInt32LE(4);
-              const mtime = stat.readUInt32LE(8);
-              const namelen = stat.readUInt32LE(12);
-              return this.parser.readBytes(namelen).then(function (name) {
-                const nameString = name.toString();
-                // Skip '.' and '..' to match Node's fs.readdir().
-                if (!(nameString === '.' || nameString === '..')) {
-                  files.push(new Entry(nameString, mode, size, mtime));
-                }
-                return readNext();
-              });
+    const readNext = async (): Promise<any> => {
+      const reply = await this.parser.readAscii(4);
+      switch (reply) {
+        case Protocol.DENT:
+          return this.parser.readBytes(16).then((stat) => {
+            const mode = stat.readUInt32LE(0);
+            const size = stat.readUInt32LE(4);
+            const mtime = stat.readUInt32LE(8);
+            const namelen = stat.readUInt32LE(12);
+            return this.parser.readBytes(namelen).then(function (name) {
+              const nameString = name.toString();
+              // Skip '.' and '..' to match Node's fs.readdir().
+              if (!(nameString === '.' || nameString === '..')) {
+                files.push(new Entry(nameString, mode, size, mtime));
+              }
+              return readNext();
             });
-          case Protocol.DONE:
-            return this.parser.readBytes(16).then(function () {
-              return files;
-            });
-          case Protocol.FAIL:
-            return this._readError();
-          default:
-            return this.parser.unexpected(reply, 'DENT, DONE or FAIL');
-        }
-      });
+          });
+        case Protocol.DONE:
+          return this.parser.readBytes(16).then(function () {
+            return files;
+          });
+        case Protocol.FAIL:
+          return this._readError();
+        default:
+          return this.parser.unexpected(reply, 'DENT, DONE or FAIL');
+      }
     };
     this._sendCommandWithArg(Protocol.LIST, path);
     return Bluebird.resolve(readNext()).nodeify(callback);

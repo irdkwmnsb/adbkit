@@ -105,12 +105,16 @@ export default class Socket extends EventEmitter {
           return Promise.resolve(this._handleSyncPacket());
         case Packet.A_CNXN:
           return this._handleConnectionPacket(packet);
-        case Packet.A_OPEN:
-          return this._handleOpenPacket(packet).then((r) => !!r);
+        case Packet.A_OPEN: {
+          const r = this._handleOpenPacket(packet);
+          return !!r;
+        }
         case Packet.A_OKAY:
         case Packet.A_WRTE:
-        case Packet.A_CLSE:
-          return this._forwardServicePacket(packet).then((r) => !!r);
+        case Packet.A_CLSE: {
+          const r = await this._forwardServicePacket(packet)
+          return !!r;
+        }
         case Packet.A_AUTH:
           return this._handleAuthPacket(packet);
         default:

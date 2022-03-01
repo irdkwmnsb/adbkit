@@ -19,7 +19,7 @@ describe('HostVersionCommand', function () {
         });
         return cmd.execute()
     });
-    it('should resolve with version', function () {
+    it('should resolve with version', async () => {
         const conn = new MockConnection();
         const cmd = new HostVersionCommand(conn);
         setImmediate(function () {
@@ -27,19 +27,19 @@ describe('HostVersionCommand', function () {
             conn.getSocket().causeRead(Protocol.encodeData((0x1234).toString(16)));
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute().then(function (version) {
-            expect(version).to.equal(0x1234);
-        });
+        const version = await cmd.execute()
+        expect(version).to.equal(0x1234);
+        return true;
     });
-    return it('should handle old-style version', function () {
+    return it('should handle old-style version', async () => {
         const conn = new MockConnection();
         const cmd = new HostVersionCommand(conn);
         setImmediate(function () {
             conn.getSocket().causeRead((0x1234).toString(16));
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute().then(function (version) {
-            expect(version).to.equal(0x1234);
-        });
+        const version = await cmd.execute()
+        expect(version).to.equal(0x1234);
+        return true;
     });
 });

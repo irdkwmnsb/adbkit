@@ -16,7 +16,7 @@ interface LoadsWithLine {
 
 type Stats = { cpus: LoadsWithLine };
 
-class ProcStat extends EventEmitter {
+export default class ProcStat extends EventEmitter {
   public interval = 1000;
   public stats: Stats;
   private readonly _ignore: {[key: string]: string};
@@ -145,5 +145,3 @@ class ProcStat extends EventEmitter {
     };
   }
 }
-
-export = ProcStat;

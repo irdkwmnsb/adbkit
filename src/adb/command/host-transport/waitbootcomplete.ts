@@ -7,10 +7,12 @@ export default class WaitBootCompleteCommand extends Command<boolean> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        return this.parser
-          .searchLine(/^1$/)
-          .finally(() => this.parser.end())
-          .then(() => true);
+        try {
+          await this.parser.searchLine(/^1$/);
+        } finally {
+          this.parser.end()
+        }
+        return true;
       case Protocol.FAIL:
         return this.parser.readError();
       default:
