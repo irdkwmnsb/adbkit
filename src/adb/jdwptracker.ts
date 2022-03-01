@@ -18,26 +18,25 @@ interface JdwpTrackerChangeSet {
 export default class JdwpTracker extends EventEmitter {
   private pids = [];
   private pidMap = Object.create(null);
-  private reader: Bluebird<JdwpTracker | boolean>;
+  private reader: Promise<JdwpTracker | boolean>;
 
   constructor(private command: Command<JdwpTracker>) {
     super();
     this.command = command;
     this.pids = [];
     this.pidMap = Object.create(null);
-    this.reader = this.read()
-      .catch(Parser.PrematureEOFError, () => {
+    this.reader = this.read().catch(err => {
+      if (err instanceof Parser.PrematureEOFError) {
         return this.emit('end');
-      })
-      .catch(Bluebird.CancellationError, () => {
+      }
+      if (err instanceof Bluebird.CancellationError) {
         this.command.connection.end();
         return this.emit('end');
-      })
-      .catch((err) => {
-        this.command.connection.end();
-        this.emit('error', err);
-        return this.emit('end');
-      });
+      }
+      this.command.connection.end();
+      this.emit('error', err);
+      return this.emit('end');
+    });
   }
 
   on(event: 'end', listener: () => void): this;
@@ -67,15 +66,14 @@ export default class JdwpTracker extends EventEmitter {
     return super.emit(event, ...args);
   }
 
-  read(): Bluebird<JdwpTracker> {
-    return this.command.parser.readValue().then((list) => {
-      const pids = list.toString().split('\n');
-      const maybeEmpty = pids.pop();
-      if (maybeEmpty) {
-        pids.push(maybeEmpty);
-      }
-      return this.update(pids);
-    });
+  async read(): Promise<JdwpTracker> {
+    const list = await this.command.parser.readValue();
+    const pids = list.toString().split('\n');
+    const maybeEmpty = pids.pop();
+    if (maybeEmpty) {
+      pids.push(maybeEmpty);
+    }
+    return this.update(pids);
   }
 
   update(newList: string[]): JdwpTracker {
@@ -107,7 +105,9 @@ export default class JdwpTracker extends EventEmitter {
   }
 
   end(): JdwpTracker {
-    this.reader.cancel();
+    if ((this.reader as Bluebird<unknown>).cancel) {
+      (this.reader as Bluebird<unknown>).cancel();
+    }
     return this;
   }
 }
