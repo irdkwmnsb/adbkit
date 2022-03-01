@@ -77,7 +77,7 @@ export default class Auth {
     const md = forge.md.md5.create();
     md.update(struct.toString('binary'));
     const extendedKey: ExtendedPublicKey = key as ExtendedPublicKey;
-    extendedKey.fingerprint = md.digest().toHex().match(/../g).join(':');
+    extendedKey.fingerprint = (md.digest().toHex().match(/../g) || []).join(':');
     // Expose comment for the same reason
     extendedKey.comment = comment;
     return extendedKey;

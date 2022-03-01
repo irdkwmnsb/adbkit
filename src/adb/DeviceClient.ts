@@ -504,8 +504,8 @@ export default class DeviceClient {
   public async install(apk: string | ReadStream): Promise<boolean> {
     const temp = Sync.temp(typeof apk === 'string' ? apk : '_stream.apk');
     const transfer = await this.push(apk, temp);
-    let endListener: () => void;
-    let errorListener: (err: Error) => void;
+    let endListener!: () => void;
+    let errorListener!: (err: Error) => void;
     try {
       return await new Promise<boolean>((resolve, reject) => {
         errorListener = (err_1: Error) => reject(err_1);

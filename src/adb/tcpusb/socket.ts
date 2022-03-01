@@ -177,6 +177,8 @@ export default class Socket extends EventEmitter {
         }
         debug(`Received RSA public key '${packet.data.toString('base64')}'`);
         const key = await Auth.parsePublicKey(this._skipNull(packet.data).toString());
+        if (!this.token)
+          throw Error('missing token in socket:_handleAuthPacket')
         const digest = this.token.toString('binary');
         const sig = this.signature.toString('binary');
         if (!key.verify(digest, sig)) {
@@ -228,7 +230,7 @@ export default class Socket extends EventEmitter {
       });
   }
 
-  private _forwardServicePacket(packet: Packet): Promise<boolean | Service> {
+  private _forwardServicePacket(packet: Packet): Promise<boolean | Service | undefined> {
     if (!this.authorized) {
       throw new Socket.UnauthorizedError();
     }

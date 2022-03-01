@@ -50,7 +50,7 @@ export default class PsCommand extends Command<Array<Partial<PsEntry>>> {
 
   private _parsePs(value: string): Array<Partial<PsEntry>> {
     const lines: string[] = value.split(/[\r\n]+/g);
-    const titles = lines.shift().trim();
+    const titles = (lines.shift() || '').trim();
     const cols = titles.split(/\s+/g) as Array<keyof PsEntry>;
     const result: Partial<PsEntry>[] = [];
     for (const line of lines) {

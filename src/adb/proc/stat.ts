@@ -56,13 +56,15 @@ export default class ProcStat extends EventEmitter {
   }
 
   private _parse(out: string): Stats {
-    let match:RegExpExecArray;
+    let match: RegExpExecArray | null = null;
     let val: string;
     const stats = this._emptyStats();
     while ((match = RE_CPULINE.exec(out))) {
       const line: string = match[0];
       const cols = line.split(RE_COLSEP);
       const type = cols.shift();
+      if (!type)
+        continue;
       if (this._ignore[type] === line) {
         continue;
       }

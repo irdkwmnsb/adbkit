@@ -93,11 +93,11 @@ export default class StartActivityCommand extends Command<boolean> {
     if (Array.isArray(extras)) {
       return extras.reduce((all, extra) => {
         return all.concat(this._formatLongExtra(extra));
-      }, []);
+      }, [] as Array<number | string>);
     } else {
       return Object.keys(extras).reduce((all, key) => {
         return all.concat(this._formatShortExtra(key, extras[key]));
-      }, []);
+      }, [] as Array<number | string>);
     }
   }
 
@@ -154,9 +154,11 @@ export default class StartActivityCommand extends Command<boolean> {
       args.push(this._escape(extra.key));
       args.push(this._escape(extra.value.join(',')));
     } else {
-      args.push(`--e${type}`);
-      args.push(this._escape(extra.key));
-      args.push(this._escape(extra.value));
+      //if (extra.value) {
+        args.push(`--e${type}`);
+        args.push(this._escape(extra.key));
+        args.push(this._escape(extra.value));
+      //}
     }
     return args;
   }

@@ -72,7 +72,7 @@ export default class Connection extends EventEmitter {
   }
 
   public async waitForDrain(): Promise<void> {
-    let drainListener: () => void;
+    let drainListener!: () => void;
     try {
       return await new Promise<any>((resolve) => {
         drainListener = () => { resolve(undefined); };
