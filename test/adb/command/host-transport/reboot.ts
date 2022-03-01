@@ -5,35 +5,34 @@ import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import RebootCommand from '../../../../src/adb/command/host-transport/reboot';
 
-describe('RebootCommand', function () {
-    it("should send 'reboot:'", function () {
+describe('RebootCommand', () => {
+    it("should send 'reboot:'", () => {
         const conn = new MockConnection();
         const cmd = new RebootCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('reboot:').toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });
         return cmd.execute();
     });
-    return it('should send wait for the connection to end', function () {
+    return it('should send wait for the connection to end', async () => {
         const conn = new MockConnection();
         const cmd = new RebootCommand(conn);
         let ended = false;
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('reboot:').toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             return conn.getSocket().causeRead(Protocol.OKAY);
         });
-        setImmediate(function () {
+        setImmediate(() => {
             ended = true;
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute().then(function () {
-            expect(ended).to.be.true;
-        });
+        await cmd.execute();
+        expect(ended).to.be.true;
     });
 });

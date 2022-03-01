@@ -20,7 +20,7 @@ describe('IsInstalledCommand', function () {
         });
         return cmd.execute('foo');
     });
-    it('should resolve with true if package returned by command', function () {
+    it('should resolve with true if package returned by command', async function () {
         const conn = new MockConnection();
         const cmd = new IsInstalledCommand(conn);
         setImmediate(function () {
@@ -28,20 +28,18 @@ describe('IsInstalledCommand', function () {
             conn.getSocket().causeRead('package:bar\r\n');
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute('foo').then(function (found) {
-            expect(found).to.be.true;
-        });
+        const found = await cmd.execute('foo');
+        expect(found).to.be.true;
     });
-    it('should resolve with false if no package returned', function () {
+    it('should resolve with false if no package returned', async function () {
         const conn = new MockConnection();
         const cmd = new IsInstalledCommand(conn);
         setImmediate(function () {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute('foo').then(function (found) {
-            expect(found).to.be.false;
-        });
+        const found = await cmd.execute('foo');
+        expect(found).to.be.false;
     });
     return it('should fail if any other data is received', function (done) {
         const conn = new MockConnection();

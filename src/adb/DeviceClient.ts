@@ -425,7 +425,8 @@ export default class DeviceClient {
       } catch (err) {
         if ((times -= 1)) {
           debug(`Monkey can't be reached, trying ${times} more times`);
-          return Util.delay(100).then(() => tryConnect(times));
+          await Util.delay(100)
+          return tryConnect(times);
         } else {
           throw err;
         }

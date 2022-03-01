@@ -122,8 +122,8 @@ describe('Parser', function () {
             })
         });
     });
-    describe('readByteFlow(maxHowMany, targetStream)', function () {
-        it('should return a cancellable Promise', function (done) {
+    describe('readByteFlow(maxHowMany, targetStream)', () => {
+        it('should return a cancellable Promise', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const target = new Stream.PassThrough();
@@ -132,23 +132,22 @@ describe('Parser', function () {
                 parser.end()
             done();
         });
-        it('should read as many bytes as requested', function (done) {
+        it('should read as many bytes as requested', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const target = new Stream.PassThrough();
             parser
                 .readByteFlow(4, target)
-                .then(function () {
+                .then(async () => {
                     expect(target.read()).to.eql(Buffer.from('OKAY'));
-                    return parser.readByteFlow(2, target).then(function () {
-                        expect(target.read()).to.eql(Buffer.from('FA'));
-                        done();
-                    });
+                    await parser.readByteFlow(2, target);
+                    expect(target.read()).to.eql(Buffer.from('FA'));
+                    done();
                 })
                 .catch(done);
             stream.write('OKAYFAIL');
         });
-        return it('should progress with new/partial chunk until maxHowMany', function (done) {
+        return it('should progress with new/partial chunk until maxHowMany', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const target = new Stream.PassThrough();
@@ -170,7 +169,7 @@ describe('Parser', function () {
         });
     });
     describe('readAscii(howMany)', function () {
-        it('should return a cancellable Bluebird Promise', function (done) {
+        it('should return a cancellable Bluebird Promise', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readAscii(1);
@@ -178,17 +177,17 @@ describe('Parser', function () {
                 parser.end()
             done();
         });
-        it('should read as many ascii characters as requested', function (done) {
+        it('should read as many ascii characters as requested', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.readAscii(4).then(function (str) {
+            parser.readAscii(4).then((str) => {
                 expect(str.length).to.equal(4);
                 expect(str).to.equal('OKAY');
                 done();
             });
             stream.write('OKAYFAIL');
         });
-        return it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', function (done) {
+        return it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('FOO');
@@ -199,8 +198,8 @@ describe('Parser', function () {
             stream.end();
         });
     });
-    describe('readValue()', function () {
-        it('should return a cancellable Bluebird Promise', function (done) {
+    describe('readValue()', () => {
+        it('should return a cancellable Bluebird Promise', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readValue();
@@ -208,7 +207,7 @@ describe('Parser', function () {
                 parser.end()
             done();
         });
-        it('should read a protocol value as a Buffer', function (done) {
+        it('should read a protocol value as a Buffer', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             parser.readValue().then(function (value) {
@@ -229,7 +228,7 @@ describe('Parser', function () {
             expect(value).to.have.length(0);
             return true;
         });
-        return it('should reject with Parser.PrematureEOFError if stream ends before the value can be read', function (done) {
+        return it('should reject with Parser.PrematureEOFError if stream ends before the value can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readValue().catch(err => {
