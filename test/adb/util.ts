@@ -20,17 +20,15 @@ describe('util', function () {
             }
             done();
         });
-        return it('should read all remaining content until the stream ends', function (done) {
+        return it('should read all remaining content until the stream ends', async () => {
             const stream = new Stream.PassThrough();
-            util.readAll(stream).then(function (buf) {
-                expect(buf.length).to.equal(3);
-                expect(buf.toString()).to.equal('FOO');
-                done();
-            });
             stream.write('F');
             stream.write('O');
             stream.write('O');
-            return stream.end();
+            stream.end();
+            const buf = await util.readAll(stream)
+            expect(buf.length).to.equal(3);
+            expect(buf.toString()).to.equal('FOO');
         });
     });
 });

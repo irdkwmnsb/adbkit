@@ -177,15 +177,26 @@ describe('Parser', function () {
                 parser.end()
             done();
         });
-        it('should read as many ascii characters as requested', (done) => {
+        it('should read as many ascii characters as requested 1', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.readAscii(4).then((str) => {
-                expect(str.length).to.equal(4);
-                expect(str).to.equal('OKAY');
-                done();
-            });
+            const p = parser.readAscii(4);
             stream.write('OKAYFAIL');
+            const str = await p;
+            expect(str.length).to.equal(4);
+            expect(str).to.equal('OKAY');
+            return true;
+        });
+        it('should read as many ascii characters as requested 2', async () => {
+            const stream = new Stream.PassThrough();
+            const parser = new Parser(stream);
+            const p = parser.readAscii(4);
+            stream.write('OKAYFAIL');
+            stream.end();
+            const str = await p;
+            expect(str.length).to.equal(4);
+            expect(str).to.equal('OKAY');
+            return true;
         });
         return it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', (done) => {
             const stream = new Stream.PassThrough();

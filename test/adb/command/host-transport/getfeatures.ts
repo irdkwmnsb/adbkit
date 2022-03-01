@@ -5,16 +5,16 @@ import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import GetFeaturesCommand from '../../../../src/adb/command/host-transport/getfeatures';
 
-describe('GetFeaturesCommand', function () {
+describe('GetFeaturesCommand', () => {
     it("should send 'pm list features'", () => {
         const conn = new MockConnection();
         const cmd = new GetFeaturesCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData('shell:pm list features 2>/dev/null').toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });
@@ -23,7 +23,7 @@ describe('GetFeaturesCommand', function () {
     it('should return an empty object for an empty feature list', async () => {
         const conn = new MockConnection();
         const cmd = new GetFeaturesCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });

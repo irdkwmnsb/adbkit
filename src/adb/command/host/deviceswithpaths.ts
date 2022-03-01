@@ -16,8 +16,9 @@ export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[
     }
   }
 
-  public _readDevices(): Promise<DeviceWithPath[]> {
-    return this.parser.readValue().then(this._parseDevices);
+  public async _readDevices(): Promise<DeviceWithPath[]> {
+    const value = await this.parser.readValue();
+    return this._parseDevices(value);
   }
 
   private _parseDevices(value: Buffer): DeviceWithPath[] {

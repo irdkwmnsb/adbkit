@@ -43,7 +43,7 @@ describe('ShellCommand', () => {
         });
         return cmd.execute(['foo', 67]);
     });
-    return it('should reject with FailError on ADB failure (not command failure)', (done) => {
+    return it('should reject with FailError on ADB failure (not command failure)', async () => {
         const conn = new MockConnection();
         const cmd = new ShellCommand(conn);
         conn.getSocket().on('write', (chunk) => {
@@ -54,9 +54,12 @@ describe('ShellCommand', () => {
             conn.getSocket().causeRead(Protocol.encodeData('mystery'));
             return conn.getSocket().causeEnd();
         });
-        cmd.execute(['foo']).then(() => {}, (err) => {
+        try {
+            await cmd.execute(['foo']);
+            throw Error('should throw FailError');
+        } catch(err) {
             expect(err).to.be.instanceOf(Parser.FailError);
-            done();
-        });
+        }
+        return true;
     });
 });

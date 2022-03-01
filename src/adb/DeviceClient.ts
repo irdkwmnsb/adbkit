@@ -509,7 +509,10 @@ export default class DeviceClient {
     try {
       return await new Promise<boolean>((resolve, reject) => {
         errorListener = (err_1: Error) => reject(err_1);
-        endListener = () => this.installRemote(temp).then((value: boolean) => resolve(value));
+        endListener = async () => {
+          const value = await this.installRemote(temp);
+          resolve(value);
+        };
         transfer.on('error', errorListener);
         transfer.on('end', endListener);
       });
