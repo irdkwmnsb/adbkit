@@ -59,38 +59,35 @@ export default class Sync extends EventEmitter {
     }
   }
 
-  public readdir(path: string, callback?: Callback<Entry[]>): Bluebird<Entry[]> {
+  public readdir(path: string): Promise<Entry[]> {
     const files: Entry[] = [];
-    const readNext = async (): Promise<any> => {
+    this._sendCommandWithArg(Protocol.LIST, path);
+    const readNext = async (): Promise<Entry[]> => {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
         case Protocol.DENT:
-          return this.parser.readBytes(16).then((stat) => {
-            const mode = stat.readUInt32LE(0);
-            const size = stat.readUInt32LE(4);
-            const mtime = stat.readUInt32LE(8);
-            const namelen = stat.readUInt32LE(12);
-            return this.parser.readBytes(namelen).then(function (name) {
-              const nameString = name.toString();
-              // Skip '.' and '..' to match Node's fs.readdir().
-              if (!(nameString === '.' || nameString === '..')) {
-                files.push(new Entry(nameString, mode, size, mtime));
-              }
-              return readNext();
-            });
-          });
+          const stat = await this.parser.readBytes(16);
+          const mode = stat.readUInt32LE(0);
+          const size = stat.readUInt32LE(4);
+          const mtime = stat.readUInt32LE(8);
+          const namelen = stat.readUInt32LE(12);
+          const name = await this.parser.readBytes(namelen);
+          const nameString = name.toString();
+          // Skip '.' and '..' to match Node's fs.readdir().
+          if (!(nameString === '.' || nameString === '..')) {
+            files.push(new Entry(nameString, mode, size, mtime));
+          }
+          return readNext();
         case Protocol.DONE:
-          return this.parser.readBytes(16).then(function () {
-            return files;
-          });
+          await this.parser.readBytes(16)
+          return files;
         case Protocol.FAIL:
           return this._readError();
         default:
           return this.parser.unexpected(reply, 'DENT, DONE or FAIL');
       }
     };
-    this._sendCommandWithArg(Protocol.LIST, path);
-    return Bluebird.resolve(readNext()).nodeify(callback);
+    return readNext();
   }
 
   public push(contents: string | Readable, path: string, mode?: number): PushTransfer {
@@ -186,13 +183,12 @@ export default class Sync extends EventEmitter {
         return writer.cancel();
       });
     };
-    const readReply = async () => {
+    const readReply = async (): Promise<boolean> => {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
         case Protocol.OKAY:
-          return this.parser.readBytes(4).then(function () {
-            return true;
-          });
+          await this.parser.readBytes(4);
+          return true;
         case Protocol.FAIL:
           return this._readError();
         default:
@@ -230,18 +226,17 @@ export default class Sync extends EventEmitter {
 
   private _readData(): PullTransfer {
     const transfer = new PullTransfer();
-    const readNext = async (): Promise<any> => {
+    const readNext = async (): Promise<boolean> => {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
         case Protocol.DATA:
-          return this.parser.readBytes(4).then((lengthData) => {
-            const length = lengthData.readUInt32LE(0);
-            return this.parser.readByteFlow(length, transfer).then(readNext);
-          });
+          const lengthData = await this.parser.readBytes(4)
+          const length = lengthData.readUInt32LE(0);
+          await this.parser.readByteFlow(length, transfer)
+          return readNext();
         case Protocol.DONE:
-          return this.parser.readBytes(4).then(function () {
-            return true;
-          });
+          await this.parser.readBytes(4)
+          return true;
         case Protocol.FAIL:
           return this._readError();
         default:
