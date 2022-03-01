@@ -56,12 +56,13 @@ describe('UninstallCommand', function () {
         });
         return cmd.execute('foo');
     });
-    it('should succeed even if command responds with a buggy exception', function () {
+    it('should succeed even if command responds with a buggy exception', () => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
-        setImmediate(function () {
-            conn.getSocket().causeRead(Protocol.OKAY);
-            conn.getSocket().causeRead(`
+        setImmediate(() => {
+            const socket = conn.getSocket();
+            socket.causeRead(Protocol.OKAY);
+            socket.causeRead(`
 Exception occurred while dumping:
 java.lang.IllegalArgumentException: Unknown package: foo
 	at com.android.server.pm.Settings.isOrphaned(Settings.java:4134)
@@ -77,11 +78,11 @@ java.lang.IllegalArgumentException: Unknown package: foo
 	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:2387)
 	at com.android.server.pm.PackageManagerService.onTransact(PackageManagerService.java:3019)
 	at android.os.Binder.execTransact(Binder.java:565)`);
-            return conn.getSocket().causeEnd();
+            socket.causeEnd();
         });
         return cmd.execute('foo');
     });
-    it('should reject with Parser.PrematureEOFError if stream ends before match', function (done) {
+    it('should reject with Parser.PrematureEOFError if stream ends before match', (done) => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
         setImmediate(function () {
@@ -89,8 +90,12 @@ java.lang.IllegalArgumentException: Unknown package: foo
             conn.getSocket().causeRead('Hello. Is it me you are looking for?\r\n');
             return conn.getSocket().causeEnd();
         });
-        cmd.execute('foo').catch(Parser.PrematureEOFError, function (err) {
-            done();
+        cmd.execute('foo').catch(err => {
+            if (err instanceof Parser.PrematureEOFError) {
+                done();
+            } else {
+                // failed
+            }
         });
     });
     return it('should ignore any other data', function () {

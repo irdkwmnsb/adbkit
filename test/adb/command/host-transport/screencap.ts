@@ -22,7 +22,7 @@ describe('ScreencapCommand', function () {
         });
         return cmd.execute()
     });
-    it('should resolve with the PNG stream', function () {
+    it('should resolve with the PNG stream', async function () {
         const conn = new MockConnection();
         const cmd = new ScreencapCommand(conn);
         setImmediate(function () {
@@ -30,14 +30,10 @@ describe('ScreencapCommand', function () {
             conn.getSocket().causeRead('\r\nlegit image');
             return conn.getSocket().causeEnd();
         });
-        return cmd
-            .execute()
-            .then(function (stream) {
-                return new Parser(stream).readAll();
-            })
-            .then(function (out) {
-                expect(out.toString()).to.equal('legit image');
-            });
+        const stream = await cmd
+            .execute();
+        const out = await new Parser(stream).readAll();
+        expect(out.toString()).to.equal('legit image');
     });
     it('should reject if command not supported', function (done) {
         const conn = new MockConnection();
@@ -50,7 +46,7 @@ describe('ScreencapCommand', function () {
             done();
         });
     });
-    it('should perform CRLF transformation by default', function () {
+    it('should perform CRLF transformation by default', async function () {
         const conn = new MockConnection();
         const cmd = new ScreencapCommand(conn);
         setImmediate(function () {
@@ -58,16 +54,12 @@ describe('ScreencapCommand', function () {
             conn.getSocket().causeRead('\r\nfoo\r\n');
             return conn.getSocket().causeEnd();
         });
-        return cmd
-            .execute()
-            .then(function (stream) {
-                return new Parser(stream).readAll();
-            })
-            .then(function (out) {
-                expect(out.toString()).to.equal('foo\n');
-            });
+        const stream = await cmd
+            .execute();
+        const out = await new Parser(stream).readAll();
+        expect(out.toString()).to.equal('foo\n');
     });
-    return it('should not perform CRLF transformation if not needed', function () {
+    return it('should not perform CRLF transformation if not needed', async function () {
         const conn = new MockConnection();
         const cmd = new ScreencapCommand(conn);
         setImmediate(function () {
@@ -75,13 +67,9 @@ describe('ScreencapCommand', function () {
             conn.getSocket().causeRead('\nfoo\r\n');
             return conn.getSocket().causeEnd();
         });
-        return cmd
-            .execute()
-            .then(function (stream) {
-                return new Parser(stream).readAll();
-            })
-            .then(function (out) {
-                expect(out.toString()).to.equal('foo\r\n');
-            });
+        const stream = await cmd
+            .execute();
+        const out = await new Parser(stream).readAll();
+        expect(out.toString()).to.equal('foo\r\n');
     });
 });

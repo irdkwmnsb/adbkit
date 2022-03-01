@@ -21,27 +21,27 @@ describe('MonkeyCommand', function () {
         });
         return cmd.execute(1080);
     });
-    it('should resolve with the output stream', function () {
+    it('should resolve with the output stream', async function () {
         const conn = new MockConnection();
         const cmd = new MonkeyCommand(conn);
         setImmediate(function () {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeRead(':Monkey: foo\n');
         });
-        return cmd.execute(1080).then(function (stream) {
-            stream.end();
-            expect(stream).to.be.an.instanceof(Stream.Readable);
-        });
+        const stream = await cmd.execute(1080);
+        stream.end();
+        expect(stream).to.be.an.instanceof(Stream.Readable);
+        return true;
     });
-    return it("should resolve after a timeout if result can't be judged from output", function () {
+    return it("should resolve after a timeout if result can't be judged from output", async function () {
         const conn = new MockConnection();
         const cmd = new MonkeyCommand(conn);
         setImmediate(function () {
             return conn.getSocket().causeRead(Protocol.OKAY);
         });
-        return cmd.execute(1080).then(function (stream) {
-            stream.end();
-            expect(stream).to.be.an.instanceof(Stream.Readable);
-        });
+        const stream = await cmd.execute(1080);
+        stream.end();
+        expect(stream).to.be.an.instanceof(Stream.Readable);
+        return true;
     });
 });

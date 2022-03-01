@@ -6,7 +6,7 @@ import Protocol from '../../../../src/adb/protocol';
 import GetFeaturesCommand from '../../../../src/adb/command/host-transport/getfeatures';
 
 describe('GetFeaturesCommand', function () {
-    it("should send 'pm list features'", function () {
+    it("should send 'pm list features'", () => {
         const conn = new MockConnection();
         const cmd = new GetFeaturesCommand(conn);
         conn.getSocket().on('write', function (chunk) {
@@ -20,34 +20,35 @@ describe('GetFeaturesCommand', function () {
         });
         return cmd.execute();
     });
-    it('should return an empty object for an empty feature list', function () {
+    it('should return an empty object for an empty feature list', async () => {
         const conn = new MockConnection();
         const cmd = new GetFeaturesCommand(conn);
         setImmediate(function () {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute().then(function (features) {
-            expect(Object.keys(features)).to.be.empty;
-        });
+        const features = await cmd.execute();
+        expect(Object.keys(features)).to.be.empty;
+        return true;
     });
-    return it('should return a map of features', function () {
+    return it('should return a map of features', async () => {
         const conn = new MockConnection();
         const cmd = new GetFeaturesCommand(conn);
-        setImmediate(function () {
-            conn.getSocket().causeRead(Protocol.OKAY);
-            conn.getSocket().causeRead(`feature:reqGlEsVersion=0x20000
+        setImmediate(() => {
+            const socket = conn.getSocket();
+            socket.causeRead(Protocol.OKAY);
+            socket.causeRead(`feature:reqGlEsVersion=0x20000
 feature:foo\r
 feature:bar`);
-            return conn.getSocket().causeEnd();
+            socket.causeEnd();
         });
-        return cmd.execute().then(function (features) {
-            expect(Object.keys(features)).to.have.length(3);
-            expect(features).to.eql({
-                reqGlEsVersion: '0x20000',
-                foo: true,
-                bar: true,
-            });
+        const features = await cmd.execute();
+        expect(Object.keys(features)).to.have.length(3);
+        expect(features).to.eql({
+            reqGlEsVersion: '0x20000',
+            foo: true,
+            bar: true,
         });
+        return true;
     });
 });

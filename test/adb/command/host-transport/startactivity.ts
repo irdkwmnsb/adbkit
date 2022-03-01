@@ -4,16 +4,17 @@ Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import StartActivityCommand from '../../../../src/adb/command/host-transport/startactivity';
-import { StartActivityOptions } from '../../../..';
+import { StartActivityOptions } from '../../../../src/';
 
 describe('StartActivityCommand', function () {
     it("should succeed when 'Success' returned", function () {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
         setImmediate(function () {
-            conn.getSocket().causeRead(Protocol.OKAY);
-            conn.getSocket().causeRead('Success');
-            return conn.getSocket().causeEnd();
+            const socket = conn.getSocket();
+            socket.causeRead(Protocol.OKAY);
+            socket.causeRead('Success');
+            return socket.causeEnd();
         });
         const options = {
             component: 'com.dummy.component/.Main',

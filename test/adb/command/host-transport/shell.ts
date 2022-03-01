@@ -54,7 +54,8 @@ describe('ShellCommand', function () {
             conn.getSocket().causeRead(Protocol.encodeData('mystery'));
             return conn.getSocket().causeEnd();
         });
-        cmd.execute(['foo']).catch(Parser.FailError, function () {
+        cmd.execute(['foo']).then(() => {}, (err) => {
+            expect(err).to.be.instanceOf(Parser.FailError);
             done();
         });
     });
