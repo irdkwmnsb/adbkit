@@ -12,8 +12,8 @@ export default class GetPropertiesCommand extends Command<any> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        const data_1 = await this.parser.readAll()
-        return this._parseProperties(data_1.toString());
+        const data = await this.parser.readAll()
+        return this._parseProperties(data.toString());
       case Protocol.FAIL:
         return this.parser.readError();
       default:
@@ -23,7 +23,7 @@ export default class GetPropertiesCommand extends Command<any> {
 
   private _parseProperties(value: string): Properties {
     const properties = {};
-    let match;
+    let match: RegExpExecArray | null;
     while ((match = RE_KEYVAL.exec(value))) {
       properties[match[1]] = match[2];
     }

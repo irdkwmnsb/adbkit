@@ -8,8 +8,8 @@ export default class ClearCommand extends Command<boolean> {
     switch (reply) {
       case Protocol.OKAY:
         try {
-          const result_1 = await this.parser.searchLine(/^(Success|Failed)$/)
-          switch (result_1[0]) {
+          const result = await this.parser.searchLine(/^(Success|Failed)$/)
+          switch (result[0]) {
             case 'Success':
               return true;
             case 'Failed':

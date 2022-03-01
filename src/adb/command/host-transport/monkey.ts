@@ -1,4 +1,4 @@
-
+import Connection from '../../connection';
 import Protocol from '../../protocol';
 import Command from '../../command';
 import { Duplex } from 'stream';
@@ -7,6 +7,10 @@ import Utils from '../../../adb/util';
 const symbolTimeout = Symbol('timeout')
 
 export default class MonkeyCommand extends Command<Duplex> {
+  constructor (connection: Connection, private timeout = 1000) {
+    super(connection);
+  }
+
   async execute(port: number): Promise<Duplex> {
     // Some devices have broken /sdcard (i.e. /mnt/sdcard), which monkey will
     // attempt to use to write log files to. We can cheat and set the location
@@ -29,9 +33,9 @@ export default class MonkeyCommand extends Command<Duplex> {
         // On some devices (such as F-08D by Fujitsu), the monkey
         // command gives no output no matter how many verbose flags you
         // give it. So we use a fallback timeout.
-        const timeout = Utils.delay(1000).then(() => symbolTimeout);
+        const pTimeout = Utils.delay(this.timeout).then(() => symbolTimeout);
         const parse = this.parser.searchLine(/^:Monkey:/);
-        const race = await Promise.race([timeout, parse])
+        const race = await Promise.race([pTimeout, parse])
         if (race === symbolTimeout) {
           // get timeout
           return this.parser.raw();

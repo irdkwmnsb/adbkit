@@ -11,8 +11,8 @@ export default class GetPackagesCommand extends Command<string[]> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        const data_1 = await this.parser.readAll();
-        return this._parsePackages(data_1.toString());
+        const data = await this.parser.readAll();
+        return this._parsePackages(data.toString());
       case Protocol.FAIL:
         return this.parser.readError();
       default:

@@ -35,7 +35,7 @@ describe('MonkeyCommand', function () {
     });
     return it("should resolve after a timeout if result can't be judged from output", async function () {
         const conn = new MockConnection();
-        const cmd = new MonkeyCommand(conn);
+        const cmd = new MonkeyCommand(conn, 10);
         setImmediate(function () {
             return conn.getSocket().causeRead(Protocol.OKAY);
         });

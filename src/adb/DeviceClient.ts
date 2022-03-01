@@ -503,10 +503,10 @@ export default class DeviceClient {
     const temp = Sync.temp(typeof apk === 'string' ? apk : '_stream.apk');
     const transfer = await this.push(apk, temp);
     let endListener: () => void;
-    let errorListener: (err_1: Error) => void;
+    let errorListener: (err: Error) => void;
     try {
       return await new Promise<boolean>((resolve, reject) => {
-        errorListener = (err_2: Error) => reject(err_2);
+        errorListener = (err_1: Error) => reject(err_1);
         endListener = () => this.installRemote(temp).then((value: boolean) => resolve(value));
         transfer.on('error', errorListener);
         transfer.on('end', endListener);
