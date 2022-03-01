@@ -7,7 +7,8 @@ export default class GetStateCommand extends Command<string> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        return this.parser.readValue().then((value) => value.toString());
+        const value = await this.parser.readValue();
+        return value.toString();
       case Protocol.FAIL:
         return this.parser.readError();
       default:

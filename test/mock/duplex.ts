@@ -7,7 +7,7 @@ export default class MockDuplex extends Stream.Duplex {
         // empty
     }
 
-    _write(chunk, encoding: string, callback: Function): void {
+    _write(chunk: Buffer, encoding: string, callback: Function): void {
         this.emit('write', chunk, encoding, callback);
         callback(null);
     }

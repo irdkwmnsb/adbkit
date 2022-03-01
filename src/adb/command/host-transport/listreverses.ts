@@ -8,9 +8,8 @@ export default class ListReversesCommand extends Command<Reverse[]> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        return this.parser.readValue().then((value) => {
-          return this._parseReverses(value);
-        });
+        const value = await this.parser.readValue()
+        return this._parseReverses(value);
       case Protocol.FAIL:
         return this.parser.readError();
       default:

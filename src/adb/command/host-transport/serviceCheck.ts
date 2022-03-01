@@ -8,9 +8,8 @@ export default class ServiceCallCommand extends Command<boolean> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        return this.parser.readAll().then((data) => {
-          return this._parse(data.toString());
-        });
+        const data = await this.parser.readAll()
+        return this._parse(data.toString());
       case Protocol.FAIL:
         return this.parser.readError();
       default:

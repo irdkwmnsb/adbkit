@@ -8,7 +8,8 @@ export default class ListForwardsCommand extends Command<Forward[]> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        return this.parser.readValue().then(this._parseForwards);
+        const value = await this.parser.readValue()
+        return this._parseForwards(value);
       case Protocol.FAIL:
         return this.parser.readError();
       default:

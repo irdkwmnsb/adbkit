@@ -13,13 +13,12 @@ export default class HostConnectCommand extends Command<string> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        return this.parser.readValue().then(function (value) {
-          if (RE_OK.test(value.toString())) {
-            return `${host}:${port}`;
-          } else {
-            throw new Error(value.toString());
-          }
-        });
+        const value = await this.parser.readValue();
+        if (RE_OK.test(value.toString())) {
+          return `${host}:${port}`;
+        } else {
+          throw new Error(value.toString());
+        }
       case Protocol.FAIL:
         return this.parser.readError();
       default:

@@ -7,9 +7,8 @@ export default class GetDevicePathCommand extends Command<string> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        return this.parser.readValue().then((value) => {
-          return value.toString();
-        });
+        const value = this.parser.readValue()
+        return value.toString();
       case Protocol.FAIL:
         return this.parser.readError();
       default:
