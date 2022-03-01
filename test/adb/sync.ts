@@ -1,6 +1,5 @@
 import Fs from 'fs';
 import Stream from 'stream';
-import Promise from 'bluebird';
 import Sinon from 'sinon';
 import Chai, { expect, assert } from 'chai';
 import simonChai from 'sinon-chai';
@@ -38,7 +37,7 @@ describe('Sync', () => {
                 .syncService();
             expect(sync).to.be.an.instanceof(Sync);
             try {
-                return await Promise.cast(iterator(sync));
+                return await iterator(sync);
             } finally {
                 return sync.end();
             }
@@ -115,7 +114,7 @@ describe('Sync', () => {
     describe('pull(path)', () => {
         dt('should retrieve the same content pushStream() pushed', async () => {
             await forEachSyncDevice((sync) => {
-                return new Promise((resolve, reject) => {
+                return new Promise<void>((resolve, reject) => {
                     const stream = new Stream.PassThrough();
                     const content = 'ABCDEFGHI' + Date.now();
                     const transfer = sync.pushStream(stream, SURELY_WRITABLE_FILE);
@@ -127,10 +126,10 @@ describe('Sync', () => {
                         transfer.on('error', reject);
                         return transfer.on('readable', () => {
                             let chunk: Buffer;
-                            while ((chunk = transfer.read())) {
+                            if ((chunk = transfer.read())) {
                                 expect(chunk).to.not.be.null;
                                 expect(chunk.toString()).to.equal(content);
-                                return resolve();
+                                resolve();
                             }
                         });
                     });

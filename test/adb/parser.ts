@@ -10,7 +10,7 @@ import Util from '../../src/adb/util';
  * 
  * @param promise native or bluebird Promise;
  */
-function bluebirdTest(promise: any) {
+function bPromiseTest(promise: any) {
     if ((promise as Bluebird<unknown>).cancel) {
         (promise as Bluebird<unknown>).cancel();
         expect((promise as Bluebird<unknown>).isCancelled()).to.be.true;
@@ -38,7 +38,7 @@ describe('Parser', function () {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readAll();
-            if (!bluebirdTest(promise))
+            if (!bPromiseTest(promise))
                 parser.end();
             done();
         });
@@ -71,7 +71,7 @@ describe('Parser', function () {
             const parser = new Parser(stream);
             const promise = parser.readBytes(1);
             expect(promise).to.be.an.instanceOf(Promise);
-            if (!bluebirdTest(promise))
+            if (!bPromiseTest(promise))
                 parser.end()
             done();
         });
@@ -128,7 +128,7 @@ describe('Parser', function () {
             const parser = new Parser(stream);
             const target = new Stream.PassThrough();
             const promise = parser.readByteFlow(1, target);
-            if (!bluebirdTest(promise))
+            if (!bPromiseTest(promise))
                 parser.end()
             done();
         });
@@ -159,7 +159,7 @@ describe('Parser', function () {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readAscii(1);
-            if (!bluebirdTest(promise))
+            if (!bPromiseTest(promise))
                 parser.end()
         });
         it('should read as many ascii characters as requested 1', async () => {
@@ -199,7 +199,7 @@ describe('Parser', function () {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readValue();
-            if (!bluebirdTest(promise))
+            if (!bPromiseTest(promise))
                 parser.end()
         });
         it('should read a protocol value as a Buffer', async () => {
@@ -237,7 +237,7 @@ describe('Parser', function () {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readError();
-            if (!bluebirdTest(promise))
+            if (!bPromiseTest(promise))
                 parser.end()
             done();
         });
@@ -266,7 +266,7 @@ describe('Parser', function () {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.searchLine(/foo/);
-            if (!bluebirdTest(promise))
+            if (!bPromiseTest(promise))
                 parser.end()
             done();
         });
@@ -296,7 +296,7 @@ describe('Parser', function () {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readLine();
-            if (!bluebirdTest(promise))
+            if (!bPromiseTest(promise))
                 parser.end()
             done();
         });
@@ -342,7 +342,7 @@ describe('Parser', function () {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readUntil(0xa0);
-            if (!bluebirdTest(promise))
+            if (!bPromiseTest(promise))
                 parser.end()
             done();
         });
