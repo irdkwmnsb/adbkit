@@ -186,19 +186,18 @@ export default class Sync extends EventEmitter {
         return writer.cancel();
       });
     };
-    const readReply = () => {
-      return this.parser.readAscii(4).then((reply) => {
-        switch (reply) {
-          case Protocol.OKAY:
-            return this.parser.readBytes(4).then(function () {
-              return true;
-            });
-          case Protocol.FAIL:
-            return this._readError();
-          default:
-            return this.parser.unexpected(reply, 'OKAY or FAIL');
-        }
-      });
+    const readReply = async () => {
+      const reply = await this.parser.readAscii(4);
+      switch (reply) {
+        case Protocol.OKAY:
+          return this.parser.readBytes(4).then(function () {
+            return true;
+          });
+        case Protocol.FAIL:
+          return this._readError();
+        default:
+          return this.parser.unexpected(reply, 'OKAY or FAIL');
+      }
     };
     // While I can't think of a case that would break this double-Promise
     // writer-reader arrangement right now, it's not immediately obvious
@@ -231,24 +230,23 @@ export default class Sync extends EventEmitter {
 
   private _readData(): PullTransfer {
     const transfer = new PullTransfer();
-    const readNext = (): Promise<any> => {
-      return this.parser.readAscii(4).then((reply) => {
-        switch (reply) {
-          case Protocol.DATA:
-            return this.parser.readBytes(4).then((lengthData) => {
-              const length = lengthData.readUInt32LE(0);
-              return this.parser.readByteFlow(length, transfer).then(readNext);
-            });
-          case Protocol.DONE:
-            return this.parser.readBytes(4).then(function () {
-              return true;
-            });
-          case Protocol.FAIL:
-            return this._readError();
-          default:
-            return this.parser.unexpected(reply, 'DATA, DONE or FAIL');
-        }
-      });
+    const readNext = async (): Promise<any> => {
+      const reply = await this.parser.readAscii(4);
+      switch (reply) {
+        case Protocol.DATA:
+          return this.parser.readBytes(4).then((lengthData) => {
+            const length = lengthData.readUInt32LE(0);
+            return this.parser.readByteFlow(length, transfer).then(readNext);
+          });
+        case Protocol.DONE:
+          return this.parser.readBytes(4).then(function () {
+            return true;
+          });
+        case Protocol.FAIL:
+          return this._readError();
+        default:
+          return this.parser.unexpected(reply, 'DATA, DONE or FAIL');
+      }
     };
     const reader = Bluebird.resolve(readNext())
       .catch(Bluebird.CancellationError, () => this.connection.end())
