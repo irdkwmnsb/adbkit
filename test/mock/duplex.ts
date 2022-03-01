@@ -12,7 +12,7 @@ export default class MockDuplex extends Stream.Duplex {
         callback(null);
     }
 
-    causeRead(chunk): void {
+    causeRead(chunk: string | Buffer): void {
         if (!Buffer.isBuffer(chunk)) {
             chunk = Buffer.from(chunk);
         }

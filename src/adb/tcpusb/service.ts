@@ -1,7 +1,6 @@
 import d from 'debug';
 import { EventEmitter } from 'events';
 import Packet from './packet';
-import Bluebird from 'bluebird';
 import Protocol from '../protocol';
 import Client from '../client';
 import Socket from './socket';
@@ -61,7 +60,7 @@ export default class Service extends EventEmitter {
       // We may or may not have gotten here due to @socket ending, so write
       // may fail.
       this.socket.write(Packet.assemble(Packet.A_CLSE, localId, this.remoteId, null));
-    } catch (error) {}
+    } catch (error) { }
     // Let it go
     this.transport = null;
     this.ended = true;
@@ -69,8 +68,8 @@ export default class Service extends EventEmitter {
     return this;
   }
 
-  public handle(packet: Packet): Bluebird<Service | boolean> {
-    return Bluebird.try<Service | boolean>(() => {
+  public async handle(packet: Packet): Promise<Service | boolean> {
+    try {
       switch (packet.command) {
         case Packet.A_OPEN:
           return this._handleOpenPacket(packet);
@@ -83,13 +82,13 @@ export default class Service extends EventEmitter {
         default:
           throw new Error(`Unexpected packet ${packet.command}`);
       }
-    }).catch((err) => {
-      this.emit('error', err);
+    } catch (err) {
+      this.emit('error', err as Error);
       return this.end();
-    });
+    };
   }
 
-  private _handleOpenPacket(packet): Bluebird<boolean> {
+  private _handleOpenPacket(packet): Promise<boolean> {
     debug('I:A_OPEN', packet);
     return this.client
       .getDevice(this.serial)
@@ -114,7 +113,7 @@ export default class Service extends EventEmitter {
         });
       })
       .then(() => {
-        return new Bluebird<boolean>((resolve, reject) => {
+        return new Promise<boolean>((resolve, reject) => {
           this.transport.socket
             .on('readable', () => this._tryPush())
             .on('end', resolve)

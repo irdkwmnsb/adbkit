@@ -3,7 +3,6 @@ import path from 'path';
 import fs from 'fs';
 import { ChildProcess } from 'node:child_process';
 
-// options: { encoding: BufferEncoding } & ExecOptions, callback?: (error: ExecException | null, stdout: string, stderr: string) => void
 function execPromise(command: string, options: { encoding: BufferEncoding } & ExecOptions): Promise<{ stdout: string, stderr: string, exitCode: number }> {
     return new Promise((resolve, reject) => {
         const cp: ChildProcess = exec(command, options, (error: ExecException, stdout: string, stderr: string) => {

@@ -3,7 +3,7 @@ import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import RgbTransform from '../../../src/adb/framebuffer/rgbtransform';
-import { FramebufferMeta } from '../../..';
+import { FramebufferMeta } from '../../../src';
 
 describe('RgbTransform', function () {
     it('should transform BGRA into RGB', function (done) {

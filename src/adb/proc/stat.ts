@@ -2,7 +2,6 @@ import { EventEmitter } from 'events';
 import Parser from '../parser';
 import Sync from '../sync';
 import { CpuStats, Loads } from '../../CpuStats';
-import Bluebird from 'bluebird';
 
 const RE_CPULINE = /^cpu[0-9]+ .*$/gm;
 const RE_COLSEP = /\ +/g;
@@ -42,23 +41,23 @@ class ProcStat extends EventEmitter {
     }
   }
 
-  public update(): Bluebird<Stats> {
+  public async update(): Promise<Stats> {
     if (!this.sync) {
       throw Error('Closed');
     }
-    return new Parser(this.sync.pull('/proc/stat'))
-      .readAll()
-      .then((out) => {
-        return this._parse(out.toString());
-      })
-      .catch((err) => {
-        this._error(err);
-        return Bluebird.reject(err);
-      });
+    try {
+      const out = await new Parser(this.sync.pull('/proc/stat'))
+        .readAll();
+      return this._parse(out.toString());
+    } catch (err) {
+      this._error(err as Error);
+      return await Promise.reject(err);
+    }
   }
 
   private _parse(out: string): Stats {
-    let match, val;
+    let match:RegExpExecArray;
+    let val: string;
     const stats = this._emptyStats();
     while ((match = RE_CPULINE.exec(out))) {
       const line: string = match[0];

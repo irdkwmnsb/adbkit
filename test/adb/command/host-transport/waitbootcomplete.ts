@@ -33,7 +33,8 @@ describe('WaitBootCompleteCommand', function () {
             .then(function () {
                 return done(new Error('Succeeded even though it should not'));
             })
-            .catch(Parser.PrematureEOFError, function (err) {
+            .catch((err) => {
+                expect(err).to.be.an.instanceof(Parser.PrematureEOFError);
                 done();
             });
     });

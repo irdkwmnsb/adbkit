@@ -19,7 +19,7 @@ const DEFAULT_CHMOD = 0o644;
 const DATA_MAX_LENGTH = 65536;
 const debug = d('adb:sync');
 
-interface ENOENT extends Error {
+export interface ENOENT extends Error {
   errno: 34;
   code: 'ENOENT';
   path: string;
@@ -38,30 +38,26 @@ export default class Sync extends EventEmitter {
     this.parser = this.connection.parser as Parser;
   }
 
-  public stat(path: string, callback?: Callback<Stats>): Bluebird<Stats> {
+  public async stat(path: string): Promise<Stats> {
     this._sendCommandWithArg(Protocol.STAT, path);
-    return this.parser
-      .readAscii(4)
-      .then((reply) => {
-        switch (reply) {
-          case Protocol.STAT:
-            return this.parser.readBytes(12).then((stat) => {
-              const mode = stat.readUInt32LE(0);
-              const size = stat.readUInt32LE(4);
-              const mtime = stat.readUInt32LE(8);
-              if (mode === 0) {
-                return this._enoent(path);
-              } else {
-                return new Stats(mode, size, mtime);
-              }
-            });
-          case Protocol.FAIL:
-            return this._readError();
-          default:
-            return this.parser.unexpected(reply, 'STAT or FAIL');
-        }
-      })
-      .nodeify(callback);
+    const reply = await this.parser.readAscii(4);
+    switch (reply) {
+      case Protocol.STAT:
+        return this.parser.readBytes(12).then((stat) => {
+          const mode = stat.readUInt32LE(0);
+          const size = stat.readUInt32LE(4);
+          const mtime = stat.readUInt32LE(8);
+          if (mode === 0) {
+            return this._enoent(path);
+          } else {
+            return new Stats(mode, size, mtime);
+          }
+        });
+      case Protocol.FAIL:
+        return this._readError();
+      default:
+        return this.parser.unexpected(reply, 'STAT or FAIL');
+    }
   }
 
   public readdir(path: string, callback?: Callback<Entry[]>): Bluebird<Entry[]> {
@@ -219,7 +215,7 @@ export default class Sync extends EventEmitter {
         transfer.emit('error', err);
         return reader.cancel();
       });
-    const reader = readReply()
+    const reader: Bluebird<any> = Bluebird.resolve(readReply())
       .catch(Bluebird.CancellationError, () => true)
       .catch((err) => {
         transfer.emit('error', err);
@@ -269,17 +265,14 @@ export default class Sync extends EventEmitter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private _readError(): Bluebird<any> {
-    return this.parser
-      .readBytes(4)
-      .then((length: Buffer) => {
-        return this.parser.readBytes(length.readUInt32LE(0)).then((buf: Buffer) => {
-          return Bluebird.reject(new Parser.FailError(buf.toString()));
-        });
-      })
-      .finally(() => {
-        return this.parser.end();
-      });
+  private async _readError(): Promise<any> {
+    try {
+      const length = await this.parser.readBytes(4);
+      const buf = await this.parser.readBytes(length.readUInt32LE(0));
+      return await Bluebird.reject(new Parser.FailError(buf.toString()));
+    } finally {
+      return await this.parser.end();
+    }
   }
 
   private _sendCommandWithLength(cmd: string, length: number): Connection {
