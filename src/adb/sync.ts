@@ -149,21 +149,19 @@ export default class Sync extends EventEmitter {
         });
       };
       const track = () => transfer.pop();
-      const writeNext = (): Bluebird<void> => {
-        let chunk: Buffer;
-        if ((chunk = stream.read(DATA_MAX_LENGTH) || stream.read())) {
+      const writeAll = async (): Promise<void> => {
+        while (true) {
+          const chunk = stream.read(DATA_MAX_LENGTH) || stream.read();
+          if (!chunk) return;
           this._sendCommandWithLength(Protocol.DATA, chunk.length);
           transfer.push(chunk.length);
-          if (this.connection.write(chunk, track)) {
-            return writeNext();
-          } else {
-            return waitForDrain().then(writeNext);
+          if (!this.connection.write(chunk, track)) {
+            await waitForDrain();
           }
-        } else {
-          return Bluebird.resolve();
         }
       };
-      readableListener = () => writer.then(writeNext);
+
+      readableListener = () => writer.then(writeAll);
       stream.on('readable', readableListener);
       errorListener = (err) => resolver.reject(err);
       stream.on('error', errorListener);
