@@ -5,14 +5,14 @@ specifiers:
   '@types/debug': ^4.1.7
   '@types/mocha': ^8.2.0
   '@types/node': ^14.14.28
-  '@types/node-forge': ^0.9.7
+  '@types/node-forge': ^1.0.0
   '@types/sinon-chai': ^3.2.8
   '@typescript-eslint/eslint-plugin': ^4.15.1
   '@typescript-eslint/parser': ^4.15.1
   '@u4/adbkit-monkey': ^1.0.3
   bench: ~0.3.6
   chai: ~4.3.6
-  commander: ^7.1.0
+  commander: 7.1.0
   debug: ~4.3.3
   eslint: ^7.20.0
   eslint-config-prettier: ^8.0.0
@@ -20,7 +20,7 @@ specifiers:
   eslint-plugin-progress: 0.0.1
   install: ^0.13.0
   mocha: ~8.3.1
-  node-forge: ^0.10.0
+  node-forge: ^1.2.1
   prettier: ^2.5.1
   rimraf: ^3.0.2
   sinon: ~9.2.4
@@ -32,17 +32,17 @@ specifiers:
 dependencies:
   '@devicefarmer/adbkit-logcat': 2.1.1
   '@u4/adbkit-monkey': 1.0.3
-  commander: 7.2.0
+  commander: 7.1.0
   debug: 4.3.3
   install: 0.13.0
-  node-forge: 0.10.0
+  node-forge: 1.2.1
   split: 1.0.1
 
 devDependencies:
   '@types/debug': 4.1.7
   '@types/mocha': 8.2.3
   '@types/node': 14.18.2
-  '@types/node-forge': 0.9.10
+  '@types/node-forge': 1.0.0
   '@types/sinon-chai': 3.2.8
   '@typescript-eslint/eslint-plugin': 4.33.0_959502c0ea240e86d4d2ba8b8c0fee45
   '@typescript-eslint/parser': 4.33.0_eslint@7.32.0+typescript@4.5.5
@@ -192,8 +192,8 @@ packages:
     resolution: {integrity: sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==}
     dev: true
 
-  /@types/node-forge/0.9.10:
-    resolution: {integrity: sha512-+BbPlhZeYs/WETWftQi2LeRx9VviWSwawNo+Pid5qNrSZHb60loYjpph3OrbwXMMseadu9rE9NeK34r4BHT+QQ==}
+  /@types/node-forge/1.0.0:
+    resolution: {integrity: sha512-h0bgwPKq5u99T9Gor4qtV1lCZ41xNkai0pie1n/a2mh2/4+jENWOlo7AJ4YKxTZAnSZ8FRurUpdIN7ohaPPuHA==}
     dependencies:
       '@types/node': 14.18.2
     dev: true
@@ -557,8 +557,8 @@ packages:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
     dev: true
 
-  /commander/7.2.0:
-    resolution: {integrity: sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==}
+  /commander/7.1.0:
+    resolution: {integrity: sha512-pRxBna3MJe6HKnBGsDyMv8ETbptw3axEdYHoqNh7gu5oDcew8fs0xnivZGm06Ogk8zGAJ9VX+OPEr2GXEQK4dg==}
     engines: {node: '>= 10'}
     dev: false
 
@@ -1242,9 +1242,9 @@ packages:
       path-to-regexp: 1.8.0
     dev: true
 
-  /node-forge/0.10.0:
-    resolution: {integrity: sha512-PPmu8eEeG9saEUvI97fm4OYxXVB6bFvyNTyiUOBichBpFG8A1Ljw3bY62+5oOjDEMHRnd0Y7HQ+x7uzxOzC6JA==}
-    engines: {node: '>= 6.0.0'}
+  /node-forge/1.2.1:
+    resolution: {integrity: sha512-Fcvtbb+zBcZXbTTVwqGA5W+MKBj56UjVRevvchv5XrcyXbmNdesfZL37nlcWOfpgHhgmxApw3tQbTr4CqNmX4w==}
+    engines: {node: '>= 6.13.0'}
     dev: false
 
   /normalize-path/3.0.0:

@@ -196,7 +196,7 @@ export default class Sync extends EventEmitter {
       .catch((err: Error): void => {
         transfer.emit('error', err);
       }).finally(() => {
-        return transfer.end();
+        transfer.end();
       });
     return transfer;
   }
