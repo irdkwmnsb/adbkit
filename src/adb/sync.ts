@@ -186,11 +186,13 @@ export default class Sync extends EventEmitter {
     // writer-reader arrangement right now, it's not immediately obvious
     // that the code is correct and it may or may not have some failing
     // edge cases. Refactor pending.
-    const writer = writeData().catch(err => {
+    // const writer = 
+    writeData().catch(err => {
       transfer.emit('error', err);
     })
 
-    const reader: Promise<any> = readReply()
+    // const reader: Promise<any> = 
+    readReply()
       .catch((err: Error): void => {
         transfer.emit('error', err);
       }).finally(() => {
@@ -221,7 +223,8 @@ export default class Sync extends EventEmitter {
       }
     };
 
-    const reader = readAll().catch(err => {
+    // const reader = 
+    readAll().catch(err => {
       transfer.emit('error', err as Error)
     }).finally(() => {
       return transfer.end();

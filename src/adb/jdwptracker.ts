@@ -17,14 +17,15 @@ interface JdwpTrackerChangeSet {
 export default class JdwpTracker extends EventEmitter {
   private pids: string[] = [];
   private pidMap = Object.create(null);
-  private reader: Promise<JdwpTracker | boolean>;
+  // private reader: Promise<JdwpTracker | boolean>;
 
   constructor(private command: Command<JdwpTracker>) {
     super();
     this.command = command;
     this.pids = [];
     this.pidMap = Object.create(null);
-    this.reader = this.read().catch(err => {
+    // this.reader = 
+    this.read().catch(err => {
       if (err instanceof Parser.PrematureEOFError) {
         return this.emit('end');
       }
