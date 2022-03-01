@@ -197,22 +197,23 @@ export default class Sync extends EventEmitter {
     // writer-reader arrangement right now, it's not immediately obvious
     // that the code is correct and it may or may not have some failing
     // edge cases. Refactor pending.
-    const writer = writeData()
-      // .cancellable()
-      .catch(Bluebird.CancellationError, () => {
+    const writer = writeData().catch(err => {
+      transfer.emit('error', err);
+      if (err instanceof Bluebird.CancellationError) {
         return this.connection.end();
-      })
-      .catch(function (err) {
-        transfer.emit('error', err);
+      } else {
         return reader.cancel();
-      });
+      }
+    })
+
     const reader: Bluebird<any> = Bluebird.resolve(readReply())
-      .catch(Bluebird.CancellationError, () => true)
-      .catch((err) => {
+      .catch((err: Error): Promise<boolean> => {
         transfer.emit('error', err);
-        return writer.cancel();
-      })
-      .finally(() => {
+        if (err instanceof Bluebird.CancellationError) {
+          return Promise.resolve(true);
+        }
+        writer.cancel();
+      }).finally(() => {
         return transfer.end();
       });
     transfer.on('cancel', () => {
@@ -224,30 +225,37 @@ export default class Sync extends EventEmitter {
 
   private _readData(): PullTransfer {
     const transfer = new PullTransfer();
-    const readNext = async (): Promise<boolean> => {
-      const reply = await this.parser.readAscii(4);
-      switch (reply) {
-        case Protocol.DATA:
-          const lengthData = await this.parser.readBytes(4)
-          const length = lengthData.readUInt32LE(0);
-          await this.parser.readByteFlow(length, transfer)
-          return readNext();
-        case Protocol.DONE:
-          await this.parser.readBytes(4)
-          return true;
-        case Protocol.FAIL:
-          return this._readError();
-        default:
-          return this.parser.unexpected(reply, 'DATA, DONE or FAIL');
+    const readAll = async (): Promise<boolean> => {
+      while (true) {
+        const reply = await this.parser.readAscii(4);
+        switch (reply) {
+          case Protocol.DATA:
+            const lengthData = await this.parser.readBytes(4)
+            const length = lengthData.readUInt32LE(0);
+            await this.parser.readByteFlow(length, transfer)
+            continue;
+          case Protocol.DONE:
+            await this.parser.readBytes(4)
+            return true;
+          case Protocol.FAIL:
+            return this._readError();
+          default:
+            return this.parser.unexpected(reply, 'DATA, DONE or FAIL');
+        }
       }
     };
-    const reader = Bluebird.resolve(readNext())
-      .catch(Bluebird.CancellationError, () => this.connection.end())
-      .catch((err: Error) => transfer.emit('error', err))
-      .finally(function () {
-        transfer.removeListener('cancel', cancelListener);
-        return transfer.end();
-      });
+
+    const reader = Bluebird.resolve(readAll()).catch(err => {
+      transfer.emit('error', err as Error)
+      if (err instanceof Bluebird.CancellationError) {
+        // may not works
+        this.connection.end()
+        return;
+      }
+    }).finally(() => {
+      transfer.removeListener('cancel', cancelListener);
+      return transfer.end();
+    });
     const cancelListener = () => reader.cancel();
     transfer.on('cancel', cancelListener);
     return transfer;
@@ -258,7 +266,7 @@ export default class Sync extends EventEmitter {
     try {
       const length = await this.parser.readBytes(4);
       const buf = await this.parser.readBytes(length.readUInt32LE(0));
-      return await Bluebird.reject(new Parser.FailError(buf.toString()));
+      return await Promise.reject(new Parser.FailError(buf.toString()));
     } finally {
       await this.parser.end();
     }
