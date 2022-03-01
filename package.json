@@ -47,35 +47,34 @@
         "testJS": "mocha --reporter spec --colors dist/test/**/*.js",
         "test": "mocha -r ts-node/register --reporter spec --colors test/**/*.ts",
         "test2": "mocha -r ts-node/register --reporter spec --colors test/adb/parser.ts"
-
     },
     "dependencies": {
         "@devicefarmer/adbkit-logcat": "^2.1.1",
-        "@devicefarmer/adbkit-monkey": "~1.1.0",
+        "@u4/adbkit-monkey": "^1.0.3",
         "bluebird": "~3.7",
         "commander": "^7.1.0",
-        "debug": "~4.3.1",
+        "debug": "~4.3.3",
         "install": "^0.13.0",
         "node-forge": "^0.10.0",
         "split": "~1.0.1"
     },
     "devDependencies": {
-        "@types/bluebird": "^3.5.33",
-        "@types/debug": "^4.1.5",
+        "@types/bluebird": "^3.5.36",
+        "@types/debug": "^4.1.7",
         "@types/mocha": "^8.2.0",
         "@types/node": "^14.14.28",
         "@types/node-forge": "^0.9.7",
-        "@types/sinon-chai": "^3.2.5",
+        "@types/sinon-chai": "^3.2.8",
         "@typescript-eslint/eslint-plugin": "^4.15.1",
         "@typescript-eslint/parser": "^4.15.1",
         "bench": "~0.3.6",
-        "chai": "~4.3.0",
+        "chai": "~4.3.6",
         "eslint": "^7.20.0",
         "eslint-config-prettier": "^8.0.0",
         "eslint-plugin-prettier": "^3.3.1",
         "eslint-plugin-progress": "0.0.1",
         "mocha": "~8.3.1",
-        "prettier": "^2.2.1",
+        "prettier": "^2.5.1",
         "rimraf": "^3.0.2",
         "sinon": "~9.2.4",
         "sinon-chai": "~3.5.0",
@@ -88,5 +87,5 @@
     "files": [
         "dist/src",
         "bin"
-      ]
+    ]
 }

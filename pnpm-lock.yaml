@@ -2,20 +2,20 @@ lockfileVersion: 5.3
 
 specifiers:
   '@devicefarmer/adbkit-logcat': ^2.1.1
-  '@devicefarmer/adbkit-monkey': ~1.1.0
-  '@types/bluebird': ^3.5.33
-  '@types/debug': ^4.1.5
+  '@types/bluebird': ^3.5.36
+  '@types/debug': ^4.1.7
   '@types/mocha': ^8.2.0
   '@types/node': ^14.14.28
   '@types/node-forge': ^0.9.7
-  '@types/sinon-chai': ^3.2.5
+  '@types/sinon-chai': ^3.2.8
   '@typescript-eslint/eslint-plugin': ^4.15.1
   '@typescript-eslint/parser': ^4.15.1
+  '@u4/adbkit-monkey': ^1.0.3
   bench: ~0.3.6
   bluebird: ~3.7
-  chai: ~4.3.0
+  chai: ~4.3.6
   commander: ^7.1.0
-  debug: ~4.3.1
+  debug: ~4.3.3
   eslint: ^7.20.0
   eslint-config-prettier: ^8.0.0
   eslint-plugin-prettier: ^3.3.1
@@ -23,7 +23,7 @@ specifiers:
   install: ^0.13.0
   mocha: ~8.3.1
   node-forge: ^0.10.0
-  prettier: ^2.2.1
+  prettier: ^2.5.1
   rimraf: ^3.0.2
   sinon: ~9.2.4
   sinon-chai: ~3.5.0
@@ -33,7 +33,7 @@ specifiers:
 
 dependencies:
   '@devicefarmer/adbkit-logcat': 2.1.1
-  '@devicefarmer/adbkit-monkey': 1.1.0
+  '@u4/adbkit-monkey': 1.0.3
   bluebird: 3.7.2
   commander: 7.2.0
   debug: 4.3.3
@@ -47,11 +47,11 @@ devDependencies:
   '@types/mocha': 8.2.3
   '@types/node': 14.18.2
   '@types/node-forge': 0.9.10
-  '@types/sinon-chai': 3.2.6
+  '@types/sinon-chai': 3.2.8
   '@typescript-eslint/eslint-plugin': 4.33.0_959502c0ea240e86d4d2ba8b8c0fee45
   '@typescript-eslint/parser': 4.33.0_eslint@7.32.0+typescript@4.5.5
   bench: 0.3.6
-  chai: 4.3.4
+  chai: 4.3.6
   eslint: 7.32.0
   eslint-config-prettier: 8.3.0_eslint@7.32.0
   eslint-plugin-prettier: 3.4.1_6e6a25a49a944db0fa38418c3ba4bc86
@@ -60,7 +60,7 @@ devDependencies:
   prettier: 2.5.1
   rimraf: 3.0.2
   sinon: 9.2.4
-  sinon-chai: 3.5.0_chai@4.3.4+sinon@9.2.4
+  sinon-chai: 3.5.0_chai@4.3.6+sinon@9.2.4
   ts-node: 9.1.1_typescript@4.5.5
   typescript: 4.5.5
 
@@ -89,13 +89,6 @@ packages:
   /@devicefarmer/adbkit-logcat/2.1.1:
     resolution: {integrity: sha512-Wu9g/P6QatOtCr7D/HjjIN84Q6XhAOZLGf941HR2SMWZI7B/WwzxMpUSQN/d/lZT8qcxmH40X16p6GxQnlI6LQ==}
     engines: {node: '>= 4'}
-    dev: false
-
-  /@devicefarmer/adbkit-monkey/1.1.0:
-    resolution: {integrity: sha512-De6bm/IQXTeYI0/fMO+lddEmNCenTOsHMqCga7oGWL1x71VsOlrytn0Kqso0Rzq96xzizMPZ8jgoGG5M6f2baQ==}
-    engines: {node: '>= 0.10.4'}
-    dependencies:
-      async: 0.2.10
     dev: false
 
   /@eslint/eslintrc/0.4.3:
@@ -217,8 +210,8 @@ packages:
     resolution: {integrity: sha512-fqtSN5xn/bBzDxMT77C1rJg6CsH/R49E7qsGuvdPJa20HtV5zSTuLJPNfnlyVH3wauKnkHdLggTVkOW/xP9oQg==}
     dev: true
 
-  /@types/sinon-chai/3.2.6:
-    resolution: {integrity: sha512-Z57LprQ+yOQNu9d6mWdHNvnmncPXzDWGSeLj+8L075/QahToapC4Q13zAFRVKV4clyBmdJ5gz4xBfVkOso5lXw==}
+  /@types/sinon-chai/3.2.8:
+    resolution: {integrity: sha512-d4ImIQbT/rKMG8+AXpmcan5T2/PNeSjrYhvkwet6z0p8kzYtfgA32xzOBlbU0yqJfq+/0Ml805iFoODO0LP5/g==}
     dependencies:
       '@types/chai': 4.3.0
       '@types/sinon': 10.0.6
@@ -336,6 +329,13 @@ packages:
       eslint-visitor-keys: 2.1.0
     dev: true
 
+  /@u4/adbkit-monkey/1.0.3:
+    resolution: {integrity: sha512-WyAFkEGM7HCSjj9sinxKbSq0yaJXPTAvDdemh0Nb5ht6Tej+JyerjHzRqjf7csnzRrdjIvSOZogYQ17PIYiZUg==}
+    engines: {node: '>= 12'}
+    dependencies:
+      async: 3.2.3
+    dev: false
+
   /@ungap/promise-all-settled/1.1.2:
     resolution: {integrity: sha512-sL/cEvJWAnClXw0wHk85/2L0G6Sj8UB0Ctc1TEMbKSsmpRosqhwj9gWgFRZSrBr2f9tiXISwNhCPmlfqUqyb9Q==}
     dev: true
@@ -437,8 +437,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /async/0.2.10:
-    resolution: {integrity: sha1-trvgsGdLnXGXCMo43owjfLUmw9E=}
+  /async/3.2.3:
+    resolution: {integrity: sha512-spZRyzKL5l5BZQrr/6m/SqFdBN0q3OCI0f9rjfBzCMBIP4p75P620rR3gTmaksNOhmzgdxcaxdNfMy6anrbM0g==}
     dev: false
 
   /balanced-match/1.0.2:
@@ -491,14 +491,15 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /chai/4.3.4:
-    resolution: {integrity: sha512-yS5H68VYOCtN1cjfwumDSuzn/9c+yza4f3reKXlE5rUg7SFcCEy90gJvydNgOYtblyf4Zi6jIWRnXOgErta0KA==}
+  /chai/4.3.6:
+    resolution: {integrity: sha512-bbcp3YfHCUzMOvKqsztczerVgBKSsEijCySNlHHbX3VG1nskvqjz5Rfso1gGwD6w6oOV3eI60pKuMOV5MV7p3Q==}
     engines: {node: '>=4'}
     dependencies:
       assertion-error: 1.1.0
       check-error: 1.0.2
       deep-eql: 3.0.1
       get-func-name: 2.0.0
+      loupe: 2.3.4
       pathval: 1.1.1
       type-detect: 4.0.8
     dev: true
@@ -1158,6 +1159,12 @@ packages:
       chalk: 4.1.2
     dev: true
 
+  /loupe/2.3.4:
+    resolution: {integrity: sha512-OvKfgCC2Ndby6aSTREl5aCCPTNIzlDfQZvZxNUrBrihDhL3xcrYegTblhmEiCrg2kKQz4XsFIaemE5BF4ybSaQ==}
+    dependencies:
+      get-func-name: 2.0.0
+    dev: true
+
   /lru-cache/6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
@@ -1444,13 +1451,13 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /sinon-chai/3.5.0_chai@4.3.4+sinon@9.2.4:
+  /sinon-chai/3.5.0_chai@4.3.6+sinon@9.2.4:
     resolution: {integrity: sha512-IifbusYiQBpUxxFJkR3wTU68xzBN0+bxCScEaKMjBvAQERg6FnTTc1F17rseLb1tjmkJ23730AXpFI0c47FgAg==}
     peerDependencies:
       chai: ^4.0.0
       sinon: '>=4.0.0 <10.0.0'
     dependencies:
-      chai: 4.3.4
+      chai: 4.3.6
       sinon: 9.2.4
     dev: true
 

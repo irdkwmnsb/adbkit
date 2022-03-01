@@ -1,4 +1,4 @@
-import Monkey from '@devicefarmer/adbkit-monkey';
+import { Monkey,  Client as MonkeyClient } from '@u4/adbkit-monkey';
 import Logcat from '@devicefarmer/adbkit-logcat';
 import Connection from './connection';
 import Sync from './sync';
@@ -416,11 +416,12 @@ export default class DeviceClient {
    *
    * @returns The Monkey client. Please see the [adbkit-monkey][adbkit-monkey] documentation for details.
    */
-  public async openMonkey(port = 1080): Promise<Duplex> {
-    const tryConnect = async (times: number): Promise<Duplex> => {
+  public async openMonkey(port = 1080): Promise<MonkeyClient> {
+    const tryConnect = async (times: number): Promise<MonkeyClient> => {
       try {
-        const stream = await this.openTcp(port);
-        return Monkey.connectStream(stream);
+        const stream: Duplex = await this.openTcp(port);
+        const client: MonkeyClient = Monkey.connectStream(stream);
+        return client;
       } catch (err) {
         if ((times -= 1)) {
           debug(`Monkey can't be reached, trying ${times} more times`);
