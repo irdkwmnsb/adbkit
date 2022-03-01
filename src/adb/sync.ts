@@ -123,7 +123,8 @@ export default class Sync extends EventEmitter {
 
   private _writeData(stream: Readable, timeStamp: number): PushTransfer {
     const transfer = new PushTransfer();
-    const writeData = () => {
+
+    const writeData = (): Promise<unknown> => {
       let readableListener: () => void;
       let connErrorListener: (err: Error) => void;
       let endListener: () => void;
@@ -179,6 +180,7 @@ export default class Sync extends EventEmitter {
         return writer.cancel();
       });
     };
+
     const readReply = async (): Promise<boolean> => {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
@@ -200,23 +202,23 @@ export default class Sync extends EventEmitter {
       if (err instanceof Bluebird.CancellationError) {
         return this.connection.end();
       } else {
-        return reader.cancel();
+        if ((reader as Bluebird<unknown>).cancel) return (reader as Bluebird<unknown>).cancel();
       }
     })
 
-    const reader: Bluebird<any> = Bluebird.resolve(readReply())
+    const reader: Promise<any> = Bluebird.resolve(readReply())
       .catch((err: Error): Promise<boolean> => {
         transfer.emit('error', err);
         if (err instanceof Bluebird.CancellationError) {
           return Promise.resolve(true);
         }
-        writer.cancel();
+        if ((writer as Bluebird<unknown>).cancel) (writer as Bluebird<unknown>).cancel();
       }).finally(() => {
         return transfer.end();
       });
     transfer.on('cancel', () => {
-      writer.cancel();
-      reader.cancel();
+      if ((writer as Bluebird<unknown>).cancel) (writer as Bluebird<unknown>).cancel();
+      if ((reader as Bluebird<unknown>).cancel) (reader as Bluebird<unknown>).cancel();
     });
     return transfer;
   }
