@@ -129,28 +129,25 @@ export default class Sync extends EventEmitter {
     let endListener: () => void;
     let errorListener: (err: Error) => void;
 
-    const writeData = (): Promise<unknown> => {
-      let resolver = Bluebird.defer();
+    const writeData = (): Promise<any> => new Promise((resolve, reject) => {
+
       const writer = Bluebird.resolve();
       endListener = () => {
         writer.then(() => {
           this._sendCommandWithLength(Protocol.DONE, timeStamp);
-          return resolver.resolve();
+          return resolve(undefined);
         });
       };
       stream.on('end', endListener);
       let drainListener: () => void;
 
-      const waitForDrain = () => {
-        resolver = Bluebird.defer();
-        drainListener = () => {
-          resolver.resolve();
-        };
+      const waitForDrain = () => new Promise<any>((resolve2) => {
+        drainListener = () => { resolve2(undefined); };
         this.connection.on('drain', drainListener);
-        return resolver.promise.finally(() => {
-          return this.connection.removeListener('drain', drainListener);
-        });
-      };
+      }).finally(()=>{
+        this.connection.removeListener('drain', drainListener);
+      });
+
       const track = () => transfer.pop();
       const writeAll = async (): Promise<void> => {
         while (true) {
@@ -166,22 +163,23 @@ export default class Sync extends EventEmitter {
 
       readableListener = () => writer.then(writeAll);
       stream.on('readable', readableListener);
-      errorListener = (err) => resolver.reject(err);
+      errorListener = (err) => reject(err);
       stream.on('error', errorListener);
       connErrorListener = (err: Error) => {
         stream.destroy(err);
         this.connection.end();
-        resolver.reject(err);
+        reject(err);
       };
       this.connection.on('error', connErrorListener);
-      return resolver.promise.finally(() => {
-        stream.removeListener('end', endListener);
-        stream.removeListener('readable', readableListener);
-        stream.removeListener('error', errorListener);
-        this.connection.removeListener('error', connErrorListener);
-        return writer.cancel();
-      });
-    };
+    })
+    .finally(() => {
+      stream.removeListener('end', endListener);
+      stream.removeListener('readable', readableListener);
+      stream.removeListener('error', errorListener);
+      this.connection.removeListener('error', connErrorListener);
+      // writer.cancel();
+    });
+
 
     const readReply = async (): Promise<boolean> => {
       const reply = await this.parser.readAscii(4);
