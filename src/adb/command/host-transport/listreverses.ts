@@ -1,23 +1,21 @@
 import Protocol from '../../protocol';
 import Command from '../../command';
 import Reverse from '../../../Reverse';
-import Bluebird from 'bluebird';
 
 export default class ListReversesCommand extends Command<Reverse[]> {
-  execute(): Bluebird<Reverse[]> {
+  async execute(): Promise<Reverse[]> {
     this._send('reverse:list-forward');
-    return this.parser.readAscii(4).then((reply) => {
-      switch (reply) {
-        case Protocol.OKAY:
-          return this.parser.readValue().then((value) => {
-            return this._parseReverses(value);
-          });
-        case Protocol.FAIL:
-          return this.parser.readError();
-        default:
-          return this.parser.unexpected(reply, 'OKAY or FAIL');
-      }
-    });
+    const reply = await this.parser.readAscii(4);
+    switch (reply) {
+      case Protocol.OKAY:
+        return this.parser.readValue().then((value) => {
+          return this._parseReverses(value);
+        });
+      case Protocol.FAIL:
+        return this.parser.readError();
+      default:
+        return this.parser.unexpected(reply, 'OKAY or FAIL');
+    }
   }
 
   private _parseReverses(value: Buffer): Reverse[] {

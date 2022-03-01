@@ -1,28 +1,26 @@
 import Protocol from '../../protocol';
 import Command from '../../command';
-import Bluebird from 'bluebird';
 
 export default class WaitForDeviceCommand extends Command<string> {
-  execute(serial: string): Bluebird<string> {
+  async execute(serial: string): Promise<string> {
     this._send(`host-serial:${serial}:wait-for-any-device`);
-    return this.parser.readAscii(4).then((reply) => {
-      switch (reply) {
-        case Protocol.OKAY:
-          return this.parser.readAscii(4).then((reply) => {
-            switch (reply) {
-              case Protocol.OKAY:
-                return serial;
-              case Protocol.FAIL:
-                return this.parser.readError();
-              default:
-                return this.parser.unexpected(reply, 'OKAY or FAIL');
-            }
-          });
-        case Protocol.FAIL:
-          return this.parser.readError();
-        default:
-          return this.parser.unexpected(reply, 'OKAY or FAIL');
-      }
-    });
+    const reply = await this.parser.readAscii(4);
+    switch (reply) {
+      case Protocol.OKAY:
+        return this.parser.readAscii(4).then((reply_1) => {
+          switch (reply_1) {
+            case Protocol.OKAY:
+              return serial;
+            case Protocol.FAIL:
+              return this.parser.readError();
+            default:
+              return this.parser.unexpected(reply_1, 'OKAY or FAIL');
+          }
+        });
+      case Protocol.FAIL:
+        return this.parser.readError();
+      default:
+        return this.parser.unexpected(reply, 'OKAY or FAIL');
+    }
   }
 }

@@ -29,8 +29,8 @@
             "url": "https://urielch.github.io/urielch/"
         }
     ],
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "./dist/src/index.js",
+    "types": "./dist/src/index.d.ts",
     "repository": {
         "type": "git",
         "url": "https://github.com/UrielCh/adbkit.git"
@@ -45,7 +45,9 @@
         "lint": "eslint   ./ --ext .ts",
         "format": "eslint ./ --ext .ts --fix",
         "testJS": "mocha --reporter spec --colors dist/test/**/*.js",
-        "test": "mocha -r ts-node/register --reporter spec --colors test/**/*.ts"
+        "test": "mocha -r ts-node/register --reporter spec --colors test/**/*.ts",
+        "test2": "mocha -r ts-node/register --reporter spec --colors test/adb/parser.ts"
+
     },
     "dependencies": {
         "@devicefarmer/adbkit-logcat": "^2.1.1",
@@ -53,6 +55,7 @@
         "bluebird": "~3.7",
         "commander": "^7.1.0",
         "debug": "~4.3.1",
+        "install": "^0.13.0",
         "node-forge": "^0.10.0",
         "split": "~1.0.1"
     },
@@ -77,9 +80,13 @@
         "sinon": "~9.2.4",
         "sinon-chai": "~3.5.0",
         "ts-node": "^9.1.1",
-        "typescript": "^4.1.5"
+        "typescript": "^4.5.5"
     },
     "engines": {
-        "node": ">= 0.10.4"
-    }
+        "node": ">= 12"
+    },
+    "files": [
+        "dist/src",
+        "bin"
+      ]
 }

@@ -1,26 +1,23 @@
 import Command from '../../command';
 import Protocol from '../../protocol';
-import Bluebird from 'bluebird';
 
 export default class GetPackagesCommand extends Command<string[]> {
-  execute(flags?: string): Bluebird<string[]> {
+  async execute(flags?: string): Promise<string[]> {
     if (flags) {
       this._send(`shell:pm list packages ${flags} 2>/dev/null`);
     } else {
       this._send('shell:pm list packages 2>/dev/null');
     }
-    return this.parser.readAscii(4).then((reply) => {
-      switch (reply) {
-        case Protocol.OKAY:
-          return this.parser.readAll().then((data) => {
-            return this._parsePackages(data.toString());
-          });
-        case Protocol.FAIL:
-          return this.parser.readError();
-        default:
-          return this.parser.unexpected(reply, 'OKAY or FAIL');
-      }
-    });
+    const reply = await this.parser.readAscii(4);
+    switch (reply) {
+      case Protocol.OKAY:
+        const data_1 = await this.parser.readAll();
+        return this._parsePackages(data_1.toString());
+      case Protocol.FAIL:
+        return this.parser.readError();
+      default:
+        return this.parser.unexpected(reply, 'OKAY or FAIL');
+    }
   }
 
   private _parsePackages(value: string): string[] {
