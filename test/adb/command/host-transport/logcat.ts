@@ -7,22 +7,22 @@ import Protocol from '../../../../src/adb/protocol';
 import Parser from '../../../../src/adb/parser';
 import LogcatCommand from '../../../../src/adb/command/host-transport/logcat';
 
-describe('LogcatCommand', function () {
+describe('LogcatCommand', () => {
     it("should send 'echo && logcat -B *:I'", function () {
         const conn = new MockConnection();
         const cmd = new LogcatCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk: Buffer) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData('shell:echo && logcat -B *:I 2>/dev/null').toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });
         return cmd.execute();
     });
-    it("should send 'echo && logcat -c && logcat -B *:I' if options.clear is set", function () {
+    it("should send 'echo && logcat -c && logcat -B *:I' if options.clear is set", () => {
         const conn = new MockConnection();
         const cmd = new LogcatCommand(conn);
         conn.getSocket().on('write', function (chunk) {
@@ -39,49 +39,38 @@ describe('LogcatCommand', function () {
                 clear: true,
             })
     });
-    it('should resolve with the logcat stream', function () {
+    it('should resolve with the logcat stream', async function () {
         const conn = new MockConnection();
         const cmd = new LogcatCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             return conn.getSocket().causeRead(Protocol.OKAY);
         });
-        return cmd.execute().then(function (stream) {
-            stream.end();
-            expect(stream).to.be.an.instanceof(Stream.Readable);
-        });
+        const stream = await cmd.execute();
+        stream.end();
+        expect(stream).to.be.an.instanceof(Stream.Readable);
     });
-    it('should perform CRLF transformation by default', function () {
+    it('should perform CRLF transformation by default', async function () {
         const conn = new MockConnection();
         const cmd = new LogcatCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('\r\nfoo\r\n');
             return conn.getSocket().causeEnd();
         });
-        return cmd
-            .execute()
-            .then(function (stream) {
-                return new Parser(stream).readAll();
-            })
-            .then(function (out) {
-                expect(out.toString()).to.equal('foo\n');
-            });
+        const stream = await cmd.execute();
+        const out = await new Parser(stream).readAll();
+        expect(out.toString()).to.equal('foo\n');
     });
-    return it('should not perform CRLF transformation if not needed', function () {
+    return it('should not perform CRLF transformation if not needed', async function () {
         const conn = new MockConnection();
         const cmd = new LogcatCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('\nfoo\r\n');
             return conn.getSocket().causeEnd();
         });
-        return cmd
-            .execute()
-            .then(function (stream) {
-                return new Parser(stream).readAll();
-            })
-            .then(function (out) {
-                expect(out.toString()).to.equal('foo\r\n');
-            });
+        const stream = await cmd.execute();
+        const out = await new Parser(stream).readAll();
+        expect(out.toString()).to.equal('foo\r\n');
     });
 });

@@ -310,25 +310,21 @@ describe('Parser', function () {
                 parser.end()
             done();
         });
-        it('should skip a line terminated by \\n', (done) => {
+        it('should skip a line terminated by \\n', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.readLine().then(function () {
-                return parser.readBytes(7).then((buf) => {
-                    expect(buf.toString()).to.equal('zip zap');
-                    done();
-                });
-            });
-            return stream.write('foo bar\nzip zap\npip pop');
+            stream.write('foo bar\nzip zap\npip pop');
+            await parser.readLine()
+            const buf = await parser.readBytes(7)
+            expect(buf.toString()).to.equal('zip zap');
+            return true
         });
-        it('should return skipped line', function (done) {
+        it('should return skipped line', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.readLine().then(function (buf) {
-                expect(buf.toString()).to.equal('foo bar');
-                done();
-            });
-            return stream.write('foo bar\nzip zap\npip pop');
+            stream.write('foo bar\nzip zap\npip pop');
+            const buf = await parser.readLine()
+            expect(buf.toString()).to.equal('foo bar');
         });
         it('should strip trailing \\r', function (done) {
             const stream = new Stream.PassThrough();
