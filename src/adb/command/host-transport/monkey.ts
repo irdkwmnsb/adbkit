@@ -4,8 +4,6 @@ import Command from '../../command';
 import { Duplex } from 'stream';
 import Utils from '../../../adb/util';
 
-const symbolTimeout = Symbol('timeout')
-
 export default class MonkeyCommand extends Command<Duplex> {
   constructor (connection: Connection, private timeout = 1000) {
     super(connection);
@@ -33,13 +31,9 @@ export default class MonkeyCommand extends Command<Duplex> {
         // On some devices (such as F-08D by Fujitsu), the monkey
         // command gives no output no matter how many verbose flags you
         // give it. So we use a fallback timeout.
-        const pTimeout = Utils.delay(this.timeout).then(() => symbolTimeout);
+        const pTimeout = Utils.delay(this.timeout)
         const parse = this.parser.searchLine(/^:Monkey:/);
         const race = await Promise.race([pTimeout, parse])
-        if (race === symbolTimeout) {
-          // get timeout
-          return this.parser.raw();
-        }
         return this.parser.raw();
       case Protocol.FAIL:
         return this.parser.readError();

@@ -25,7 +25,7 @@ export default class Connection extends EventEmitter {
     this.triedStarting = false;
   }
 
-  public connect(): Promise<Connection> {
+  public async connect(): Promise<Connection> {
     this.socket = Net.connect(this.options);
     this.socket.setNoDelay(true);
     this.parser = new Parser(this.socket);
@@ -35,34 +35,33 @@ export default class Connection extends EventEmitter {
     this.socket.on('timeout', () => this.emit('timeout'));
     this.socket.on('close', (hadError: boolean) => this.emit('close', hadError));
 
-    return new Promise((resolve, reject) => {
-      this.socket.once('connect', resolve);
-      this.socket.once('error', reject);
-    })
-      .catch((err) => {
-        if (err.code === 'ECONNREFUSED' && !this.triedStarting) {
-          debug("Connection was refused, let's try starting the server once");
-          this.triedStarting = true;
-          return this.startServer().then(() => {
-            return this.connect();
-          });
-        } else {
-          this.end();
-          throw err;
-        }
-      })
-      .then(() => {
-        // Emit unhandled error events, so that they can be handled on the client.
-        // Without this, they would just crash node unavoidably.
-        if (this.socket) {
-          this.socket.on('error', (err) => {
-            if (this.socket && this.socket.listenerCount('error') === 1) {
-              this.emit('error', err);
-            }
-          });
-        }
-        return this;
+    try {
+      await new Promise((resolve, reject) => {
+        this.socket.once('connect', resolve);
+        this.socket.once('error', reject);
       });
+    } catch (err) {
+      if ((err as any).code === 'ECONNREFUSED' && !this.triedStarting) {
+        debug("Connection was refused, let's try starting the server once");
+        this.triedStarting = true;
+        await this.startServer();
+        return this.connect();
+      } else {
+        this.end();
+        throw err;
+      }
+    }
+
+    // Emit unhandled error events, so that they can be handled on the client.
+    // Without this, they would just crash node unavoidably.
+    if (this.socket) {
+      this.socket.on('error', (err) => {
+        if (this.socket && this.socket.listenerCount('error') === 1) {
+          this.emit('error', err);
+        }
+      });
+    }
+    return this;
   }
 
   /**

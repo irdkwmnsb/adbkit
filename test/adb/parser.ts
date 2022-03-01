@@ -132,50 +132,35 @@ describe('Parser', function () {
                 parser.end()
             done();
         });
-        it('should read as many bytes as requested', (done) => {
+        it('should read as many bytes as requested', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const target = new Stream.PassThrough();
-            parser
-                .readByteFlow(4, target)
-                .then(async () => {
-                    expect(target.read()).to.eql(Buffer.from('OKAY'));
-                    await parser.readByteFlow(2, target);
-                    expect(target.read()).to.eql(Buffer.from('FA'));
-                    done();
-                })
-                .catch(done);
             stream.write('OKAYFAIL');
+            await parser.readByteFlow(4, target);
+            expect(target.read()).to.eql(Buffer.from('OKAY'));
+            await parser.readByteFlow(2, target);
+            expect(target.read()).to.eql(Buffer.from('FA'));
         });
-        return it('should progress with new/partial chunk until maxHowMany', (done) => {
+        return it('should progress with new/partial chunk until maxHowMany', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const target = new Stream.PassThrough();
-            parser
-                .readByteFlow(3, target)
-                .then(function () {
-                    expect(target.read()).to.eql(Buffer.from('PIE'));
-                    done();
-                })
-                .catch(done);
-            const b1 = Buffer.from('P');
-            const b2 = Buffer.from('I');
-            const b3 = Buffer.from('ES');
-            const b4 = Buffer.from('R');
-            stream.write(b1);
-            stream.write(b2);
-            stream.write(b3);
-            stream.write(b4);
+            stream.write(Buffer.from('P'));
+            stream.write(Buffer.from('I'));
+            stream.write(Buffer.from('ES'));
+            stream.write(Buffer.from('R'));
+            await parser.readByteFlow(3, target);
+            expect(target.read()).to.eql(Buffer.from('PIE'));
         });
     });
     describe('readAscii(howMany)', function () {
-        it('should return a cancellable Bluebird Promise', (done) => {
+        it('should return a cancellable Bluebird Promise', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readAscii(1);
             if (!bluebirdTest(promise))
                 parser.end()
-            done();
         });
         it('should read as many ascii characters as requested 1', async () => {
             const stream = new Stream.PassThrough();
@@ -210,24 +195,21 @@ describe('Parser', function () {
         });
     });
     describe('readValue()', () => {
-        it('should return a cancellable Bluebird Promise', (done) => {
+        it('should return a cancellable Bluebird Promise', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readValue();
             if (!bluebirdTest(promise))
                 parser.end()
-            done();
         });
-        it('should read a protocol value as a Buffer', (done) => {
+        it('should read a protocol value as a Buffer', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.readValue().then(function (value) {
-                expect(value).to.be.an.instanceOf(Buffer);
-                expect(value).to.have.length(4);
-                expect(value.toString()).to.equal('001f');
-                done();
-            });
             stream.write('0004001f');
+            const value = await parser.readValue()
+            expect(value).to.be.an.instanceOf(Buffer);
+            expect(value).to.have.length(4);
+            expect(value.toString()).to.equal('001f');
         });
         it('should return an empty value', async () => {
             const stream = new Stream.PassThrough();
@@ -237,7 +219,6 @@ describe('Parser', function () {
             const value = await p;
             expect(value).to.be.an.instanceOf(Buffer);
             expect(value).to.have.length(0);
-            return true;
         });
         return it('should reject with Parser.PrematureEOFError if stream ends before the value can be read', (done) => {
             const stream = new Stream.PassThrough();
@@ -289,16 +270,15 @@ describe('Parser', function () {
                 parser.end()
             done();
         });
-        it('should return the re.exec match of the matching line', function (done) {
+        it('should return the re.exec match of the matching line', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.searchLine(/za(p)/).then(function (line) {
-                expect(line[0]).to.equal('zap');
-                expect(line[1]).to.equal('p');
-                expect(line.input).to.equal('zip zap');
-                done();
-            });
-            return stream.write('foo bar\nzip zap\npip pop\n');
+            stream.write('foo bar\nzip zap\npip pop\n');
+            const line = await parser.searchLine(/za(p)/)
+            expect(line[0]).to.equal('zap');
+            expect(line[1]).to.equal('p');
+            expect(line.input).to.equal('zip zap');
+            return true;
         });
         return it('should reject with Parser.PrematureEOFError if stream ends before a line is found', (done) => {
             const stream = new Stream.PassThrough();
@@ -336,24 +316,25 @@ describe('Parser', function () {
             const buf = await parser.readLine()
             expect(buf.toString()).to.equal('foo bar');
         });
-        it('should strip trailing \\r', function (done) {
+        it('should strip trailing \\r', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.readLine().then(function (buf) {
-                expect(buf.toString()).to.equal('foo bar');
-                done();
-            });
             stream.write('foo bar\r\n');
+            const buf = await parser.readLine()
+            expect(buf.toString()).to.equal('foo bar');
+            return true;
         });
-        return it('should reject with Parser.PrematureEOFError if stream ends before a line is found', (done) => {
+        return it('should reject with Parser.PrematureEOFError if stream ends before a line is found', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.readLine().catch(err => {
-                expect(err).to.be.an.instanceOf(Parser.PrematureEOFError);
-                done();
-            });
             stream.write('foo bar');
             stream.end();
+            try {
+                await parser.readLine()
+                throw Error('should throw PrematureEOFError');
+            } catch (err) {
+                expect(err).to.be.an.instanceOf(Parser.PrematureEOFError);
+            }
         });
     });
     describe('readUntil(code)', function () {
@@ -365,14 +346,12 @@ describe('Parser', function () {
                 parser.end()
             done();
         });
-        it('should return any characters before given value', (done) => {
+        it('should return any characters before given value', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.readUntil('p'.charCodeAt(0)).then(function (buf) {
-                expect(buf.toString()).to.equal('foo bar\nzi');
-                done();
-            });
             stream.write('foo bar\nzip zap\npip pop');
+            const buf = await parser.readUntil('p'.charCodeAt(0))
+            expect(buf.toString()).to.equal('foo bar\nzi');
         });
         return it('should reject with Parser.PrematureEOFError if stream ends before a line is found', (done) => {
             const stream = new Stream.PassThrough();

@@ -17,20 +17,19 @@ export default class FrameBufferCommand extends Command<any> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        return this.parser.readBytes(52).then((header) => {
-          let stream: FramebufferStreamWithMeta;
-          const meta = this._parseHeader(header);
-          switch (format) {
-            case 'raw':
-              stream = this.parser.raw() as FramebufferStreamWithMeta;
-              stream.meta = meta;
-              return stream;
-            default:
-              stream = this._convert(meta, format) as FramebufferStreamWithMeta;
-              stream.meta = meta;
-              return stream;
-          }
-        });
+        const header = await this.parser.readBytes(52)
+        let stream: FramebufferStreamWithMeta;
+        const meta = this._parseHeader(header);
+        switch (format) {
+          case 'raw':
+            stream = this.parser.raw() as FramebufferStreamWithMeta;
+            stream.meta = meta;
+            return stream;
+          default:
+            stream = this._convert(meta, format) as FramebufferStreamWithMeta;
+            stream.meta = meta;
+            return stream;
+        }
       case Protocol.FAIL:
         return this.parser.readError();
       default:

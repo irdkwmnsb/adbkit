@@ -145,19 +145,18 @@ export default class Socket extends EventEmitter {
     return this.write(Packet.assemble(Packet.A_SYNC, 1, this.syncToken.next()));
   }
 
-  private _handleConnectionPacket(packet: Packet): Promise<boolean> {
+  private async _handleConnectionPacket(packet: Packet): Promise<boolean> {
     debug('I:A_CNXN', packet);
     this.version = Packet.swap32(packet.arg0);
     this.maxPayload = Math.min(UINT16_MAX, packet.arg1);
-    return this._createToken().then((token) => {
-      this.token = token;
-      debug(`Created challenge '${this.token.toString('base64')}'`);
-      debug('O:A_AUTH');
-      return this.write(Packet.assemble(Packet.A_AUTH, AUTH_TOKEN, 0, this.token));
-    });
+    const token = await this._createToken();
+    this.token = token;
+    debug(`Created challenge '${this.token.toString('base64')}'`);
+    debug('O:A_AUTH');
+    return this.write(Packet.assemble(Packet.A_AUTH, AUTH_TOKEN, 0, this.token));
   }
 
-  private _handleAuthPacket(packet: Packet): Promise<boolean> {
+  private async _handleAuthPacket(packet: Packet): Promise<boolean> {
     debug('I:A_AUTH', packet);
     switch (packet.arg0) {
       case AUTH_SIGNATURE:
@@ -168,7 +167,7 @@ export default class Socket extends EventEmitter {
         }
         debug('O:A_AUTH');
         const b = this.write(Packet.assemble(Packet.A_AUTH, AUTH_TOKEN, 0, this.token));
-        return Promise.resolve(b);
+        return b;
       case AUTH_RSAPUBLICKEY:
         if (!this.signature) {
           throw new Socket.AuthError('Public key sent before signature');
@@ -177,32 +176,26 @@ export default class Socket extends EventEmitter {
           throw new Socket.AuthError('Empty RSA public key');
         }
         debug(`Received RSA public key '${packet.data.toString('base64')}'`);
-        return Auth.parsePublicKey(this._skipNull(packet.data).toString())
-          .then((key) => {
-            const digest = this.token.toString('binary');
-            const sig = this.signature.toString('binary');
-            if (!key.verify(digest, sig)) {
-              debug('Signature mismatch');
-              throw new Socket.AuthError('Signature mismatch');
-            }
-            debug('Signature verified');
-            return key;
-          })
-          .then((key) => {
-            if (!this.options.auth) return;
-            return this.options.auth(key).catch(() => {
-              debug('Connection rejected by user-defined auth handler');
-              throw new Socket.AuthError('Rejected by user-defined handler');
-            });
-          })
-          .then(() => {
-            return this._deviceId();
-          })
-          .then((id) => {
-            this.authorized = true;
-            debug('O:A_CNXN');
-            return this.write(Packet.assemble(Packet.A_CNXN, Packet.swap32(this.version), this.maxPayload, id));
-          });
+        const key = await Auth.parsePublicKey(this._skipNull(packet.data).toString());
+        const digest = this.token.toString('binary');
+        const sig = this.signature.toString('binary');
+        if (!key.verify(digest, sig)) {
+          debug('Signature mismatch');
+          throw new Socket.AuthError('Signature mismatch');
+        }
+        debug('Signature verified');
+        if (this.options.auth) {
+          try {
+            await this.options.auth(key)
+          } catch (e) {
+            debug('Connection rejected by user-defined auth handler');
+            throw new Socket.AuthError('Rejected by user-defined handler');
+          }
+        }
+        const id = await this._deviceId();
+        this.authorized = true;
+        debug('O:A_CNXN');
+        return this.write(Packet.assemble(Packet.A_CNXN, Packet.swap32(this.version), this.maxPayload, id));
       default:
         throw new Error(`Unknown authentication method ${packet.arg0}`);
     }
@@ -264,22 +257,20 @@ export default class Socket extends EventEmitter {
     return data.slice(0, -1); // Discard null byte at end
   }
 
-  private _deviceId(): Promise<Buffer> {
+  private async _deviceId(): Promise<Buffer> {
     debug('Loading device properties to form a standard device ID');
-    return this.client
+    const properties = await this.client
       .getDevice(this.serial)
-      .getProperties()
-      .then(function (properties) {
-        const id = (function () {
-          const ref = ['ro.product.name', 'ro.product.model', 'ro.product.device'];
-          const results = [];
-          for (let i = 0, len = ref.length; i < len; i++) {
-            const prop = ref[i];
-            results.push(`${prop}=${properties[prop]};`);
-          }
-          return results;
-        })().join('');
-        return Buffer.from(`device::${id}\x00`);
-      });
+      .getProperties();
+    const id = (() => {
+      const ref = ['ro.product.name', 'ro.product.model', 'ro.product.device'];
+      const results = [];
+      for (let i = 0, len = ref.length; i < len; i++) {
+        const prop = ref[i];
+        results.push(`${prop}=${properties[prop]};`);
+      }
+      return results;
+    })().join('');
+    return Buffer.from(`device::${id}\x00`);
   }
 }
