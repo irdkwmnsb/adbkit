@@ -13,22 +13,22 @@ export default class Tracker extends EventEmitter {
 
   constructor(private readonly command: HostDevicesCommand | HostDevicesWithPathsCommand) {
     super();
-    this.reader = this.read()
+    this.reader = Bluebird.resolve(this.read())
     .catch(Bluebird.CancellationError, () => true)
     .catch(Parser.PrematureEOFError, () => {
       throw new Error('Connection closed');
     })
     .catch((err) => this.emit('error', err))
-    .finally(() => {
-      this.command.parser.end().then(() => this.emit('end'));
+    .finally(async () => {
+      await this.command.parser.end();
+      this.emit('end');
     });
   }
 
-  public read(): Bluebird<Device[]> {
-    return Bluebird.resolve(this.command._readDevices().then((list) => {
-      this.update(list);
-      return this.read();
-    }));
+  public async read(): Promise<Device[]> {
+    const list = await this.command._readDevices();
+    this.update(list);
+    return this.read();
   }
 
   public update(newList: Device[]): Tracker {
