@@ -1,7 +1,6 @@
 import d from 'debug';
 import { EventEmitter } from 'events';
 import Packet from './packet';
-import Bluebird from 'bluebird';
 import Protocol from '../protocol';
 import Client from '../client';
 import Socket from './socket';
@@ -60,17 +59,19 @@ export default class Service extends EventEmitter {
     try {
       // We may or may not have gotten here due to @socket ending, so write
       // may fail.
-      this.socket.write(Packet.assemble(Packet.A_CLSE, localId, this.remoteId, null));
-    } catch (error) {}
+      this.socket.write(Packet.assemble(Packet.A_CLSE, localId, this.remoteId));
+    } catch (error) {
+      // ignore error
+    }
     // Let it go
-    this.transport = null;
+    this.transport = undefined;
     this.ended = true;
     this.emit('end');
     return this;
   }
 
-  public handle(packet: Packet): Bluebird<Service | boolean> {
-    return Bluebird.try<Service | boolean>(() => {
+  public async handle(packet: Packet): Promise<Service | boolean | undefined> {
+    try {
       switch (packet.command) {
         case Packet.A_OPEN:
           return this._handleOpenPacket(packet);
@@ -83,48 +84,50 @@ export default class Service extends EventEmitter {
         default:
           throw new Error(`Unexpected packet ${packet.command}`);
       }
-    }).catch((err) => {
-      this.emit('error', err);
+    } catch (err) {
+      this.emit('error', err as Error);
       return this.end();
-    });
+    }
   }
 
-  private _handleOpenPacket(packet): Bluebird<boolean> {
+  private async _handleOpenPacket(packet: Packet): Promise<boolean> {
     debug('I:A_OPEN', packet);
-    return this.client
-      .getDevice(this.serial)
-      .transport()
-      .then((transport) => {
-        this.transport = transport;
-        if (this.ended) {
-          throw new LateTransportError();
+    try {
+      const transport = await this.client.getDevice(this.serial).transport()
+      this.transport = transport;
+      if (this.ended) {
+        throw new LateTransportError();
+      }
+      if (!packet.data)
+        throw Error("missing data in packet");
+      this.transport.write(Protocol.encodeData(packet.data.slice(0, -1))); // Discard null byte at end
+      const reply = await this.transport.parser.readAscii(4);
+      switch (reply) {
+        case Protocol.OKAY:
+          debug('O:A_OKAY');
+          this.socket.write(Packet.assemble(Packet.A_OKAY, this.localId, this.remoteId));
+          this.opened = true;
+          break;
+        case Protocol.FAIL:
+          this.transport.parser.readError();
+          break;
+        default:
+          this.transport.parser.unexpected(reply, 'OKAY or FAIL');
+          break;
+      }
+      return new Promise<boolean>((resolve, reject) => {
+        if (!this.transport) {
+          return reject('transport is closed')
         }
-        this.transport.write(Protocol.encodeData(packet.data.slice(0, -1))); // Discard null byte at end
-        return this.transport.parser.readAscii(4).then((reply) => {
-          switch (reply) {
-            case Protocol.OKAY:
-              debug('O:A_OKAY');
-              this.socket.write(Packet.assemble(Packet.A_OKAY, this.localId, this.remoteId, null));
-              return (this.opened = true);
-            case Protocol.FAIL:
-              return this.transport.parser.readError();
-            default:
-              return this.transport.parser.unexpected(reply, 'OKAY or FAIL');
-          }
-        });
-      })
-      .then(() => {
-        return new Bluebird<boolean>((resolve, reject) => {
-          this.transport.socket
-            .on('readable', () => this._tryPush())
-            .on('end', resolve)
-            .on('error', reject);
-          return this._tryPush();
-        });
-      })
-      .finally(() => {
-        return this.end();
+        this.transport.socket
+          .on('readable', () => this._tryPush())
+          .on('end', resolve)
+          .on('error', reject);
+        return this._tryPush();
       });
+    } finally {
+      this.end();
+    }
   }
 
   private _handleOkayPacket(packet: Packet): boolean | undefined {
@@ -151,7 +154,7 @@ export default class Service extends EventEmitter {
       this.transport.write(packet.data);
     }
     debug('O:A_OKAY');
-    return this.socket.write(Packet.assemble(Packet.A_OKAY, this.localId, this.remoteId, null));
+    return this.socket.write(Packet.assemble(Packet.A_OKAY, this.localId, this.remoteId));
   }
 
   private _handleClosePacket(packet: Packet): Service | undefined {
@@ -166,7 +169,7 @@ export default class Service extends EventEmitter {
   }
 
   private _tryPush(): boolean | undefined {
-    if (this.needAck || this.ended) {
+    if (this.needAck || this.ended || !this.transport) {
       return;
     }
     const chunk = this._readChunk(this.transport.socket);

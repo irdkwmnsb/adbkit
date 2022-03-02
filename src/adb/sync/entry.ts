@@ -1,6 +1,6 @@
 import Stats from './stats';
 
-class Entry extends Stats {
+export default class Entry extends Stats {
   constructor(public name: string, mode: number, size: number, mtime: number) {
     super(mode, size, mtime);
   }
@@ -9,5 +9,3 @@ class Entry extends Stats {
     return this.name;
   }
 }
-
-export = Entry;

@@ -31,15 +31,14 @@ describe('TcpCommand', function () {
         });
         return cmd.execute(8080, '127.0.0.1');
     });
-    return it('should resolve with the tcp stream', function () {
+    return it('should resolve with the tcp stream', async function () {
         const conn = new MockConnection();
         const cmd = new TcpCommand(conn);
         setImmediate(function () {
             return conn.getSocket().causeRead(Protocol.OKAY);
         });
-        return cmd.execute(8080).then(function (stream) {
-            stream.end();
-            expect(stream).to.be.an.instanceof(Stream.Readable);
-        });
+        const stream = await cmd.execute(8080);
+        stream.end();
+        expect(stream).to.be.an.instanceof(Stream.Readable);
     });
 });

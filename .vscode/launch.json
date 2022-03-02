@@ -5,6 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Mocha Tests",
             "cwd": "${workspaceFolder}",
             "args": [
                 "-r",
@@ -16,7 +17,68 @@
                 "${workspaceFolder}/test/**/*.ts"
             ],
             "internalConsoleOptions": "openOnSessionStart",
-            "name": "Mocha Tests",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
+        },
+        {
+            "name": "Mocha Tests parser",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "-r",
+                "ts-node/register",
+                "--project",
+                "tsconfig.json",
+                "--no-timeouts",
+                "--colors",
+                "${workspaceFolder}/test/adb/parser.ts"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
+        },
+
+        {
+            "name": "Mocha Tests host-transport",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "-r",
+                "ts-node/register",
+                "--project",
+                "tsconfig.json",
+                "--no-timeouts",
+                "--colors",
+                "${workspaceFolder}/test/adb/command/host-transport/*.ts"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
+        },
+
+        {
+            "name": "Mocha Tests adb",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "-r",
+                "ts-node/register",
+                "--project",
+                "tsconfig.json",
+                "--no-timeouts",
+                "--colors",
+                "${workspaceFolder}/test/adb/tr*.ts"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "request": "launch",
             "skipFiles": [
@@ -24,5 +86,7 @@
             ],
             "type": "pwa-node"
         }
+
+
     ]
 }

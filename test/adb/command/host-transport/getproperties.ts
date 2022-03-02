@@ -5,34 +5,33 @@ import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import GetPropertiesCommand from '../../../../src/adb/command/host-transport/getproperties';
 
-describe('GetPropertiesCommand', function () {
-    it("should send 'getprop'", function () {
+describe('GetPropertiesCommand', () => {
+    it("should send 'getprop'", () => {
         const conn = new MockConnection();
         const cmd = new GetPropertiesCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('shell:getprop').toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });
         return cmd.execute();
     });
-    it('should return an empty object for an empty property list', function () {
+    it('should return an empty object for an empty property list', async () => {
         const conn = new MockConnection();
         const cmd = new GetPropertiesCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute().then(function (properties) {
-            expect(Object.keys(properties)).to.be.empty;
-        });
+        const properties = await cmd.execute();
+        expect(Object.keys(properties)).to.be.empty;
     });
-    return it('should return a map of properties', function () {
+    return it('should return a map of properties', async () => {
         const conn = new MockConnection();
         const cmd = new GetPropertiesCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead(`[ro.product.locale.region]: [US]
 [ro.product.manufacturer]: [samsung]\r
@@ -40,14 +39,13 @@ describe('GetPropertiesCommand', function () {
 [ro.product.name]: [SC-04E]`);
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute().then(function (properties) {
-            expect(Object.keys(properties)).to.have.length(4);
-            expect(properties).to.eql({
-                'ro.product.locale.region': 'US',
-                'ro.product.manufacturer': 'samsung',
-                'ro.product.model': 'SC-04E',
-                'ro.product.name': 'SC-04E',
-            });
+        const properties = await cmd.execute();
+        expect(Object.keys(properties)).to.have.length(4);
+        expect(properties).to.eql({
+            'ro.product.locale.region': 'US',
+            'ro.product.manufacturer': 'samsung',
+            'ro.product.model': 'SC-04E',
+            'ro.product.name': 'SC-04E',
         });
     });
 });

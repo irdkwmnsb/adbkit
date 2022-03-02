@@ -1,19 +1,18 @@
 import Command from '../../command';
 import Protocol from '../../protocol';
-import Bluebird from 'bluebird';
 
 export default class GetSerialNoCommand extends Command<string> {
-  execute(serial: string): Bluebird<string> {
+  async execute(serial: string): Promise<string> {
     this._send(`host-serial:${serial}:get-serialno`);
-    return this.parser.readAscii(4).then((reply) => {
-      switch (reply) {
-        case Protocol.OKAY:
-          return this.parser.readValue().then((value) => value.toString());
-        case Protocol.FAIL:
-          return this.parser.readError();
-        default:
-          return this.parser.unexpected(reply, 'OKAY or FAIL');
-      }
-    });
+    const reply = await this.parser.readAscii(4);
+    switch (reply) {
+      case Protocol.OKAY:
+        const value = await this.parser.readValue();
+        return value.toString();
+      case Protocol.FAIL:
+        return this.parser.readError();
+      default:
+        return this.parser.unexpected(reply, 'OKAY or FAIL');
+    }
   }
 }

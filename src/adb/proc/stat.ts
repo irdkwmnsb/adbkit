@@ -2,10 +2,9 @@ import { EventEmitter } from 'events';
 import Parser from '../parser';
 import Sync from '../sync';
 import { CpuStats, Loads } from '../../CpuStats';
-import Bluebird from 'bluebird';
 
 const RE_CPULINE = /^cpu[0-9]+ .*$/gm;
-const RE_COLSEP = /\ +/g;
+const RE_COLSEP = / +/g;
 
 interface CpuStatsWithLine extends CpuStats {
   line: string;
@@ -17,11 +16,11 @@ interface LoadsWithLine {
 
 type Stats = { cpus: LoadsWithLine };
 
-class ProcStat extends EventEmitter {
+export default class ProcStat extends EventEmitter {
   public interval = 1000;
   public stats: Stats;
-  private readonly _ignore;
-  private readonly _timer;
+  private readonly _ignore: {[key: string]: string};
+  private readonly _timer: NodeJS.Timeout;
 
   constructor(private sync?: Sync) {
     super();
@@ -42,28 +41,30 @@ class ProcStat extends EventEmitter {
     }
   }
 
-  public update(): Bluebird<Stats> {
+  public async update(): Promise<Stats> {
     if (!this.sync) {
       throw Error('Closed');
     }
-    return new Parser(this.sync.pull('/proc/stat'))
-      .readAll()
-      .then((out) => {
-        return this._parse(out.toString());
-      })
-      .catch((err) => {
-        this._error(err);
-        return Bluebird.reject(err);
-      });
+    try {
+      const out = await new Parser(this.sync.pull('/proc/stat'))
+        .readAll();
+      return this._parse(out.toString());
+    } catch (err) {
+      this._error(err as Error);
+      return await Promise.reject(err);
+    }
   }
 
   private _parse(out: string): Stats {
-    let match, val;
+    let match: RegExpExecArray | null = null;
+    let val: string;
     const stats = this._emptyStats();
     while ((match = RE_CPULINE.exec(out))) {
       const line: string = match[0];
       const cols = line.split(RE_COLSEP);
       const type = cols.shift();
+      if (!type)
+        continue;
       if (this._ignore[type] === line) {
         continue;
       }
@@ -146,5 +147,3 @@ class ProcStat extends EventEmitter {
     };
   }
 }
-
-export = ProcStat;

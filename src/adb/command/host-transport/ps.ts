@@ -1,6 +1,6 @@
 import Command from '../../command';
 import Protocol from '../../protocol';
-import Bluebird from 'bluebird';
+
 /**
  * usage: ps [-AadefLlnwZ] [-gG GROUP,] [-k FIELD,] [-o FIELD,] [-p PID,] [-t TTY,] [-uU USER,]
  *
@@ -30,29 +30,27 @@ import Bluebird from 'bluebird';
  * -Z  Include LABEL
  */
 export default class PsCommand extends Command<Array<Partial<PsEntry>>> {
-  execute(...args: string[]): Bluebird<Array<Partial<PsEntry>>> {
+  async execute(...args: string[]): Promise<Array<Partial<PsEntry>>> {
     if (!args.length) {
       this._send(`shell:ps`); //  2>/dev/null
     } else {
       this._send(`shell:ps ${args.join(' ')}`); //  2>/dev/null
     }
-    return this.parser.readAscii(4).then((reply) => {
-      switch (reply) {
-        case Protocol.OKAY:
-          return this.parser.readAll().then((data: Buffer) => {
-            return this._parsePs(data.toString());
-          });
-        case Protocol.FAIL:
-          return this.parser.readError();
-        default:
-          return this.parser.unexpected(reply, 'OKAY or FAIL');
-      }
-    });
+    const reply = await this.parser.readAscii(4);
+    switch (reply) {
+      case Protocol.OKAY:
+        const data = await this.parser.readAll()
+        return this._parsePs(data.toString());
+      case Protocol.FAIL:
+        return this.parser.readError();
+      default:
+        return this.parser.unexpected(reply, 'OKAY or FAIL');
+    }
   }
 
   private _parsePs(value: string): Array<Partial<PsEntry>> {
     const lines: string[] = value.split(/[\r\n]+/g);
-    const titles = lines.shift().trim();
+    const titles = (lines.shift() || '').trim();
     const cols = titles.split(/\s+/g) as Array<keyof PsEntry>;
     const result: Partial<PsEntry>[] = [];
     for (const line of lines) {

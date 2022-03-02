@@ -46,6 +46,9 @@ export default class PacketReader extends EventEmitter {
     while (this._appendChunk()) {
       while (this.buffer) {
         if (this.inBody) {
+          if (!this.packet) {
+            throw Error('invalid stat packet is missing');
+          }
           if (!(this.buffer.length >= this.packet.length)) {
             break;
           }
@@ -97,9 +100,11 @@ export default class PacketReader extends EventEmitter {
     }
   }
 
-  private _consume(length): Buffer {
+  private _consume(length: number): Buffer {
+    if (!this.buffer)
+      return Buffer.from([]);
     const chunk = this.buffer.slice(0, length);
-    this.buffer = length === this.buffer.length ? null : this.buffer.slice(length);
+    this.buffer = length === this.buffer.length ? undefined : this.buffer.slice(length);
     return chunk;
   }
 }

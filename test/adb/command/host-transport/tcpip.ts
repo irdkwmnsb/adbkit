@@ -19,7 +19,7 @@ describe('TcpIpCommand', function () {
         });
         return cmd.execute(5555)
     });
-    it('should resolve with the port', function () {
+    it('should resolve with the port', async function () {
         const conn = new MockConnection();
         const cmd = new TcpIpCommand(conn);
         setImmediate(function () {
@@ -27,9 +27,8 @@ describe('TcpIpCommand', function () {
             conn.getSocket().causeRead('restarting in TCP mode port: 5555\n');
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute(5555).then(function (port) {
-            expect(port).to.equal(5555);
-        });
+        const port = await cmd.execute(5555);
+        expect(port).to.equal(5555);
     });
     return it('should reject on unexpected reply', function (done) {
         const conn = new MockConnection();

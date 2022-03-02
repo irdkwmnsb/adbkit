@@ -7,12 +7,12 @@ export default class MockDuplex extends Stream.Duplex {
         // empty
     }
 
-    _write(chunk, encoding: string, callback: Function): void {
+    _write(chunk: Buffer, encoding: string, callback: Function): void {
         this.emit('write', chunk, encoding, callback);
         callback(null);
     }
 
-    causeRead(chunk): void {
+    causeRead(chunk: string | Buffer): void {
         if (!Buffer.isBuffer(chunk)) {
             chunk = Buffer.from(chunk);
         }
@@ -23,7 +23,7 @@ export default class MockDuplex extends Stream.Duplex {
         this.push(null);
     }
 
-    end(...args: any[]): void {
+    end(...args: any[]): this {
         this.causeEnd(); // In order to better emulate socket streams
         return (Stream.Duplex.prototype.end as any).apply(this, args);
     }

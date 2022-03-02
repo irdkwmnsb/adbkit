@@ -4,11 +4,12 @@ Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import { WaitForDeviceCommand } from '../../../../src/adb/command/host-serial';
+import Connection from '../../../../src/adb/connection';
 
 describe('WaitForDeviceCommand', function () {
     it("should send 'host-serial:<serial>:wait-for-any-device'", function () {
         const conn = new MockConnection();
-        const cmd = new WaitForDeviceCommand(conn);
+        const cmd = new WaitForDeviceCommand(conn as any as Connection);
         conn.getSocket().on('write', function (chunk) {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('host-serial:abba:wait-for-any-device').toString());
         });
@@ -19,29 +20,31 @@ describe('WaitForDeviceCommand', function () {
         });
         return cmd.execute('abba');
     });
-    it('should resolve with id when the device is connected', function () {
+    it('should resolve with id when the device is connected', async () => {
         const conn = new MockConnection();
-        const cmd = new WaitForDeviceCommand(conn);
+        const cmd = new WaitForDeviceCommand(conn as any as Connection);
         setImmediate(function () {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute('abba').then(function (id) {
-            expect(id).to.equal('abba');
-        });
+        const id = await cmd.execute('abba')
+        expect(id).to.equal('abba');
+        return true;
     });
-    return it('should reject with error if unable to connect', function () {
+    return it('should reject with error if unable to connect', async function () {
         const conn = new MockConnection();
-        const cmd = new WaitForDeviceCommand(conn);
+        const cmd = new WaitForDeviceCommand(conn as any as Connection);
         setImmediate(function () {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead(Protocol.FAIL);
             conn.getSocket().causeRead(Protocol.encodeData('not sure how this might happen'));
             return conn.getSocket().causeEnd();
         });
-        return cmd.execute('abba').catch(function (err) {
-            expect(err.message).to.contain('not sure how this might happen');
-        });
+        try {
+            return await cmd.execute('abba');
+        } catch (err) {
+            expect((err as Error).message).to.contain('not sure how this might happen');
+        }
     });
 });

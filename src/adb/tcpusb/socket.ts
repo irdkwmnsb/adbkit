@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
 import d from 'debug';
-import Bluebird from 'bluebird';
+import { promisify } from 'util';
 import PacketReader from './packetreader';
 import RollingCounter from './rollingcounter';
 import Packet from './packet';
@@ -63,7 +63,7 @@ export default class Socket extends EventEmitter {
     super();
 
     let base: SocketOptions;
-    (base = this.options).auth || (base.auth = () => Bluebird.resolve(true));
+    (base = this.options).auth || (base.auth = () => Promise.resolve(true));
     this.socket.setNoDelay(true);
     this.reader = new PacketReader(this.socket)
       .on('packet', this._handle.bind(this))
@@ -94,41 +94,47 @@ export default class Socket extends EventEmitter {
     return this.end();
   }
 
-  private _handle(packet: Packet): Bluebird<boolean> {
+  private async _handle(packet: Packet): Promise<boolean> {
     if (this.ended) {
-      return Bluebird.resolve(false);
+      return false;
     }
     this.emit('userActivity', packet);
-    return Bluebird.try(() => {
+    try {
       switch (packet.command) {
         case Packet.A_SYNC:
-          return Bluebird.resolve(this._handleSyncPacket());
+          return Promise.resolve(this._handleSyncPacket());
         case Packet.A_CNXN:
           return this._handleConnectionPacket(packet);
-        case Packet.A_OPEN:
-          return this._handleOpenPacket(packet).then((r) => !!r);
+        case Packet.A_OPEN: {
+          const r = this._handleOpenPacket(packet);
+          return !!r;
+        }
         case Packet.A_OKAY:
         case Packet.A_WRTE:
-        case Packet.A_CLSE:
-          return this._forwardServicePacket(packet).then((r) => !!r);
+        case Packet.A_CLSE: {
+          const r = await this._forwardServicePacket(packet)
+          return !!r;
+        }
         case Packet.A_AUTH:
           return this._handleAuthPacket(packet);
         default:
           throw new Error(`Unknown command ${packet.command}`);
       }
-    })
-      .catch(Socket.AuthError, () => {
+    } catch (err) {
+      if (err instanceof Socket.AuthError) {
         this.end();
         return false;
-      })
-      .catch(Socket.UnauthorizedError, () => {
+      }
+      if (err instanceof Socket.UnauthorizedError) {
         this.end();
         return false;
-      })
-      .catch((err) => {
+      }
+      if (err instanceof Error) {
         this._error(err);
         return false;
-      });
+      }
+      return false;
+    }
   }
 
   private _handleSyncPacket(): boolean {
@@ -138,19 +144,18 @@ export default class Socket extends EventEmitter {
     return this.write(Packet.assemble(Packet.A_SYNC, 1, this.syncToken.next()));
   }
 
-  private _handleConnectionPacket(packet): Bluebird<boolean> {
+  private async _handleConnectionPacket(packet: Packet): Promise<boolean> {
     debug('I:A_CNXN', packet);
     this.version = Packet.swap32(packet.arg0);
     this.maxPayload = Math.min(UINT16_MAX, packet.arg1);
-    return this._createToken().then((token) => {
-      this.token = token;
-      debug(`Created challenge '${this.token.toString('base64')}'`);
-      debug('O:A_AUTH');
-      return this.write(Packet.assemble(Packet.A_AUTH, AUTH_TOKEN, 0, this.token));
-    });
+    const token = await this._createToken();
+    this.token = token;
+    debug(`Created challenge '${this.token.toString('base64')}'`);
+    debug('O:A_AUTH');
+    return this.write(Packet.assemble(Packet.A_AUTH, AUTH_TOKEN, 0, this.token));
   }
 
-  private _handleAuthPacket(packet: Packet): Bluebird<boolean> {
+  private async _handleAuthPacket(packet: Packet): Promise<boolean> {
     debug('I:A_AUTH', packet);
     switch (packet.arg0) {
       case AUTH_SIGNATURE:
@@ -161,7 +166,7 @@ export default class Socket extends EventEmitter {
         }
         debug('O:A_AUTH');
         const b = this.write(Packet.assemble(Packet.A_AUTH, AUTH_TOKEN, 0, this.token));
-        return Bluebird.resolve(b);
+        return b;
       case AUTH_RSAPUBLICKEY:
         if (!this.signature) {
           throw new Socket.AuthError('Public key sent before signature');
@@ -170,38 +175,34 @@ export default class Socket extends EventEmitter {
           throw new Socket.AuthError('Empty RSA public key');
         }
         debug(`Received RSA public key '${packet.data.toString('base64')}'`);
-        return Auth.parsePublicKey(this._skipNull(packet.data).toString())
-          .then((key) => {
-            const digest = this.token.toString('binary');
-            const sig = this.signature.toString('binary');
-            if (!key.verify(digest, sig)) {
-              debug('Signature mismatch');
-              throw new Socket.AuthError('Signature mismatch');
-            }
-            debug('Signature verified');
-            return key;
-          })
-          .then((key) => {
-            if (!this.options.auth) return;
-            return this.options.auth(key).catch(() => {
-              debug('Connection rejected by user-defined auth handler');
-              throw new Socket.AuthError('Rejected by user-defined handler');
-            });
-          })
-          .then(() => {
-            return this._deviceId();
-          })
-          .then((id) => {
-            this.authorized = true;
-            debug('O:A_CNXN');
-            return this.write(Packet.assemble(Packet.A_CNXN, Packet.swap32(this.version), this.maxPayload, id));
-          });
+        const key = await Auth.parsePublicKey(this._skipNull(packet.data).toString());
+        if (!this.token)
+          throw Error('missing token in socket:_handleAuthPacket')
+        const digest = this.token.toString('binary');
+        const sig = this.signature.toString('binary');
+        if (!key.verify(digest, sig)) {
+          debug('Signature mismatch');
+          throw new Socket.AuthError('Signature mismatch');
+        }
+        debug('Signature verified');
+        if (this.options.auth) {
+          try {
+            await this.options.auth(key)
+          } catch (e) {
+            debug('Connection rejected by user-defined auth handler');
+            throw new Socket.AuthError('Rejected by user-defined handler');
+          }
+        }
+        const id = await this._deviceId();
+        this.authorized = true;
+        debug('O:A_CNXN');
+        return this.write(Packet.assemble(Packet.A_CNXN, Packet.swap32(this.version), this.maxPayload, id));
       default:
         throw new Error(`Unknown authentication method ${packet.arg0}`);
     }
   }
 
-  private _handleOpenPacket(packet: Packet): Bluebird<boolean | Service> {
+  private _handleOpenPacket(packet: Packet): Promise<boolean | Service> {
     if (!this.authorized) {
       throw new Socket.UnauthorizedError();
     }
@@ -213,7 +214,7 @@ export default class Socket extends EventEmitter {
     const name = this._skipNull(packet.data);
     debug(`Calling ${name}`);
     const service = new Service(this.client, this.serial, localId, remoteId, this);
-    return new Bluebird<boolean | Service>((resolve, reject) => {
+    return new Promise<boolean | Service>((resolve, reject) => {
       service.on('error', reject);
       service.on('end', resolve);
       this.services.insert(localId, service);
@@ -228,7 +229,7 @@ export default class Socket extends EventEmitter {
       });
   }
 
-  private _forwardServicePacket(packet: Packet): Promise<boolean | Service> {
+  private _forwardServicePacket(packet: Packet): Promise<boolean | Service | undefined> {
     if (!this.authorized) {
       throw new Socket.UnauthorizedError();
     }
@@ -249,30 +250,28 @@ export default class Socket extends EventEmitter {
     return this.socket.write(chunk);
   }
 
-  private _createToken(): Bluebird<Buffer> {
-    return Bluebird.promisify(crypto.randomBytes)(TOKEN_LENGTH);
+  private _createToken(): Promise<Buffer> {
+    return promisify(crypto.randomBytes)(TOKEN_LENGTH);
   }
 
   private _skipNull(data: Buffer): Buffer {
     return data.slice(0, -1); // Discard null byte at end
   }
 
-  private _deviceId(): Bluebird<Buffer> {
+  private async _deviceId(): Promise<Buffer> {
     debug('Loading device properties to form a standard device ID');
-    return this.client
+    const properties = await this.client
       .getDevice(this.serial)
-      .getProperties()
-      .then(function (properties) {
-        const id = (function () {
-          const ref = ['ro.product.name', 'ro.product.model', 'ro.product.device'];
-          const results = [];
-          for (let i = 0, len = ref.length; i < len; i++) {
-            const prop = ref[i];
-            results.push(`${prop}=${properties[prop]};`);
-          }
-          return results;
-        })().join('');
-        return Buffer.from(`device::${id}\x00`);
-      });
+      .getProperties();
+    const id = (() => {
+      const ref = ['ro.product.name', 'ro.product.model', 'ro.product.device'];
+      const results = [];
+      for (let i = 0, len = ref.length; i < len; i++) {
+        const prop = ref[i];
+        results.push(`${prop}=${properties[prop]};`);
+      }
+      return results;
+    })().join('');
+    return Buffer.from(`device::${id}\x00`);
   }
 }

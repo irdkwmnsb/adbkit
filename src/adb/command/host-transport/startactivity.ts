@@ -2,7 +2,6 @@ import Protocol from '../../protocol';
 import Parser from '../../parser';
 import Command from '../../command';
 import StartActivityOptions from '../../../StartActivityOptions';
-import Bluebird from 'bluebird';
 import { Extra, ExtraObject, ExtraValue } from '../../../StartServiceOptions';
 
 const RE_ERROR = /^Error: (.*)$/;
@@ -18,8 +17,8 @@ const EXTRA_TYPES = {
   component: 'cn',
 };
 
-class StartActivityCommand extends Command<boolean> {
-  execute(options: StartActivityOptions): Bluebird<boolean> {
+export default class StartActivityCommand extends Command<boolean> {
+  execute(options: StartActivityOptions): Promise<boolean> {
     const args = this._intentArgs(options);
     if (options.debug) {
       args.push('-D');
@@ -33,28 +32,27 @@ class StartActivityCommand extends Command<boolean> {
     return this._run('start', args);
   }
 
-  _run(command: string, args: Array<string | number>): Bluebird<boolean> {
+  async _run(command: string, args: Array<string | number>): Promise<boolean> {
     this._send(`shell:am ${command} ${args.join(' ')}`);
-    return this.parser.readAscii(4).then((reply) => {
-      switch (reply) {
-        case Protocol.OKAY:
-          return this.parser
-            .searchLine(RE_ERROR)
-            .finally(() => {
-              return this.parser.end();
-            })
-            .then(function (match) {
-              throw new Error(match[1]);
-            })
-            .catch(Parser.PrematureEOFError, function () {
-              return true;
-            });
-        case Protocol.FAIL:
-          return this.parser.readError();
-        default:
-          return this.parser.unexpected(reply, 'OKAY or FAIL');
-      }
-    });
+    const reply = await this.parser.readAscii(4)
+    switch (reply) {
+      case Protocol.OKAY:
+        try {
+          const match = await this.parser.searchLine(RE_ERROR);
+          throw new Error(match[1]);
+        } catch (err) {
+          if (err instanceof Parser.PrematureEOFError)
+            return true;
+        } finally {
+          this.parser.end();
+        }
+        // may be incorrect.
+        return this.parser.readError();
+      case Protocol.FAIL:
+        return this.parser.readError();
+      default:
+        return this.parser.unexpected(reply, 'OKAY or FAIL');
+    }
   }
 
   protected _intentArgs(options: StartActivityOptions): Array<string | number> {
@@ -97,20 +95,20 @@ class StartActivityCommand extends Command<boolean> {
     if (Array.isArray(extras)) {
       return extras.reduce((all, extra) => {
         return all.concat(this._formatLongExtra(extra));
-      }, []);
+      }, [] as Array<number | string>);
     } else {
       return Object.keys(extras).reduce((all, key) => {
         return all.concat(this._formatShortExtra(key, extras[key]));
-      }, []);
+      }, [] as Array<number | string>);
     }
   }
 
   private _formatShortExtra(key: string, value: ExtraValue): Array<string | number> {
-    let sugared = {
+    let sugared: Extra = {
       key: key,
-      type: '' as string,
+      type: 'null',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      value: undefined as any,
+      value: undefined,
     };
     if (value === null) {
       sugared.type = 'null';
@@ -134,19 +132,19 @@ class StartActivityCommand extends Command<boolean> {
           break;
         case 'object':
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          sugared = value as any;
+          sugared = value as any as Extra;
           sugared.key = key;
       }
     }
     return this._formatLongExtra(sugared);
   }
 
-  private _formatLongExtra(extra): Array<string | number> {
+  private _formatLongExtra(extra: Extra): Array<string | number> {
     const args: Array<string | number> = [];
     if (!extra.type) {
       extra.type = 'string';
     }
-    const type = EXTRA_TYPES[extra.type];
+    const type = EXTRA_TYPES[(extra as Extra).type];
     if (!type) {
       throw new Error(`Unsupported type '${extra.type}' for extra '${extra.key}'`);
     }
@@ -158,12 +156,12 @@ class StartActivityCommand extends Command<boolean> {
       args.push(this._escape(extra.key));
       args.push(this._escape(extra.value.join(',')));
     } else {
+      //if (extra.value) {
       args.push(`--e${type}`);
       args.push(this._escape(extra.key));
       args.push(this._escape(extra.value));
+      //}
     }
     return args;
   }
 }
-
-export = StartActivityCommand;

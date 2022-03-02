@@ -1,4 +1,4 @@
-import Monkey from '@devicefarmer/adbkit-monkey';
+import { Monkey,  Client as MonkeyClient } from '@u4/adbkit-monkey';
 import Logcat from '@devicefarmer/adbkit-logcat';
 import Connection from './connection';
 import Sync from './sync';
@@ -55,7 +55,6 @@ import Forward from '../Forward';
 import Reverse from '../Reverse';
 import StartActivityOptions from '../StartActivityOptions';
 import StartServiceOptions from '../StartServiceOptions';
-import Bluebird from 'bluebird';
 import { Duplex } from 'stream';
 import Stats from './sync/stats';
 import Entry from './sync/entry';
@@ -69,6 +68,7 @@ import WithToString from '../WithToString';
 import JdwpTracker from './jdwptracker';
 import DeviceWithPath from '../DeviceWithPath';
 import Client from './client';
+import Util from './util';
 
 const debug = d('adb:client');
 
@@ -84,24 +84,27 @@ export default class DeviceClient {
    *
    * @returns The serial number of the device.
    */
-  public getSerialNo(): Bluebird<string> {
-    return this.connection().then((conn) => new GetSerialNoCommand(conn).execute(this.serial));
+  public async getSerialNo(): Promise<string> {
+    const conn = await this.connection();
+    return await new GetSerialNoCommand(conn).execute(this.serial);
   }
 
   /**
    * Gets the device path of the device identified by the given serial number.
    * @returns The device path. This corresponds to the device path in `client.listDevicesWithPaths()`.
    */
-  public getDevicePath(): Bluebird<DeviceWithPath['path']> {
-    return this.connection().then((conn) => new GetDevicePathCommand(conn).execute(this.serial));
+  public async getDevicePath(): Promise<DeviceWithPath['path']> {
+    const conn = await this.connection();
+    return await new GetDevicePathCommand(conn).execute(this.serial);
   }
   /**
    * Gets the state of the device identified by the given serial number.
    *
    * @returns The device state. This corresponds to the device type in `client.listDevices()`.
    */
-  public getState(): Bluebird<string> {
-    return this.connection().then((conn) => new GetStateCommand(conn).execute(this.serial));
+  public async getState(): Promise<string> {
+    const conn = await this.connection();
+    return await new GetStateCommand(conn).execute(this.serial);
   }
 
   /**
@@ -109,8 +112,9 @@ export default class DeviceClient {
    *
    * @returns An object of device properties. Each key corresponds to a device property. Convenient for accessing things like `'ro.product.model'`.
    */
-  public getProperties(): Bluebird<Properties> {
-    return this.transport().then((transport) => new GetPropertiesCommand(transport).execute());
+  public async getProperties(): Promise<Properties> {
+    const transport = await this.transport();
+    return await new GetPropertiesCommand(transport).execute();
   }
 
   /**
@@ -124,8 +128,9 @@ export default class DeviceClient {
    * ```
    * @returns An object of device features. Each key corresponds to a device feature, with the value being either `true` for a boolean feature, or the feature value as a string (e.g. `'0x20000'` for `reqGlEsVersion`).
    */
-  public getFeatures(): Bluebird<Features> {
-    return this.transport().then((transport) => new GetFeaturesCommand(transport).execute());
+  public async getFeatures(): Promise<Features> {
+    const transport = await this.transport();
+    return await new GetFeaturesCommand(transport).execute();
   }
 
   /**
@@ -134,8 +139,9 @@ export default class DeviceClient {
    * @param flags TODO
    * @returns An object of device features. Each key corresponds to a device feature, with the value being either `true` for a boolean feature, or the feature value as a string (e.g. `'0x20000'` for `reqGlEsVersion`)
    */
-  public getPackages(flags?: string): Bluebird<string[]> {
-    return this.transport().then((transport) => new GetPackagesCommand(transport).execute(flags));
+  public async getPackages(flags?: string): Promise<string[]> {
+    const transport = await this.transport();
+    return await new GetPackagesCommand(transport).execute(flags);
   }
 
   /**
@@ -144,8 +150,9 @@ export default class DeviceClient {
    * @param flags TODO
    * @returns a PsEntry array
    */
-  public getPs(...flags: string[]): Bluebird<Array<Partial<PsEntry>>> {
-    return this.transport().then((transport) => new PsCommand(transport).execute(...flags));
+  public async getPs(...flags: string[]): Promise<Array<Partial<PsEntry>>> {
+    const transport = await this.transport();
+    return await new PsCommand(transport).execute(...flags);
   }
 
   /**
@@ -153,8 +160,9 @@ export default class DeviceClient {
    *
    * @returns a PsEntry array
    */
-   public getServices(): Bluebird<Array<AdbServiceInfo>> {
-    return this.transport().then((transport) => new ServicesListCommand(transport).execute());
+  public async getServices(): Promise<Array<AdbServiceInfo>> {
+    const transport = await this.transport();
+    return await new ServicesListCommand(transport).execute();
   }
 
   /**
@@ -162,8 +170,9 @@ export default class DeviceClient {
    *
    * @returns a PsEntry array
    */
-   public checkService(serviceName: KnownServices | string): Bluebird<boolean> {
-    return this.transport().then((transport) => new ServiceCheckCommand(transport).execute(serviceName));
+  public async checkService(serviceName: KnownServices | string): Promise<boolean> {
+    const transport = await this.transport();
+    return await new ServiceCheckCommand(transport).execute(serviceName);
   }
 
   /**
@@ -171,8 +180,9 @@ export default class DeviceClient {
    *
    * @returns a PsEntry array
    */
-   public callServiceRaw(serviceName: KnownServices | string, code: number | string): Bluebird<Buffer> {
-    return this.transport().then((transport) => new ServiceCallCommand(transport).execute(serviceName, code));
+  public async callServiceRaw(serviceName: KnownServices | string, code: number | string): Promise<Buffer> {
+    const transport = await this.transport();
+    return await new ServiceCallCommand(transport).execute(serviceName, code);
   }
 
   /**
@@ -182,14 +192,13 @@ export default class DeviceClient {
    *
    * @returns The IP address as a `String`.
    */
-  public getDHCPIpAddress(iface = 'wlan0'): Bluebird<string> {
-    return this.getProperties().then((properties) => {
-      const ip = properties[`dhcp.${iface}.ipaddress`];
-      if (ip) {
-        return ip;
-      }
-      throw Error(`Unable to find ipaddress for '${iface}'`);
-    });
+  public async getDHCPIpAddress(iface = 'wlan0'): Promise<string> {
+    const properties = await this.getProperties();
+    const ip = properties[`dhcp.${iface}.ipaddress`];
+    if (ip) {
+      return ip;
+    }
+    throw Error(`Unable to find ipaddress for '${iface}'`);
   }
 
   /**
@@ -206,8 +215,9 @@ export default class DeviceClient {
    *   `jdwp:<process pid>`
    * @returns true
    */
-  public forward(local: string, remote: string): Bluebird<boolean> {
-    return this.connection().then((conn) => new ForwardCommand(conn).execute(this.serial, local, remote));
+  public async forward(local: string, remote: string): Promise<boolean> {
+    const conn = await this.connection();
+    return await new ForwardCommand(conn).execute(this.serial, local, remote);
   }
 
   /**
@@ -218,8 +228,9 @@ export default class DeviceClient {
    *   -   **local** The local endpoint. Same format as `client.forward()`'s `local` argument.
    *   -   **remote** The remote endpoint on the device. Same format as `client.forward()`'s `remote` argument.
    */
-  public listForwards(): Bluebird<Forward[]> {
-    return this.connection().then((conn) => new ListForwardsCommand(conn).execute(this.serial));
+  public async listForwards(): Promise<Forward[]> {
+    const conn = await this.connection();
+    return await new ListForwardsCommand(conn).execute(this.serial);
   }
 
   /**
@@ -231,8 +242,9 @@ export default class DeviceClient {
    * -   `localfilesystem:<unix domain socket name>`
    * @param local A string representing the local endpoint on the ADB host. At time of writing, can be any value accepted by the `remote` argument.
    */
-  public reverse(remote: string, local: string): Bluebird<boolean> {
-    return this.transport().then((transport) => new ReverseCommand(transport).execute(remote, local));
+  public async reverse(remote: string, local: string): Promise<boolean> {
+    const transport = await this.transport();
+    return await new ReverseCommand(transport).execute(remote, local);
   }
   /**
    * Lists forwarded connections on the device. This is analogous to `adb reverse --list`.
@@ -241,22 +253,25 @@ export default class DeviceClient {
    *  -   **remote** The remote endpoint on the device. Same format as `client.reverse()`'s `remote` argument.
    *  -   **local** The local endpoint on the host. Same format as `client.reverse()`'s `local` argument.
    */
-  public listReverses(): Bluebird<Reverse[]> {
-    return this.transport().then((transport) => new ListReversesCommand(transport).execute());
+  public async listReverses(): Promise<Reverse[]> {
+    const transport = await this.transport();
+    return await new ListReversesCommand(transport).execute();
   }
 
   /**
    * return a new connection to ADB.
    */
-  private connection(): Bluebird<Connection> {
+  private connection(): Promise<Connection> {
     return this.client.connection();
   }
 
   /**
    * return a new connextion to the current Host devices
    */
-  public transport(): Bluebird<Connection> {
-    return this.connection().then((conn) => new HostTransportCommand(conn).execute(this.serial).return(conn));
+  public async transport(): Promise<Connection> {
+    const conn = await this.connection();
+    await new HostTransportCommand(conn).execute(this.serial);
+    return conn;
   }
 
   /**
@@ -266,8 +281,9 @@ export default class DeviceClient {
    *
    * @returns A readable stream (`Socket` actually) containing the progressive `stdout` of the command. Use with `adb.util.readAll` to get a readable String from it.
    */
-  public shell(command: string | ArrayLike<WithToString>): Bluebird<Duplex> {
-    return this.transport().then((transport) => new ShellCommand(transport).execute(command));
+  public async shell(command: string | ArrayLike<WithToString>): Promise<Duplex> {
+    const transport = await this.transport();
+    return await new ShellCommand(transport).execute(command);
   }
 
   /**
@@ -275,8 +291,9 @@ export default class DeviceClient {
    *
    * @return true
    */
-  public reboot(): Bluebird<boolean> {
-    return this.transport().then((transport) => new RebootCommand(transport).execute());
+  public async reboot(): Promise<boolean> {
+    const transport = await this.transport();
+    return await new RebootCommand(transport).execute();
   }
 
   /**
@@ -284,8 +301,9 @@ export default class DeviceClient {
    *
    * @returns true
    */
-  public remount(): Bluebird<boolean> {
-    return this.transport().then((transport) => new RemountCommand(transport).execute());
+  public async remount(): Promise<boolean> {
+    const transport = await this.transport();
+    return await new RemountCommand(transport).execute();
   }
 
   /**
@@ -293,8 +311,9 @@ export default class DeviceClient {
    *
    * @return true
    */
-  public root(): Bluebird<boolean> {
-    return this.transport().then((transport) => new RootCommand(transport).execute());
+  public async root(): Promise<boolean> {
+    const transport = await this.transport();
+    return await new RootCommand(transport).execute();
   }
 
   /**
@@ -313,8 +332,9 @@ export default class DeviceClient {
    *  -   **end** Emitted when the underlying connection ends.
    *  -   **error** **(err)** Emitted if there's an error.
    */
-  public trackJdwp(): Bluebird<JdwpTracker> {
-    return this.transport().then((transport) => new TrackJdwpCommand(transport).execute());
+  public async trackJdwp(): Promise<JdwpTracker> {
+    const transport = await this.transport();
+    return await new TrackJdwpCommand(transport).execute();
   }
 
   /**
@@ -326,8 +346,9 @@ export default class DeviceClient {
    *
    * @returns The possibly converted framebuffer stream. The stream also has a `meta`.:
    */
-  public framebuffer(format = 'raw'): Bluebird<FramebufferStreamWithMeta> {
-    return this.transport().then((transport) => new FrameBufferCommand(transport).execute(format));
+  public async framebuffer(format = 'raw'): Promise<FramebufferStreamWithMeta> {
+    const transport = await this.transport();
+    return await new FrameBufferCommand(transport).execute(format);
   }
 
   /**
@@ -339,13 +360,14 @@ export default class DeviceClient {
    *
    * @return The PNG stream.
    */
-  public screencap(): Bluebird<Duplex> {
-    return this.transport().then((transport) =>
-      new ScreencapCommand(transport).execute().catch((err) => {
-        debug(`Emulating screencap command due to '${err}'`);
-        return this.framebuffer('png');
-      }),
-    );
+  public async screencap(): Promise<Duplex> {
+    const transport = await this.transport();
+    try {
+      return await new ScreencapCommand(transport).execute();
+    } catch (err) {
+      debug(`Emulating screencap command due to '${err}'`);
+      return await this.framebuffer('png');
+    }
   }
 
   /**
@@ -355,8 +377,9 @@ export default class DeviceClient {
    *
    * @returns The connection (i.e. [`net.Socket`][node-net]). Read and write as you please. Call `conn.end()` to end the connection.
    */
-  public openLocal(path: string): Bluebird<Duplex> {
-    return this.transport().then((transport) => new LocalCommand(transport).execute(path));
+  public async openLocal(path: string): Promise<Duplex> {
+    const transport = await this.transport();
+    return await new LocalCommand(transport).execute(path);
   }
 
   /**
@@ -366,8 +389,9 @@ export default class DeviceClient {
    *
    * @returns The binary log stream. Call `log.end()` when you wish to stop receiving data.
    */
-  public openLog(name: string): Bluebird<Duplex> {
-    return this.transport().then((transport) => new LogCommand(transport).execute(name));
+  public async openLog(name: string): Promise<Duplex> {
+    const transport = await this.transport();
+    return await new LogCommand(transport).execute(name);
   }
 
   /**
@@ -378,8 +402,9 @@ export default class DeviceClient {
      * 
      * @returns The TCP connection (i.e. [`net.Socket`][node-net]). Read and write as you please. Call `conn.end()` to end the connection.
      */
-  public openTcp(port: number, host?: string): Bluebird<Duplex> {
-    return this.transport().then((transport) => new TcpCommand(transport).execute(port, host));
+  public async openTcp(port: number, host?: string): Promise<Duplex> {
+    const transport = await this.transport();
+    return await new TcpCommand(transport).execute(port, host);
   }
 
   /**
@@ -391,24 +416,30 @@ export default class DeviceClient {
    *
    * @returns The Monkey client. Please see the [adbkit-monkey][adbkit-monkey] documentation for details.
    */
-  public openMonkey(port = 1080): Bluebird<Duplex> {
-    const tryConnect = (times: number): Bluebird<Duplex> => {
-      return this.openTcp(port)
-        .then((stream) => Monkey.connectStream(stream))
-        .catch((err) => {
-          if ((times -= 1)) {
-            debug(`Monkey can't be reached, trying ${times} more times`);
-            return Bluebird.delay(100).then(() => tryConnect(times));
-          } else {
-            throw err;
-          }
-        });
+  public async openMonkey(port = 1080): Promise<MonkeyClient> {
+    const tryConnect = async (times: number): Promise<MonkeyClient> => {
+      try {
+        const stream: Duplex = await this.openTcp(port);
+        const client: MonkeyClient = Monkey.connectStream(stream);
+        return client;
+      } catch (err) {
+        if ((times -= 1)) {
+          debug(`Monkey can't be reached, trying ${times} more times`);
+          await Util.delay(100)
+          return tryConnect(times);
+        } else {
+          throw err;
+        }
+      }
     };
-    return tryConnect(1).catch(() => {
-      return this.transport()
-        .then((transport) => new MonkeyCommand(transport).execute(port))
-        .then((out) => tryConnect(20).then((monkey) => monkey.once('end', () => out.end())));
-    });
+    try {
+      return await tryConnect(1);
+    } catch {
+      const transport = await this.transport();
+      const out = await new MonkeyCommand(transport).execute(port);
+      const monkey = await tryConnect(20);
+      return monkey.once('end', () => out.end());
+    }
   }
 
   /**
@@ -421,10 +452,10 @@ export default class DeviceClient {
    *
    * @returns The Logcat client. Please see the [adbkit-logcat][adbkit-logcat] documentation for details.
    */
-  public openLogcat(options: { clear?: boolean } = {}): Bluebird<Logcat> {
-    return this.transport()
-      .then((transport) => new LogcatCommand(transport).execute(options))
-      .then((stream) => Logcat.readStream(stream, { fixLineFeeds: false }));
+  public async openLogcat(options: { clear?: boolean } = {}): Promise<Logcat> {
+    const transport = await this.transport();
+    const stream = await new LogcatCommand(transport).execute(options);
+    return Logcat.readStream(stream, { fixLineFeeds: false });
   }
 
   /**
@@ -445,8 +476,9 @@ export default class DeviceClient {
    *     -   **guestnice** Percentage (0-100) of ticks spent by a `nice`d guest.
    *     -   **total** Total. Always 100.
    */
-  public openProcStat(): Bluebird<ProcStat> {
-    return this.syncService().then((sync) => new ProcStat(sync));
+  public async openProcStat(): Promise<ProcStat> {
+    const sync = await this.syncService();
+    return new ProcStat(sync);
   }
 
   /**
@@ -456,8 +488,9 @@ export default class DeviceClient {
    *
    * @returns true
    */
-  public clear(pkg: string): Bluebird<boolean> {
-    return this.transport().then((transport) => new ClearCommand(transport).execute(pkg));
+  public async clear(pkg: string): Promise<boolean> {
+    const transport = await this.transport();
+    return await new ClearCommand(transport).execute(pkg);
   }
 
   /**
@@ -468,21 +501,25 @@ export default class DeviceClient {
    * @param apk When `String`, interpreted as a path to an APK file. When [`Stream`][node-stream], installs directly from the stream, which must be a valid APK.
    * @returns true
    */
-  public install(apk: string | ReadStream): Bluebird<boolean> {
+  public async install(apk: string | ReadStream): Promise<boolean> {
     const temp = Sync.temp(typeof apk === 'string' ? apk : '_stream.apk');
-    return this.push(apk, temp).then((transfer) => {
-      let endListener: () => void;
-      let errorListener: (err: Error) => void;
-      return new Bluebird<boolean>((resolve, reject) => {
-        errorListener = (err: Error) => reject(err);
-        endListener = () => this.installRemote(temp).then((value: boolean) => resolve(value));
+    const transfer = await this.push(apk, temp);
+    let endListener!: () => void;
+    let errorListener!: (err: Error) => void;
+    try {
+      return await new Promise<boolean>((resolve, reject) => {
+        errorListener = (err_1: Error) => reject(err_1);
+        endListener = async () => {
+          const value = await this.installRemote(temp);
+          resolve(value);
+        };
         transfer.on('error', errorListener);
         transfer.on('end', endListener);
-      }).finally(() => {
-        transfer.removeListener('error', errorListener);
-        transfer.removeListener('end', endListener);
       });
-    });
+    } finally {
+      transfer.removeListener('error', errorListener);
+      transfer.removeListener('end', endListener);
+    }
   }
 
   /**
@@ -493,14 +530,13 @@ export default class DeviceClient {
    * @param apk The path to the APK file on the device. The file will be removed when the command completes.
    * @returns true
    */
-  public installRemote(apk: string): Bluebird<boolean> {
-    return this.transport().then((transport) => {
-      return new InstallCommand(transport)
-        .execute(apk)
-        .then(() => this.shell(['rm', '-f', apk]))
-        .then((stream) => new Parser(stream).readAll())
-        .then(() => true);
-    });
+  public async installRemote(apk: string): Promise<boolean> {
+    const transport = await this.transport();
+    await new InstallCommand(transport)
+      .execute(apk);
+    const stream = await this.shell(['rm', '-f', apk]);
+    await new Parser(stream).readAll();
+    return true;
   }
 
   /**
@@ -509,8 +545,9 @@ export default class DeviceClient {
    * @param pkg The package name. This is NOT the APK.
    * @returns true
    */
-  public uninstall(pkg: string): Bluebird<boolean> {
-    return this.transport().then((transport) => new UninstallCommand(transport).execute(pkg));
+  public async uninstall(pkg: string): Promise<boolean> {
+    const transport = await this.transport();
+    return await new UninstallCommand(transport).execute(pkg);
   }
 
   /**
@@ -520,8 +557,9 @@ export default class DeviceClient {
    *
    * @returns `true` if the package is installed, `false` otherwise.
    */
-  public isInstalled(pkg: string): Bluebird<boolean> {
-    return this.transport().then((transport) => new IsInstalledCommand(transport).execute(pkg));
+  public async isInstalled(pkg: string): Promise<boolean> {
+    const transport = await this.transport();
+    return await new IsInstalledCommand(transport).execute(pkg);
   }
 
   /**
@@ -529,31 +567,37 @@ export default class DeviceClient {
    *
    * @param options The activity configuration.
    */
-  public startActivity(options: StartActivityOptions): Bluebird<boolean> {
-    return this.transport()
-      .then((transport) => new StartActivityCommand(transport).execute(options))
-      .catch(NoUserOptionError, () => {
+  public async startActivity(options: StartActivityOptions): Promise<boolean> {
+    try {
+      const transport = await this.transport();
+      return await new StartActivityCommand(transport).execute(options);
+    } catch (err) {
+      if (err instanceof NoUserOptionError) {
         options.user = undefined;
         return this.startActivity(options);
-      });
+      }
+      throw err;
+    }
   }
 
   /**
    * Starts the configured service on the device. Roughly analogous to `adb shell am startservice <options>`.
    * @param options The activity configuration.
    */
-  public startService(options: StartServiceOptions): Bluebird<boolean> {
-    return this.transport()
-      .then((transport) => {
-        if (!(options.user || options.user === null)) {
-          options.user = 0;
-        }
-        return new StartServiceCommand(transport).execute(options);
-      })
-      .catch(NoUserOptionError, () => {
+  public async startService(options: StartServiceOptions): Promise<boolean> {
+    try {
+      const transport = await this.transport();
+      if (!(options.user || options.user === null)) {
+        options.user = 0;
+      }
+      return await new StartServiceCommand(transport).execute(options);
+    } catch (err) {
+      if (err instanceof NoUserOptionError) {
         options.user = undefined;
         return this.startService(options);
-      });
+      }
+      throw err;
+    }
   }
 
   /**
@@ -561,8 +605,9 @@ export default class DeviceClient {
    *
    * @returns The Sync client. See below for details. Call `sync.end()` when done.
    */
-  public syncService(): Bluebird<Sync> {
-    return this.transport().then((transport) => new SyncCommand(transport).execute());
+  public async syncService(): Promise<Sync> {
+    const transport = await this.transport();
+    return await new SyncCommand(transport).execute();
   }
 
   /**
@@ -575,8 +620,13 @@ export default class DeviceClient {
         -   **size** The file size.
         -   **mtime** The time of last modification as a `Date`.
      */
-  public stat(path: string): Bluebird<Stats> {
-    return this.syncService().then((sync) => sync.stat(path).finally(() => sync.end()));
+  public async stat(path: string): Promise<Stats> {
+    const sync = await this.syncService();
+    try {
+      return await sync.stat(path);
+    } finally {
+      sync.end();
+    }
   }
 
   /**
@@ -585,8 +635,13 @@ export default class DeviceClient {
    * @param path See `sync.readdir()` for details.
    * @returns Files Lists
    */
-  public readdir(path: string): Bluebird<Entry[]> {
-    return this.syncService().then((sync) => sync.readdir(path).finally(() => sync.end()));
+  public async readdir(path: string): Promise<Entry[]> {
+    const sync = await this.syncService();
+    try {
+      return await sync.readdir(path);
+    } finally {
+      sync.end();
+    }
   }
 
   /**
@@ -596,8 +651,9 @@ export default class DeviceClient {
    *
    * @returns A `PullTransfer` instance.
    */
-  public pull(path: string): Bluebird<PullTransfer> {
-    return this.syncService().then((sync) => sync.pull(path).on('end', () => sync.end()));
+  public async pull(path: string): Promise<PullTransfer> {
+    const sync = await this.syncService();
+    return sync.pull(path).on('end', () => sync.end());
   }
 
   /**
@@ -607,8 +663,9 @@ export default class DeviceClient {
    * @param path See `sync.push()` for details.
    * @param mode See `sync.push()` for details.
    */
-  public push(contents: string | ReadStream, path: string, mode?: number): Bluebird<PushTransfer> {
-    return this.syncService().then((sync) => sync.push(contents, path, mode).on('end', () => sync.end()));
+  public async push(contents: string | ReadStream, path: string, mode?: number): Promise<PushTransfer> {
+    const sync = await this.syncService();
+    return sync.push(contents, path, mode).on('end', () => sync.end());
   }
 
   /**
@@ -617,8 +674,9 @@ export default class DeviceClient {
    * @param port Optional. The port the device should listen on. Defaults to `5555`.
    * @returns The port the device started listening on.
    */
-  public tcpip(port = 5555): Bluebird<number> {
-    return this.transport().then((transport) => new TcpIpCommand(transport).execute(port));
+  public async tcpip(port = 5555): Promise<number> {
+    const transport = await this.transport();
+    return await new TcpIpCommand(transport).execute(port);
   }
 
   /**
@@ -626,8 +684,9 @@ export default class DeviceClient {
    *
    * @returns true
    */
-  public usb(): Bluebird<boolean> {
-    return this.transport().then((transport) => new UsbCommand(transport).execute());
+  public async usb(): Promise<boolean> {
+    const transport = await this.transport();
+    return await new UsbCommand(transport).execute();
   }
 
   /**
@@ -635,8 +694,9 @@ export default class DeviceClient {
    *
    * @returns true
    */
-  public waitBootComplete(): Bluebird<boolean> {
-    return this.transport().then((transport) => new WaitBootCompleteCommand(transport).execute());
+  public async waitBootComplete(): Promise<boolean> {
+    const transport = await this.transport();
+    return await new WaitBootCompleteCommand(transport).execute();
   }
 
   /**
@@ -644,7 +704,8 @@ export default class DeviceClient {
    *
    * @returns The device ID. Can be useful for chaining.
    */
-  public waitForDevice(): Bluebird<string> {
-    return this.connection().then((conn) => new WaitForDeviceCommand(conn).execute(this.serial));
+  public async waitForDevice(): Promise<string> {
+    const conn = await this.connection();
+    return await new WaitForDeviceCommand(conn).execute(this.serial);
   }
 }

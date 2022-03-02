@@ -12,7 +12,6 @@ import {
 } from './command/host';
 import TcpUsbServer from './tcpusb/server';
 import Device from '../Device';
-import Bluebird from 'bluebird';
 import { ClientOptions } from '../ClientOptions';
 import SocketOptions from '../SocketOptions';
 import Tracker from './tracker';
@@ -35,7 +34,7 @@ export default class Client extends EventEmitter {
     return new TcpUsbServer(this, serial, options);
   }
 
-  public connection(): Bluebird<Connection> {
+  public connection(): Promise<Connection> {
     const connection = new Connection(this.options);
     // Reemit unhandled connection errors, so they can be handled externally.
     // If not handled at all, these will crash node.
@@ -43,11 +42,12 @@ export default class Client extends EventEmitter {
     return connection.connect();
   }
 
-  public version(): Bluebird<number> {
-    return this.connection().then((conn) => new HostVersionCommand(conn).execute());
+  public async version(): Promise<number> {
+    const conn = await this.connection();
+    return await new HostVersionCommand(conn).execute();
   }
 
-  public connect(host: string, port = 5555): Bluebird<string> {
+  public async connect(host: string, port = 5555): Promise<string> {
     if (host.indexOf(':') !== -1) {
       const [h, portString] = host.split(':', 2);
       host = h;
@@ -56,10 +56,11 @@ export default class Client extends EventEmitter {
         port = parsed;
       }
     }
-    return this.connection().then((conn) => new HostConnectCommand(conn).execute(host, port));
+    const conn = await this.connection();
+    return await new HostConnectCommand(conn).execute(host, port);
   }
 
-  public disconnect(host: string, port = 5555): Bluebird<DeviceClient> {
+  public async disconnect(host: string, port = 5555): Promise<DeviceClient> {
     if (host.indexOf(':') !== -1) {
       const [h, portString] = host.split(':', 2);
       host = h;
@@ -68,25 +69,29 @@ export default class Client extends EventEmitter {
         port = parsed;
       }
     }
-    return this.connection()
-      .then((conn) => new HostDisconnectCommand(conn).execute(host, port))
-      .then((deviceId) => new DeviceClient(this, deviceId));
+    const conn = await this.connection();
+    const deviceId = await new HostDisconnectCommand(conn).execute(host, port);
+    return new DeviceClient(this, deviceId);
   }
 
-  public listDevices(): Bluebird<Device[]> {
-    return this.connection().then((conn) => new HostDevicesCommand(conn).execute());
+  public async listDevices(): Promise<Device[]> {
+    const conn = await this.connection();
+    return await new HostDevicesCommand(conn).execute();
   }
 
-  public listDevicesWithPaths(): Bluebird<DeviceWithPath[]> {
-    return this.connection().then((conn) => new HostDevicesWithPathsCommand(conn).execute());
+  public async listDevicesWithPaths(): Promise<DeviceWithPath[]> {
+    const conn = await this.connection();
+    return await new HostDevicesWithPathsCommand(conn).execute();
   }
 
-  public trackDevices(): Bluebird<Tracker> {
-    return this.connection().then((conn) => new HostTrackDevicesCommand(conn).execute());
+  public async trackDevices(): Promise<Tracker> {
+    const conn = await this.connection();
+    return await new HostTrackDevicesCommand(conn).execute();
   }
 
-  public kill(): Bluebird<boolean> {
-    return this.connection().then((conn) => new HostKillCommand(conn).execute());
+  public async kill(): Promise<boolean> {
+    const conn = await this.connection();
+    return await new HostKillCommand(conn).execute();
   }
 
   public getDevice(serial: string): DeviceClient {

@@ -1,1 +1,1 @@
-export type Features = Record<string, boolean>;
+export type Features = Record<string, string | boolean>;

@@ -1,4 +1,3 @@
-import Bluebird from 'bluebird';
 import Protocol from './protocol';
 import { Duplex } from 'stream';
 
@@ -11,7 +10,7 @@ class FailError extends Error {
   }
 }
 
-class PrematureEOFError extends Error {
+export class PrematureEOFError extends Error {
   public missingBytes: number;
   constructor(howManyMissing: number) {
     super(`Premature end of stream, needed ${howManyMissing} more bytes`);
@@ -22,7 +21,7 @@ class PrematureEOFError extends Error {
   }
 }
 
-class UnexpectedDataError extends Error {
+export class UnexpectedDataError extends Error {
   constructor(public unexpected: string, public expected: string) {
     super(`Unexpected '${unexpected}', was expecting ${expected}`);
     Object.setPrototypeOf(this, UnexpectedDataError.prototype);
@@ -30,17 +29,6 @@ class UnexpectedDataError extends Error {
     Error.captureStackTrace(this, UnexpectedDataError);
   }
 }
-
-Bluebird.config({
-  // Enable warnings
-  // warnings: true,
-  // Enable long stack traces
-  // longStackTraces: true,
-  // Enable cancellation
-  cancellation: true,
-  // Enable monitoring
-  // monitoring: true,
-});
 
 export default class Parser {
   public static FailError = FailError;
@@ -52,22 +40,20 @@ export default class Parser {
     // empty
   }
 
-  public end(): Bluebird<boolean> {
+  public async end(): Promise<boolean> {
     if (this.ended) {
-      return Bluebird.resolve<boolean>(true);
+      return true;
     }
     let tryRead: () => void;
     let errorListener: (error: Error) => void;
     let endListener: () => void;
-    return new Bluebird<boolean>((resolve, reject, onCancel) => {
+    return new Promise<boolean>((resolve, reject) => {
       tryRead = () => {
         while (this.stream.read()) {
-          // ignore
+          // read and drop
         }
       };
-      errorListener = function (err) {
-        return reject(err);
-      };
+      errorListener = (err) => reject(err);
       endListener = () => {
         this.ended = true;
         return resolve(true);
@@ -77,31 +63,27 @@ export default class Parser {
       this.stream.on('end', endListener);
       this.stream.read(0);
       this.stream.end();
-      onCancel(() => {
-        // console.log('1-onCanceled');
-      });
     }).finally(() => {
       this.stream.removeListener('readable', tryRead);
       this.stream.removeListener('error', errorListener);
       this.stream.removeListener('end', endListener);
-      // return r;
-    });
+    })
   }
 
   public raw(): Duplex {
     return this.stream;
   }
 
-  public readAll(): Bluebird<Buffer> {
+  public async readAll(): Promise<Buffer> {
     let all = Buffer.alloc(0);
 
     let tryRead: () => void;
     let errorListener: (error: Error) => void;
     let endListener: () => void;
 
-    return new Bluebird<Buffer>((resolve, reject, onCancel) => {
+    return new Promise<Buffer>((resolve, reject) => {
       tryRead = () => {
-        let chunk;
+        let chunk: Buffer;
         while ((chunk = this.stream.read())) {
           all = Buffer.concat([all, chunk]);
         }
@@ -120,25 +102,23 @@ export default class Parser {
       this.stream.on('error', errorListener);
       this.stream.on('end', endListener);
       tryRead();
-      onCancel(() => {
-        // console.log('2-onCanceled');
-      });
     }).finally(() => {
       this.stream.removeListener('readable', tryRead);
       this.stream.removeListener('error', errorListener);
       this.stream.removeListener('end', endListener);
-    });
+    })
   }
 
-  public readAscii(howMany: number): Bluebird<string> {
-    return this.readBytes(howMany).then((chunk) => chunk.toString('ascii'));
+  public async readAscii(howMany: number): Promise<string> {
+    const chunk = await this.readBytes(howMany);
+    return chunk.toString('ascii');
   }
 
-  public readBytes(howMany: number): Bluebird<Buffer> {
+  public async readBytes(howMany: number): Promise<Buffer> {
     let tryRead: () => void;
     let errorListener: (error: Error) => void;
     let endListener: () => void;
-    return new Bluebird<Buffer>((resolve, reject /*, onCancel*/) => {
+    return new Promise<Buffer>((resolve, reject) => {
       tryRead = () => {
         if (howMany) {
           const chunk = this.stream.read(howMany);
@@ -161,12 +141,13 @@ export default class Parser {
         this.ended = true;
         return reject(new Parser.PrematureEOFError(howMany));
       };
-      errorListener = (err) => reject(err);
+      errorListener = (err) => {
+        reject(err)
+      };
       this.stream.on('readable', tryRead);
       this.stream.on('error', errorListener);
       this.stream.on('end', endListener);
       tryRead();
-      // onCancel(() => {});
     }).finally(() => {
       this.stream.removeListener('readable', tryRead);
       this.stream.removeListener('error', errorListener);
@@ -174,11 +155,11 @@ export default class Parser {
     });
   }
 
-  public readByteFlow(howMany: number, targetStream: Duplex): Bluebird<void> {
+  public async readByteFlow(howMany: number, targetStream: Duplex): Promise<void> {
     let tryRead: () => void;
     let errorListener: (error: Error) => void;
     let endListener: () => void;
-    return new Bluebird<void>((resolve, reject /*, onCancel*/) => {
+    return new Promise<void>((resolve, reject) => {
       tryRead = () => {
         if (howMany) {
           const chunk = this.stream.read(howMany);
@@ -209,7 +190,6 @@ export default class Parser {
       this.stream.on('error', errorListener);
       this.stream.on('end', endListener);
       tryRead();
-      // onCancel(() => {});
     }).finally(() => {
       this.stream.removeListener('readable', tryRead);
       this.stream.removeListener('error', errorListener);
@@ -217,59 +197,54 @@ export default class Parser {
     });
   }
 
-  public readError(): Bluebird<never> {
-    return this.readValue().then(function (value) {
-      throw new Parser.FailError(value.toString());
-    });
+  public async readError(): Promise<never> {
+    const value = await this.readValue();
+    throw new Parser.FailError(value.toString());
   }
 
-  public readValue(): Bluebird<Buffer> {
-    return this.readAscii(4).then((value) => {
-      const length = Protocol.decodeLength(value);
-      return this.readBytes(length);
-    });
+  public async readValue(): Promise<Buffer> {
+    const value = await this.readAscii(4);
+    const length = Protocol.decodeLength(value);
+    return await this.readBytes(length);
   }
 
-  public readUntil(code: number): Bluebird<Buffer> {
+  public readUntil(code: number): Promise<Buffer> {
     let skipped = Buffer.alloc(0);
-    const read = () => {
-      return this.readBytes(1).then(function (chunk) {
-        if (chunk[0] === code) {
-          return skipped;
-        } else {
-          skipped = Buffer.concat([skipped, chunk]);
-          return read();
-        }
-      });
+    const read = async (): Promise<Buffer> => {
+      const chunk = await this.readBytes(1);
+      if (chunk[0] === code) {
+        return skipped;
+      } else {
+        skipped = Buffer.concat([skipped, chunk]);
+        return read();
+      }
     };
     return read();
   }
 
-  searchLine(re: RegExp): Bluebird<RegExpExecArray> {
-    return this.readLine().then((line) => {
-      const match = re.exec(line.toString());
-      if (match) {
-        return match;
-      } else {
-        return this.searchLine(re);
-      }
-    });
+  async searchLine(re: RegExp): Promise<RegExpExecArray> {
+    const line = await this.readLine();
+    const match = re.exec(line.toString());
+    if (match) {
+      return match;
+    } else {
+      return this.searchLine(re);
+    }
   }
 
-  public readLine(): Bluebird<Buffer> {
-    return this.readUntil(0x0a).then(function (line) {
-      // '\n'
-      if (line[line.length - 1] === 0x0d) {
-        // '\r'
-        return line.slice(0, -1);
-      } else {
-        return line;
-      }
-    });
+  public async readLine(): Promise<Buffer> {
+    const line = await this.readUntil(10);
+    // '\n'
+    if (line[line.length - 1] === 13) {
+      // '\r'
+      return line.slice(0, -1);
+    } else {
+      return line;
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public unexpected(data: string, expected: string): Bluebird<any> {
-    return Bluebird.reject(new Parser.UnexpectedDataError(data, expected));
+  public unexpected(data: string, expected: string): Promise<never> {
+    return Promise.reject(new Parser.UnexpectedDataError(data, expected));
   }
 }

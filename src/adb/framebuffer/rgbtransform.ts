@@ -2,7 +2,7 @@ import Assert from 'assert';
 import { Stream, TransformCallback, TransformOptions } from 'stream';
 import FramebufferMeta from '../../FramebufferMeta';
 
-class RgbTransform extends Stream.Transform {
+export default class RgbTransform extends Stream.Transform {
   private _buffer = Buffer.from('');
   private readonly _r_pos: number;
   private readonly _g_pos: number;
@@ -50,5 +50,3 @@ class RgbTransform extends Stream.Transform {
     done();
   }
 }
-
-export = RgbTransform;

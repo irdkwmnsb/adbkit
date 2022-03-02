@@ -12,4 +12,4 @@ if (process.env.ADBKIT_DUMP) {
   func = (chunk: Buffer): Buffer => chunk;
 }
 
-export = func;
+export default func;
