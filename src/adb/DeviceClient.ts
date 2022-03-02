@@ -1,5 +1,5 @@
 import { Monkey,  Client as MonkeyClient } from '@u4/adbkit-monkey';
-import Logcat from '@devicefarmer/adbkit-logcat';
+import Logcat from '@u4/adbkit-logcat';
 import Connection from './connection';
 import Sync from './sync';
 import Parser from './parser';

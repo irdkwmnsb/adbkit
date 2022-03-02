@@ -1,6 +1,6 @@
 {
     "name": "@u4/adbkit",
-    "version": "3.0.3",
+    "version": "3.1.0",
     "description": "A Typescript client for the Android Debug Bridge.",
     "keywords": [
         "adb",
@@ -41,7 +41,7 @@
         "servicemap": "ts-node tasks/servicemap.ts",
         "prepublish": "npm run clean && npm run compile && npm run test",
         "compile": "tsc  -p .",
-        "compile2": "tsc -p tsconfig-dist.json",
+        "build": "tsc  -p .",
         "lint": "eslint   ./ --ext .ts",
         "format": "eslint ./ --ext .ts --fix",
         "testJS": "mocha --reporter spec --colors dist/test/**/*.js",
@@ -49,8 +49,9 @@
         "test2": "mocha -r ts-node/register --reporter spec --colors test/adb/parser.ts"
     },
     "dependencies": {
-        "@devicefarmer/adbkit-logcat": "^2.1.1",
+        "@u4/adbkit-logcat": "2.1.1",
         "@u4/adbkit-monkey": "^1.0.3",
+        "adbkit-logcat": "link:@u4\\adbkit-logcat",
         "commander": "9.0.0",
         "debug": "~4.3.3",
         "install": "^0.13.0",

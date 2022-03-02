@@ -20,11 +20,13 @@ import DeviceClient from './DeviceClient';
 
 export default class Client extends EventEmitter {
   public readonly options: ClientOptions;
+  public readonly host: string;
   public readonly port: number | string;
   public readonly bin: string;
 
-  constructor({ port = 5037, bin = 'adb' }: ClientOptions = { port: 5037 }) {
+  constructor({ host = '127.0.0.1', port = 5037, bin = 'adb' }: ClientOptions = { port: 5037 }) {
     super();
+    this.host = host;
     this.port = port;
     this.bin = bin;
     this.options = { port, bin };

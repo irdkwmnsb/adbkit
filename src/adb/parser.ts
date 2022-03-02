@@ -162,10 +162,10 @@ export default class Parser {
     return new Promise<void>((resolve, reject) => {
       tryRead = () => {
         if (howMany) {
-          const chunk = this.stream.read(howMany);
+          let chunk: Buffer;
           // Try to get the exact amount we need first. If unsuccessful, take
           // whatever is available, which will be less than the needed amount.
-          while (chunk || this.stream.read()) {
+          while ((chunk = this.stream.read(howMany) || this.stream.read())) {
             howMany -= chunk.length;
             targetStream.write(chunk);
             if (howMany === 0) {
