@@ -1,6 +1,5 @@
 import Connection from '../../src/adb/connection';
 import Parser from '../../src/adb/parser';
-import { Socket } from 'net';
 import MockDuplex from './duplex';
 
 export default class MockConnection extends Connection {

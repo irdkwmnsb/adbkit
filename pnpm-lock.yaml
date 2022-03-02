@@ -4,7 +4,7 @@ specifiers:
   '@devicefarmer/adbkit-logcat': ^2.1.1
   '@types/debug': ^4.1.7
   '@types/mocha': ^8.2.0
-  '@types/node': ^14.14.28
+  '@types/node': ^17.0.21
   '@types/node-forge': ^1.0.0
   '@types/sinon-chai': ^3.2.8
   '@typescript-eslint/eslint-plugin': ^4.15.1
@@ -41,7 +41,7 @@ dependencies:
 devDependencies:
   '@types/debug': 4.1.7
   '@types/mocha': 8.2.3
-  '@types/node': 14.18.2
+  '@types/node': 17.0.21
   '@types/node-forge': 1.0.0
   '@types/sinon-chai': 3.2.8
   '@typescript-eslint/eslint-plugin': 4.33.0_959502c0ea240e86d4d2ba8b8c0fee45
@@ -195,11 +195,11 @@ packages:
   /@types/node-forge/1.0.0:
     resolution: {integrity: sha512-h0bgwPKq5u99T9Gor4qtV1lCZ41xNkai0pie1n/a2mh2/4+jENWOlo7AJ4YKxTZAnSZ8FRurUpdIN7ohaPPuHA==}
     dependencies:
-      '@types/node': 14.18.2
+      '@types/node': 17.0.21
     dev: true
 
-  /@types/node/14.18.2:
-    resolution: {integrity: sha512-fqtSN5xn/bBzDxMT77C1rJg6CsH/R49E7qsGuvdPJa20HtV5zSTuLJPNfnlyVH3wauKnkHdLggTVkOW/xP9oQg==}
+  /@types/node/17.0.21:
+    resolution: {integrity: sha512-DBZCJbhII3r90XbQxI8Y9IjjiiOGlZ0Hr32omXIZvwwZ7p4DMMXGrKXVyPfuoBOri9XNtL0UK69jYIBIsRX3QQ==}
     dev: true
 
   /@types/sinon-chai/3.2.8:
