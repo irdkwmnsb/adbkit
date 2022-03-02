@@ -21,7 +21,7 @@ export default class ServiceListCommand extends Command<Buffer> {
     const RE_HEX = /0x[0-9a-f]{8}: ([0-9a-f]{8}) ([0-9a-f ]{8})? ([0-9a-f ]{8}) ([0-9a-f ]{8}) '.{16}'/gm;
     const data: Buffer[] = [];
 
-    while (true) {
+    for (;;) {
       const match = RE_HEX.exec(value);
       if (match) {
         for (let i = 1; i < 4; i++) {

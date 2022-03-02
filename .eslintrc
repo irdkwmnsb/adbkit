@@ -1,18 +1,18 @@
 {
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
     "extends": [
+        "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:prettier/recommended",
-        "prettier",
-        "prettier/@typescript-eslint"
     ],
-    "plugins": ["progress", "@typescript-eslint", "prettier"],
     "parserOptions": {
         "ecmaVersion": 2020,
         "sourceType": "module"
     },
     "rules": {
-        "progress/activate": 1,
-        "indent": ["error", 2, {"SwitchCase": 1}]
+        "indent": ["error", 2, {"SwitchCase": 1}],
+        "no-case-declarations": "off"
     },
     "overrides": [
     ]

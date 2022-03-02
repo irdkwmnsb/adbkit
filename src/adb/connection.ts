@@ -1,13 +1,13 @@
 import * as Net from 'net';
 import { EventEmitter } from 'events';
-import { execFile } from 'child_process';
+import { execFile, ExecFileOptions } from 'child_process';
 import Parser from './parser';
 import dump from './dump';
 import d from 'debug';
 import { Socket } from 'net';
 import { promisify } from 'util';
 import { ClientOptions } from '../ClientOptions';
-// import PromiseSocket from 'promise-socket';
+import { ObjectEncodingOptions } from 'fs';
 
 const debug = d('adb:connection');
 
@@ -41,7 +41,7 @@ export default class Connection extends EventEmitter {
         this.socket.once('error', reject);
       });
     } catch (err) {
-      if ((err as any).code === 'ECONNREFUSED' && !this.triedStarting) {
+      if ((err as {code: string}).code === 'ECONNREFUSED' && !this.triedStarting) {
         debug("Connection was refused, let's try starting the server once");
         this.triedStarting = true;
         await this.startServer();
@@ -74,7 +74,7 @@ export default class Connection extends EventEmitter {
   public async waitForDrain(): Promise<void> {
     let drainListener!: () => void;
     try {
-      return await new Promise<any>((resolve) => {
+      return await new Promise<void>((resolve) => {
         drainListener = () => { resolve(undefined); };
         this.on('drain', drainListener);
       });
@@ -105,7 +105,7 @@ export default class Connection extends EventEmitter {
     return this._exec(args, {});
   }
 
-  private _exec(args: string[], options: {}): Promise<{ stdout: string; stderr: string; }> {
+  private _exec(args: string[], options: ObjectEncodingOptions & ExecFileOptions): Promise<{ stdout: string; stderr: string; }> {
     if (!this.options.bin)
       throw new Error('No bin specified');
     debug(`CLI: ${this.options.bin} ${args.join(' ')}`);

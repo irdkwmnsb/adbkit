@@ -46,6 +46,8 @@ export default class StartActivityCommand extends Command<boolean> {
         } finally {
           this.parser.end();
         }
+        // may be incorrect.
+        return this.parser.readError();
       case Protocol.FAIL:
         return this.parser.readError();
       default:
@@ -155,9 +157,9 @@ export default class StartActivityCommand extends Command<boolean> {
       args.push(this._escape(extra.value.join(',')));
     } else {
       //if (extra.value) {
-        args.push(`--e${type}`);
-        args.push(this._escape(extra.key));
-        args.push(this._escape(extra.value));
+      args.push(`--e${type}`);
+      args.push(this._escape(extra.key));
+      args.push(this._escape(extra.value));
       //}
     }
     return args;

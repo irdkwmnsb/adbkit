@@ -33,7 +33,7 @@ export default class MonkeyCommand extends Command<Duplex> {
         // give it. So we use a fallback timeout.
         const pTimeout = Utils.delay(this.timeout)
         const parse = this.parser.searchLine(/^:Monkey:/);
-        const race = await Promise.race([pTimeout, parse])
+        await Promise.race([pTimeout, parse])
         return this.parser.raw();
       case Protocol.FAIL:
         return this.parser.readError();

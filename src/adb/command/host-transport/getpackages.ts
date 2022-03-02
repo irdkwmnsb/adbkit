@@ -23,7 +23,7 @@ export default class GetPackagesCommand extends Command<string[]> {
   private _parsePackages(value: string): string[] {
     const packages: string[] = [];
     const RE_PACKAGE = /^package:(.*?)\r?$/gm;
-    while (true) {
+    for (;;) {
       const match = RE_PACKAGE.exec(value);
       if (match) {
         packages.push(match[1]);

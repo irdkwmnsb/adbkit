@@ -60,7 +60,9 @@ export default class Service extends EventEmitter {
       // We may or may not have gotten here due to @socket ending, so write
       // may fail.
       this.socket.write(Packet.assemble(Packet.A_CLSE, localId, this.remoteId));
-    } catch (error) { }
+    } catch (error) {
+      // ignore error
+    }
     // Let it go
     this.transport = undefined;
     this.ended = true;
@@ -85,7 +87,7 @@ export default class Service extends EventEmitter {
     } catch (err) {
       this.emit('error', err as Error);
       return this.end();
-    };
+    }
   }
 
   private async _handleOpenPacket(packet: Packet): Promise<boolean> {

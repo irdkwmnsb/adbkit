@@ -14,7 +14,7 @@ export default class InstallCommand extends Command<boolean> {
           } else {
             const code = match[2];
             const err = new Error(`${apk} could not be installed [${code}]`);
-            (err as any).code = code;
+            (err as Error & {code: string}).code = code;
             throw err;
           }
         } finally {

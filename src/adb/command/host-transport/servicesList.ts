@@ -35,7 +35,7 @@ export default class ServiceListCommand extends Command<AdbServiceInfo[]> {
   private _parse(value: string): AdbServiceInfo[] {
     const packages: AdbServiceInfo[] = [];
     const RE_PACKAGE = /^(\d+)\s+([^:]+): \[(.*)\]\r?$/gm;
-    while (true) {
+    for (;;) {
       const match = RE_PACKAGE.exec(value);
       if (match) {
         const id = Number(match[1]);

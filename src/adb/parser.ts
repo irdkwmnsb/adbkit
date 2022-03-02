@@ -49,7 +49,9 @@ export default class Parser {
     let endListener: () => void;
     return new Promise<boolean>((resolve, reject) => {
       tryRead = () => {
-        while (this.stream.read()) { }
+        while (this.stream.read()) {
+          // read and drop
+        }
       };
       errorListener = (err) => reject(err);
       endListener = () => {

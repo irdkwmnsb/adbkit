@@ -5,6 +5,7 @@
  */
 import { spawn } from 'child_process';
 import Adb from '../../src/adb';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Bench = require('bench');
 
 const deviceId = process.env.DEVICE_ID || '';

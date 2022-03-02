@@ -4,7 +4,7 @@ import Sync from '../sync';
 import { CpuStats, Loads } from '../../CpuStats';
 
 const RE_CPULINE = /^cpu[0-9]+ .*$/gm;
-const RE_COLSEP = /\ +/g;
+const RE_COLSEP = / +/g;
 
 interface CpuStatsWithLine extends CpuStats {
   line: string;

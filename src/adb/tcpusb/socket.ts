@@ -121,7 +121,6 @@ export default class Socket extends EventEmitter {
           throw new Error(`Unknown command ${packet.command}`);
       }
     } catch (err) {
-      debugger;
       if (err instanceof Socket.AuthError) {
         this.end();
         return false;

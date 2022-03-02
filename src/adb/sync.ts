@@ -58,7 +58,7 @@ export default class Sync extends EventEmitter {
   public async readdir(path: string): Promise<Entry[]> {
     const files: Entry[] = [];
     this._sendCommandWithArg(Protocol.LIST, path);
-    while (true) {
+    for (;;) {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
         case Protocol.DENT:
@@ -126,7 +126,7 @@ export default class Sync extends EventEmitter {
     let endListener: () => void;
     let errorListener: (err: Error) => void;
 
-    const writeData = (): Promise<any> => new Promise((resolve, reject) => {
+    const writeData = (): Promise<unknown> => new Promise((resolve, reject) => {
 
       const writer = Promise.resolve();
       endListener = () => {
@@ -139,7 +139,7 @@ export default class Sync extends EventEmitter {
 
       const track = () => transfer.pop();
       const writeAll = async (): Promise<void> => {
-        while (true) {
+        for (;;) {
           const chunk = stream.read(DATA_MAX_LENGTH) || stream.read();
           if (!chunk) return;
           this._sendCommandWithLength(Protocol.DATA, chunk.length);
@@ -161,13 +161,13 @@ export default class Sync extends EventEmitter {
       };
       this.connection.on('error', connErrorListener);
     })
-    .finally(() => {
-      stream.removeListener('end', endListener);
-      stream.removeListener('readable', readableListener);
-      stream.removeListener('error', errorListener);
-      this.connection.removeListener('error', connErrorListener);
+      .finally(() => {
+        stream.removeListener('end', endListener);
+        stream.removeListener('readable', readableListener);
+        stream.removeListener('error', errorListener);
+        this.connection.removeListener('error', connErrorListener);
       // writer.cancel();
-    });
+      });
 
 
     const readReply = async (): Promise<boolean> => {
@@ -204,7 +204,7 @@ export default class Sync extends EventEmitter {
   private _readData(): PullTransfer {
     const transfer = new PullTransfer();
     const readAll = async (): Promise<boolean> => {
-      while (true) {
+      for (;;) {
         const reply = await this.parser.readAscii(4);
         switch (reply) {
           case Protocol.DATA:
