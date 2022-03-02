@@ -12,7 +12,7 @@ specifiers:
   '@u4/adbkit-monkey': ^1.0.3
   bench: ~0.3.6
   chai: ~4.3.6
-  commander: 7.1.0
+  commander: 8.3.0
   debug: ~4.3.3
   eslint: ^7.20.0
   eslint-config-prettier: ^8.0.0
@@ -32,7 +32,7 @@ specifiers:
 dependencies:
   '@devicefarmer/adbkit-logcat': 2.1.1
   '@u4/adbkit-monkey': 1.0.3
-  commander: 7.1.0
+  commander: 8.3.0
   debug: 4.3.3
   install: 0.13.0
   node-forge: 1.2.1
@@ -557,9 +557,9 @@ packages:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
     dev: true
 
-  /commander/7.1.0:
-    resolution: {integrity: sha512-pRxBna3MJe6HKnBGsDyMv8ETbptw3axEdYHoqNh7gu5oDcew8fs0xnivZGm06Ogk8zGAJ9VX+OPEr2GXEQK4dg==}
-    engines: {node: '>= 10'}
+  /commander/8.3.0:
+    resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
+    engines: {node: '>= 12'}
     dev: false
 
   /concat-map/0.0.1:

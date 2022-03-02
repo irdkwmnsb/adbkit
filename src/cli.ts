@@ -1,5 +1,5 @@
 import fs from 'fs';
-import program from 'commander';
+import { program } from 'commander';
 import forge from 'node-forge';
 import * as pkg from '../package.json';
 import Adb from './adb';
