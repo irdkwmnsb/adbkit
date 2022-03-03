@@ -30,4 +30,5 @@ export { default as PsCommand, PsEntry } from './ps';
 export { default as ServicesListCommand, AdbServiceInfo, KnownServices } from './servicesList';
 export { default as ServiceCheckCommand } from './serviceCheck';
 export { default as ServiceCallCommand } from './serviceCall';
-export { default as IpRouteCommand } from './ip_route';
+export { default as IpRouteCommand, IpRouteEntry } from './ipRoute';
+export { default as IpRuleCommand, IpRuleEntry } from './ipRule';

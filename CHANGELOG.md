@@ -3,6 +3,7 @@
 ## v3.1.0 (2022-03-02)
 
 * add ip route command
+* add ip rule command
 * DeviceClient can be obtain from a Device object using getClient()
 * drop all bluebird references, use only native Promise.
 * bump all depencences

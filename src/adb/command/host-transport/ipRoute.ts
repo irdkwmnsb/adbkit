@@ -21,7 +21,7 @@ export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
     const lines: string[] = value.split(/[\r\n]+/g).filter(a => a);
     const result: IpRouteEntry[] = [];
     for (const line of lines) {
-      const entry: IpRouteEntry = {};
+      const entry: IpRouteEntry = new IpRouteEntry();
       const words = line.split(' ').filter(a => a);
       if (ValidTypesSet.has(words[0] as ValidTypesT)) {
         entry.type = words.shift() as ValidTypesT;
@@ -62,7 +62,7 @@ export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
               (entry[next] as string) = value;
             break;
           default:
-            throw Error(`Failed to parse line:\n ${line}\n token: ${pc.yellow(next)} in ip route response, Fix me in ip_route.ts`);
+            throw Error(`Failed to parse line:\n ${line}\n token: ${pc.yellow(next)} in ip route response, Fix me in ipRoute.ts`);
         }
       }
       result.push(entry);
@@ -82,10 +82,10 @@ type CIDR = string;
  *
  * NODE_SPEC := [ TYPE ] PREFIX [ tos TOS ] [ table TABLE_ID ] [ proto RTPROTO ] [ scope SCOPE ] [ metric METRIC ]
  */
-export interface IpRouteEntry {
-  dest?: string;
+export class IpRouteEntry {
   type?: ValidTypesT;
-  prefix?: CIDR;
+  dest?: CIDR;
+  // prefix?: CIDR;
   via?: string;
   dev?: string;
   // is a number is canned a user
@@ -105,4 +105,19 @@ export interface IpRouteEntry {
    * hoplimit [0-255]
    */
   hoplimit?: number;
+
+  public toString(): string {
+    const out: string[] = [];
+    for (const field of ['type', 'dest'] as const) {
+      if (this[field])
+        out.push(this[field]);
+    }
+    for (const field of ['via', 'dev', 'table', 'expires', 'proto', 'scope', 'tos', 'src', 'metric', 'pref'] as const) {
+      if (this[field] || this[field] === 0) {
+        out.push(field);
+        out.push(String(this[field]));
+      }
+    }
+    return out.join(' ')
+  }
 }

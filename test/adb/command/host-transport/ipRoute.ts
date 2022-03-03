@@ -4,7 +4,7 @@ Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import { IpRouteCommand } from '../../../../src/adb/command/host-transport';
-import { IpRouteEntry } from '../../../../src/adb/command/host-transport/ip_route';
+import { IpRouteEntry } from '../../../../src/adb/command/host-transport/ipRoute';
 
 describe('ipRouteCommand', function () {
     it("should send 'ip route'", function () {
