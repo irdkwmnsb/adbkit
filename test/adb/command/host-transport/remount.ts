@@ -6,7 +6,7 @@ import Protocol from '../../../../src/adb/protocol';
 import RemountCommand from '../../../../src/adb/command/host-transport/remount';
 
 describe('RemountCommand', () => {
-    return it("should send 'remount:'", () => {
+    it("should send 'remount:'", () => {
         const conn = new MockConnection();
         const cmd = new RemountCommand(conn);
         conn.getSocket().on('write', (chunk) => {

@@ -31,7 +31,7 @@ describe('GetFeaturesCommand', () => {
         expect(Object.keys(features)).to.be.empty;
         return true;
     });
-    return it('should return a map of features', async () => {
+    it('should return a map of features', async () => {
         const conn = new MockConnection();
         const cmd = new GetFeaturesCommand(conn);
         setImmediate(() => {

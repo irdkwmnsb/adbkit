@@ -11,7 +11,7 @@ describe('GetPropertiesCommand', () => {
         const properties = await t.testPr();
         expect(Object.keys(properties)).to.be.empty;
     });
-    return it('should return a map of properties', async () => {
+    it('should return a map of properties', async () => {
         const properties = await t.testPr(`[ro.product.locale.region]: [US]
 [ro.product.manufacturer]: [samsung]\r
 [ro.product.model]: [SC-04E]

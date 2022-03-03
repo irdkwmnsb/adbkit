@@ -56,7 +56,7 @@ describe('InstallCommand', () => {
             done();
         });
     });
-    return it('should ignore any other data', () => {
+    it('should ignore any other data', () => {
         const conn = new MockConnection();
         const cmd = new InstallCommand(conn);
         setImmediate(() => {

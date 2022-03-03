@@ -32,7 +32,7 @@ describe('WaitForDeviceCommand', () => {
         expect(id).to.equal('abba');
         return true;
     });
-    return it('should reject with error if unable to connect', async () => {
+    it('should reject with error if unable to connect', async () => {
         const conn = new MockConnection();
         const cmd = new WaitForDeviceCommand(conn as any as Connection);
         setImmediate(() => {

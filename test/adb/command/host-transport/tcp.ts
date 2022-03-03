@@ -31,7 +31,7 @@ describe('TcpCommand', () => {
         });
         return cmd.execute(8080, '127.0.0.1');
     });
-    return it('should resolve with the tcp stream', async () => {
+    it('should resolve with the tcp stream', async () => {
         const conn = new MockConnection();
         const cmd = new TcpCommand(conn);
         setImmediate(() => {

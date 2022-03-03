@@ -18,7 +18,7 @@ describe('RebootCommand', () => {
         });
         return cmd.execute();
     });
-    return it('should send wait for the connection to end', async () => {
+    it('should send wait for the connection to end', async () => {
         const conn = new MockConnection();
         const cmd = new RebootCommand(conn);
         let ended = false;

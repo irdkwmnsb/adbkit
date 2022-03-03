@@ -101,7 +101,7 @@ describe('Parser', () => {
             return true;
         });
 
-        return it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', (done) => {
+        it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('F');
@@ -134,7 +134,7 @@ describe('Parser', () => {
             await parser.readByteFlow(2, target);
             expect(target.read()).to.eql(Buffer.from('FA'));
         });
-        return it('should progress with new/partial chunk until maxHowMany', async () => {
+        it('should progress with new/partial chunk until maxHowMany', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const target = new Stream.PassThrough();
@@ -175,7 +175,7 @@ describe('Parser', () => {
             expect(str).to.equal('OKAY');
             return true;
         });
-        return it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', (done) => {
+        it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('FOO');
@@ -212,7 +212,7 @@ describe('Parser', () => {
             expect(value).to.be.an.instanceOf(Buffer);
             expect(value).to.have.length(0);
         });
-        return it('should reject with Parser.PrematureEOFError if stream ends before the value can be read', (done) => {
+        it('should reject with Parser.PrematureEOFError if stream ends before the value can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readValue().catch(err => {

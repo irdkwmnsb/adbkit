@@ -41,7 +41,7 @@ describe('IsInstalledCommand', () => {
         const found = await cmd.execute('foo');
         expect(found).to.be.false;
     });
-    return it('should fail if any other data is received', (done) => {
+    it('should fail if any other data is received', (done) => {
         const conn = new MockConnection();
         const cmd = new IsInstalledCommand(conn);
         setImmediate(() => {

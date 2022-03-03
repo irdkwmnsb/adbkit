@@ -31,7 +31,7 @@ describe('LocalCommand', () => {
         });
         const stream = await cmd.execute('localabstract:/foo.sock');
     });
-    return it('should resolve with the stream', async () => {
+    it('should resolve with the stream', async () => {
         const conn = new MockConnection();
         const cmd = new LocalCommand(conn);
         setImmediate(() => {

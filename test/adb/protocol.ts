@@ -18,7 +18,7 @@ describe('Protocol', () => {
             expect(Protocol.decodeLength('0x0046')).to.be.a('number');
             done();
         });
-        return it('should accept a hexadecimal string', (done) => {
+        it('should accept a hexadecimal string', (done) => {
             expect(Protocol.decodeLength('0x5887')).to.equal(0x5887);
             done();
         });
@@ -43,7 +43,7 @@ describe('Protocol', () => {
             expect(Protocol.encodeLength(57)).to.have.length(4);
             done();
         });
-        return it('should return 0000 for 0 length', (done) => {
+        it('should return 0000 for 0 length', (done) => {
             expect(Protocol.encodeLength(0)).to.equal('0000');
             done();
         });
@@ -58,7 +58,7 @@ describe('Protocol', () => {
             expect(Protocol.encodeData(Buffer.from(''))).to.be.an.instanceOf(Buffer);
             done();
         });
-        return it('should prefix data with length', (done) => {
+        it('should prefix data with length', (done) => {
             const data = Protocol.encodeData(Buffer.alloc(0x270f));
             expect(data).to.have.length(0x270f + 4);
             expect(data.toString('ascii', 0, 4)).to.equal('270F');

@@ -180,7 +180,7 @@ describe('LineTransform', () => {
         duplex.causeEnd();
         duplex.end();
     });
-    return it('should remove saved 0x0d if next chunk starts with 0x0a', (done) => {
+    it('should remove saved 0x0d if next chunk starts with 0x0a', (done) => {
         const duplex = new MockDuplex();
         const transform = new LineTransform();
         let buffer = Buffer.from('');

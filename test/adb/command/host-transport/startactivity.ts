@@ -392,7 +392,7 @@ describe('StartActivityCommand', () => {
         } as StartActivityOptions;
         return cmd.execute(options);
     });
-    return it('should map short extras to long extras', (done) => {
+    it('should map short extras to long extras', (done) => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

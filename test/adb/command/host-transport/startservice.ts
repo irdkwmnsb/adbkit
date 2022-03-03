@@ -54,7 +54,7 @@ describe('StartServiceCommand', () => {
         };
         return cmd.execute(options);
     });
-    return it("should not send user option if not set'", () => {
+    it("should not send user option if not set'", () => {
         const conn = new MockConnection();
         const cmd = new StartServiceCommand(conn);
         conn.getSocket().on('write', (chunk) => {

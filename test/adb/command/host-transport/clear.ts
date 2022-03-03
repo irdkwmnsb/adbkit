@@ -54,7 +54,7 @@ describe('ClearCommand', () => {
             done();
         });
     });
-    return it('should ignore irrelevant lines', async () => {
+    it('should ignore irrelevant lines', async () => {
         const result = await t.testPr(['Open: foo error\n\n', 'Success\r\n'], 'foo.bar.c')
         return expect(result).to.be.eq(true);
     });

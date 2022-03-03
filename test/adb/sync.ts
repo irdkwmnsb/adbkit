@@ -96,7 +96,7 @@ describe('Sync', () => {
             transfer.cancel();
             return true;
         });
-        return dt('should be able to push >65536 byte chunks without error', async () => {
+        dt('should be able to push >65536 byte chunks without error', async () => {
             await forEachSyncDevice((sync) => {
                 return new Promise((resolve, reject) => {
                     const stream = new Stream.PassThrough();
@@ -155,7 +155,7 @@ describe('Sync', () => {
             }).finally(done);
         });
         return describe('Stream', () => {
-            return dt("should emit 'end' when pull is done", (done) => {
+            dt("should emit 'end' when pull is done", (done) => {
                 return forEachSyncDevice((sync) => {
                     return new Promise((resolve, reject) => {
                         const transfer = sync.pull(SURELY_EXISTING_FILE);
@@ -217,7 +217,7 @@ describe('Sync', () => {
                     return expect(stats.size).to.be.above(0);
                 }).finally(done);
             });
-            return dt('should set the `.mtime` property', (done) => {
+            dt('should set the `.mtime` property', (done) => {
                 return forEachSyncDevice(async (sync) => {
                     const stats = await sync.stat(SURELY_EXISTING_FILE);
                     expect(stats).to.be.an.instanceof(Fs.Stats);
@@ -240,7 +240,7 @@ describe('Sync', () => {
                     });
                 }).finally(done);
             });
-            return dt('should set the Stats properties', (done) => {
+            dt('should set the Stats properties', (done) => {
                 return forEachSyncDevice(async (sync) => {
                     const files = await sync.readdir(SURELY_EXISTING_PATH);
                     expect(files).to.be.an('Array');

@@ -6,7 +6,7 @@ import Protocol from '../../../../src/adb/protocol';
 import SyncCommand from '../../../../src/adb/command/host-transport/sync';
 
 describe('SyncCommand', () => {
-    return it("should send 'sync:'", () => {
+    it("should send 'sync:'", () => {
         const conn = new MockConnection();
         const cmd = new SyncCommand(conn);
         conn.getSocket().on('write', (chunk) => {

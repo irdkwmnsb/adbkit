@@ -43,7 +43,7 @@ describe('ShellCommand', () => {
         });
         return cmd.execute(['foo', 67]);
     });
-    return it('should reject with FailError on ADB failure (not command failure)', async () => {
+    it('should reject with FailError on ADB failure (not command failure)', async () => {
         const conn = new MockConnection();
         const cmd = new ShellCommand(conn);
         conn.getSocket().on('write', (chunk) => {

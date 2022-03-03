@@ -98,7 +98,7 @@ java.lang.IllegalArgumentException: Unknown package: foo
             }
         });
     });
-    return it('should ignore any other data', () => {
+    it('should ignore any other data', () => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
         conn.getSocket().on('write', (chunk) => {

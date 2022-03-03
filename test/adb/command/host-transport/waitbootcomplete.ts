@@ -60,7 +60,7 @@ describe('WaitBootCompleteCommand', () => {
         await cmd.execute();
         expect(sent).to.be.true;
     });
-    return it('should close connection when done', (done) => {
+    it('should close connection when done', (done) => {
         const conn = new MockConnection();
         const cmd = new WaitBootCompleteCommand(conn);
         setImmediate(() => {

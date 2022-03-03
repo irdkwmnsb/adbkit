@@ -61,7 +61,7 @@ describe('LogcatCommand', () => {
         const out = await new Parser(stream).readAll();
         expect(out.toString()).to.equal('foo\n');
     });
-    return it('should not perform CRLF transformation if not needed', async () => {
+    it('should not perform CRLF transformation if not needed', async () => {
         const conn = new MockConnection();
         const cmd = new LogcatCommand(conn);
         setImmediate(() => {

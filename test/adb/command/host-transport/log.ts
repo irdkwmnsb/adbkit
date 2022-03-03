@@ -14,7 +14,7 @@ describe('LogCommand', () => {
         // return a Duplex;
         return true;
     });
-    return it('should resolve with the log stream', async () => {
+    it('should resolve with the log stream', async () => {
         const conn = new MockConnection();
         const cmd = new LogCommand(conn);
         setImmediate(() => {

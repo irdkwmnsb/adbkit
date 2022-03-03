@@ -33,7 +33,7 @@ describe('DisconnectCommand', () => {
         const val = await cmd.execute('192.168.2.2', 5555);
         expect(val).to.be.equal('192.168.2.2:5555');
     });
-    return it('should reject with error if unable to disconnect', async () => {
+    it('should reject with error if unable to disconnect', async () => {
         const conn = new MockConnection();
         const cmd = new DisconnectCommand(conn as Connection);
         setImmediate(() => {

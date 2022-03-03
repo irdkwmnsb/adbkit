@@ -33,7 +33,7 @@ describe('MonkeyCommand', () => {
         expect(stream).to.be.an.instanceof(Stream.Readable);
         return true;
     });
-    return it("should resolve after a timeout if result can't be judged from output", async () => {
+    it("should resolve after a timeout if result can't be judged from output", async () => {
         const conn = new MockConnection();
         const cmd = new MonkeyCommand(conn, 10);
         setImmediate(() => {

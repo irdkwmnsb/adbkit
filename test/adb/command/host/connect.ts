@@ -41,7 +41,7 @@ describe('ConnectCommand', () => {
         const val = await cmd.execute('192.168.2.2', 5555);
         expect(val).to.be.equal('192.168.2.2:5555');
     });
-    return it('should reject with error if unable to connect', async () => {
+    it('should reject with error if unable to connect', async () => {
         const conn = new MockConnection();
         const cmd = new ConnectCommand(conn);
         setImmediate(() => {

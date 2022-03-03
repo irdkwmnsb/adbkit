@@ -20,7 +20,7 @@ describe('RootCommand', () => {
         const val = await cmd.execute();
         expect(val).to.be.true;
     });
-    return it('should reject on unexpected reply', (done) => {
+    it('should reject on unexpected reply', (done) => {
         const conn = new MockConnection();
         const cmd = new RootCommand(conn);
         setImmediate(() => {
