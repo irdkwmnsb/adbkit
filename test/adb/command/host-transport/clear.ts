@@ -13,7 +13,7 @@ describe('ClearCommand', function () {
             expect(chunk.toString()).to.equal(Protocol.encodeData('shell:pm clear foo.bar.c').toString());
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\r\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute('foo.bar.c');
     });
@@ -23,7 +23,7 @@ describe('ClearCommand', function () {
         conn.getSocket().on('write', function (chunk) {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\r\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute('foo.bar.c');
     });
@@ -33,7 +33,7 @@ describe('ClearCommand', function () {
         conn.getSocket().on('write', function (chunk) {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Failed\r\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         cmd.execute('foo.bar.c').catch(function (err) {
             expect(err).to.be.an.instanceof(Error);
@@ -45,7 +45,7 @@ describe('ClearCommand', function () {
         const cmd = new ClearCommand(conn);
         conn.getSocket().on('write', function (chunk) {
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeRead('Failed\r\n');
+            conn.getSocket().causeRead('Failed\r\n');
         });
         cmd.execute('foo.bar.c').catch(function (err) {
             expect(err).to.be.an.instanceof(Error);
@@ -59,7 +59,7 @@ describe('ClearCommand', function () {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Open: foo error\n\n');
             conn.getSocket().causeRead('Success\r\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute('foo.bar.c');
     });

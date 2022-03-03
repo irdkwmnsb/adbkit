@@ -10,14 +10,14 @@ describe('FrameBufferCommand', () => {
         const conn = new MockConnection();
         const cmd = new FrameBufferCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(Protocol.encodeData('framebuffer:').toString());
+            expect(chunk.toString()).to.equal(Protocol.encodeData('framebuffer:').toString());
         });
         setImmediate(() => {
             const meta = Buffer.alloc(52);
             meta.fill(0);
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead(meta);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute('raw');
     });
@@ -45,7 +45,7 @@ describe('FrameBufferCommand', () => {
             meta.writeUInt32LE(8, (offset += 4));
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead(meta);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         const stream = await cmd.execute('raw');
         expect(stream).to.have.property('meta');

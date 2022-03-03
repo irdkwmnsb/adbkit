@@ -25,7 +25,7 @@ describe('GetFeaturesCommand', () => {
         const cmd = new GetFeaturesCommand(conn);
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         const features = await cmd.execute();
         expect(Object.keys(features)).to.be.empty;

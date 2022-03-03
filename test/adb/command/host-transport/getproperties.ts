@@ -4,28 +4,13 @@ Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import GetPropertiesCommand from '../../../../src/adb/command/host-transport/getproperties';
+import getTester from './commonTest';
+const { testTr, testPr } = getTester(GetPropertiesCommand);
 
 describe('GetPropertiesCommand', () => {
-    it("should send 'getprop'", () => {
-        const conn = new MockConnection();
-        const cmd = new GetPropertiesCommand(conn);
-        conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(Protocol.encodeData('shell:getprop').toString());
-        });
-        setImmediate(() => {
-            conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
-        });
-        return cmd.execute();
-    });
+    it("should send 'getprop'", () => testTr('shell:getprop'));
     it('should return an empty object for an empty property list', async () => {
-        const conn = new MockConnection();
-        const cmd = new GetPropertiesCommand(conn);
-        setImmediate(() => {
-            conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
-        });
-        const properties = await cmd.execute();
+        const properties = await testPr();
         expect(Object.keys(properties)).to.be.empty;
     });
     return it('should return a map of properties', async () => {
