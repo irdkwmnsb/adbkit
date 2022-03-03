@@ -39,7 +39,7 @@ describe('InstallCommand', () => {
             conn.getSocket().causeRead('Failure [BAR]\r\n');
             return conn.getSocket().causeEnd();
         });
-        cmd.execute('foo').catch(function (err) {
+        cmd.execute('foo').catch((err) => {
             done();
         });
     });
@@ -51,7 +51,7 @@ describe('InstallCommand', () => {
             conn.getSocket().causeRead('Failure [ALREADY_EXISTS]\r\n');
             return conn.getSocket().causeEnd();
         });
-        cmd.execute('foo').catch(function (err) {
+        cmd.execute('foo').catch((err) => {
             expect(err.code).to.equal('ALREADY_EXISTS');
             done();
         });

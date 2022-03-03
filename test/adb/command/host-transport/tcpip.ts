@@ -38,7 +38,7 @@ describe('TcpIpCommand', () => {
             conn.getSocket().causeRead('not sure what this could be\n');
             return conn.getSocket().causeEnd();
         });
-        cmd.execute(5555).catch(function (err) {
+        cmd.execute(5555).catch((err) => {
             expect(err.message).to.eql('not sure what this could be');
             done();
         });

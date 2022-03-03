@@ -31,9 +31,7 @@ export default class Server extends EventEmitter {
       });
       socket.once('end', () => {
         // 'conn' is guaranteed to get ended
-        return (this.connections = this.connections.filter(function (val) {
-          return val !== socket;
-        }));
+        return (this.connections = this.connections.filter((val) => val !== socket));
       });
       return this.emit('connection', socket);
     });

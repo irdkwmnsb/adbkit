@@ -91,7 +91,7 @@ export default class Parser {
           return resolve(all);
         }
       };
-      errorListener = function (err) {
+      errorListener = (err) => {
         return reject(err);
       };
       endListener = () => {
@@ -183,7 +183,7 @@ export default class Parser {
         this.ended = true;
         return reject(new Parser.PrematureEOFError(howMany));
       };
-      errorListener = function (err) {
+      errorListener = (err) => {
         return reject(err);
       };
       this.stream.on('readable', tryRead);

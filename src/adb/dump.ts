@@ -4,7 +4,7 @@ let func: (chunk: Buffer) => Buffer;
 
 if (process.env.ADBKIT_DUMP) {
   const out = fs.createWriteStream('adbkit.dump');
-  func = function (chunk: Buffer): Buffer {
+  func = (chunk: Buffer): Buffer => {
     out.write(chunk);
     return chunk;
   };

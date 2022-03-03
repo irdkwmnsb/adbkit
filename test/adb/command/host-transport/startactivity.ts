@@ -32,7 +32,7 @@ describe('StartActivityCommand', () => {
         const options = {
             component: 'com.dummy.component/.Main',
         };
-        cmd.execute(options).catch(function (err) {
+        cmd.execute(options).catch((err) => {
             expect(err).to.be.be.an.instanceOf(Error);
             done();
         });

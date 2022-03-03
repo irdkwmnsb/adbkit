@@ -49,7 +49,7 @@ describe('IsInstalledCommand', () => {
             conn.getSocket().causeRead('open: Permission failed\r\n');
             return conn.getSocket().causeEnd();
         });
-        cmd.execute('foo').catch(function (err) {
+        cmd.execute('foo').catch((err) => {
             expect(err).to.be.an.instanceof(Error);
             done();
         });

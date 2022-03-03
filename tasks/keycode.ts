@@ -12,7 +12,7 @@ const original = {
 const regex = /public static final int (KEYCODE_[^\s]+)\s*=\s*([0-9]+);/g;
 const file = path.resolve(__dirname, '../src/adb/keycode.ts');
 
-const req = https.request(original, function (res) {
+const req = https.request(original, (res) => {
   if (res.statusCode !== 200) {
     console.warn('Unable to retrieve KeyEvent.java (HTTP ' + res.statusCode + ')');
     return;
