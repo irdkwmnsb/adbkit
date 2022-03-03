@@ -1,23 +1,24 @@
-import Chai, { expect } from 'chai';
+import Chai from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import { IpRouteCommand } from '../../../../src/adb/command/host-transport';
-import { testParser, testTansport } from './commonTest';
+import getTester from './commonTest';
 
+const {testTr, testPr} = getTester(IpRouteCommand);
 
 describe('ipRouteCommand', function () {
-    it("should send 'ip route'", () => testTansport(IpRouteCommand, 'shell:ip route'));
+    it("should send 'ip route'", () => testTr('shell:ip route'));
 
-    it("should send 'ip route list table all'", () => testTansport(IpRouteCommand, 'shell:ip route list table all', ['list table all']));
+    it("should send 'ip route list table all'", () => testTr('shell:ip route list table all', 'list table all'));
 
-    it("should send 'ip route list table all' split", () => testTansport(IpRouteCommand, 'shell:ip route list table all', ['list', 'table', 'all']));
+    it("should send 'ip route list table all' split", () => testTr('shell:ip route list table all', 'list', 'table', 'all'));
 
-    it('should return a list of routes', () => testParser(IpRouteCommand,
+    it('should return a list of routes', () => testPr(
         `192.168.1.0/24 dev wlan0 proto kernel scope link src 192.168.1.2\n`,
         [{ dest: '192.168.1.0/24', dev: 'wlan0', proto: 'kernel', scope: 'link', src: '192.168.1.2' }],
     ));
 
-    it('should return convert number string to numbers', () => testParser(IpRouteCommand,
+    it('should return convert number string to numbers', () => testPr(
         `fe80::/64 dev wlan0 table 1021 proto kernel metric 256 pref medium\n`,
         [{ dest: 'fe80::/64', dev: 'wlan0', table: 1021, proto: 'kernel', metric: 256, pref: 'medium' }]
     ));
