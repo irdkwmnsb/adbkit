@@ -6,50 +6,50 @@ import Protocol from '../../../../src/adb/protocol';
 import Parser from '../../../../src/adb/parser';
 import UninstallCommand from '../../../../src/adb/command/host-transport/uninstall';
 
-describe('UninstallCommand', function () {
-    it("should succeed when command responds with 'Success'", function () {
+describe('UninstallCommand', () => {
+    it("should succeed when command responds with 'Success'", () => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('shell:pm uninstall foo').toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\r\n');
             return conn.getSocket().causeEnd();
         });
         return cmd.execute('foo');
     });
-    it("should succeed even if command responds with 'Failure'", function () {
+    it("should succeed even if command responds with 'Failure'", () => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('shell:pm uninstall foo').toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Failure\r\n');
             return conn.getSocket().causeEnd();
         });
         return cmd.execute('foo');
     });
-    it("should succeed even if command responds with 'Failure' with info in standard format", function () {
+    it("should succeed even if command responds with 'Failure' with info in standard format", () => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('shell:pm uninstall foo').toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Failure [DELETE_FAILED_INTERNAL_ERROR]\r\n');
             return conn.getSocket().causeEnd();
         });
         return cmd.execute('foo');
     });
-    it("should succeed even if command responds with 'Failure' with info info in weird format", function () {
+    it("should succeed even if command responds with 'Failure' with info info in weird format", () => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Failure - not installed for 0\r\n');
             return conn.getSocket().causeEnd();
@@ -85,7 +85,7 @@ java.lang.IllegalArgumentException: Unknown package: foo
     it('should reject with Parser.PrematureEOFError if stream ends before match', (done) => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Hello. Is it me you are looking for?\r\n');
             return conn.getSocket().causeEnd();
@@ -98,13 +98,13 @@ java.lang.IllegalArgumentException: Unknown package: foo
             }
         });
     });
-    return it('should ignore any other data', function () {
+    return it('should ignore any other data', () => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('shell:pm uninstall foo').toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('open: Permission failed\r\n');
             conn.getSocket().causeRead('Failure\r\n');

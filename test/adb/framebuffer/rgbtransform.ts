@@ -5,8 +5,8 @@ Chai.use(simonChai);
 import RgbTransform from '../../../src/adb/framebuffer/rgbtransform';
 import { FramebufferMeta } from '../../../src';
 
-describe('RgbTransform', function () {
-    it('should transform BGRA into RGB', function (done) {
+describe('RgbTransform', () => {
+    it('should transform BGRA into RGB', (done) => {
         const meta: FramebufferMeta = {
             bpp: 32,
             red_offset: 16,
@@ -31,7 +31,7 @@ describe('RgbTransform', function () {
         const stream = new Stream.PassThrough();
         const transform = new RgbTransform(meta);
         stream.pipe(transform);
-        transform.on('data', function (chunk) {
+        transform.on('data', (chunk) => {
             expect(chunk).to.have.length(3);
             expect(chunk.readUInt8(0)).to.equal(150);
             expect(chunk.readUInt8(1)).to.equal(100);
@@ -41,7 +41,7 @@ describe('RgbTransform', function () {
         stream.write(pixel);
         stream.end();
     });
-    it('should transform BGR into RGB', function (done) {
+    it('should transform BGR into RGB', (done) => {
         const meta: FramebufferMeta = {
             bpp: 32,
             red_offset: 16,
@@ -65,7 +65,7 @@ describe('RgbTransform', function () {
         const stream = new Stream.PassThrough();
         const transform = new RgbTransform(meta);
         stream.pipe(transform);
-        transform.on('data', function (chunk) {
+        transform.on('data', (chunk) => {
             expect(chunk).to.have.length(3);
             expect(chunk.readUInt8(0)).to.equal(150);
             expect(chunk.readUInt8(1)).to.equal(100);
@@ -75,7 +75,7 @@ describe('RgbTransform', function () {
         stream.write(pixel);
         stream.end();
     });
-    it('should transform RGB into RGB', function (done) {
+    it('should transform RGB into RGB', (done) => {
         const meta: FramebufferMeta = {
             bpp: 24,
             red_offset: 0,
@@ -99,7 +99,7 @@ describe('RgbTransform', function () {
         const stream = new Stream.PassThrough();
         const transform = new RgbTransform(meta);
         stream.pipe(transform);
-        transform.on('data', function (chunk) {
+        transform.on('data', (chunk) => {
             expect(chunk).to.have.length(3);
             expect(chunk.readUInt8(0)).to.equal(50);
             expect(chunk.readUInt8(1)).to.equal(100);
@@ -109,7 +109,7 @@ describe('RgbTransform', function () {
         stream.write(pixel);
         stream.end();
     });
-    it('should transform RGBA into RGB', function (done) {
+    it('should transform RGBA into RGB', (done) => {
         const meta: FramebufferMeta = {
             bpp: 32,
             red_offset: 0,
@@ -134,7 +134,7 @@ describe('RgbTransform', function () {
         const stream = new Stream.PassThrough();
         const transform = new RgbTransform(meta);
         stream.pipe(transform);
-        transform.on('data', function (chunk) {
+        transform.on('data', (chunk) => {
             expect(chunk).to.have.length(3);
             expect(chunk.readUInt8(0)).to.equal(50);
             expect(chunk.readUInt8(1)).to.equal(100);
@@ -144,7 +144,7 @@ describe('RgbTransform', function () {
         stream.write(pixel);
         stream.end();
     });
-    it('should wait for a complete pixel before transforming', function (done) {
+    it('should wait for a complete pixel before transforming', (done) => {
         const meta: FramebufferMeta = {
             bpp: 32,
             red_offset: 0,
@@ -169,7 +169,7 @@ describe('RgbTransform', function () {
         const stream = new Stream.PassThrough();
         const transform = new RgbTransform(meta);
         stream.pipe(transform);
-        transform.on('data', function (chunk) {
+        transform.on('data', (chunk) => {
             expect(chunk).to.have.length(3);
             expect(chunk.readUInt8(0)).to.equal(50);
             expect(chunk.readUInt8(1)).to.equal(100);
@@ -181,7 +181,7 @@ describe('RgbTransform', function () {
         stream.write(pixel.slice(3, 4));
         stream.end();
     });
-    return it('should transform a stream of multiple pixels', function (done) {
+    return it('should transform a stream of multiple pixels', (done) => {
         const meta: FramebufferMeta = {
             bpp: 32,
             red_offset: 16,
@@ -212,10 +212,10 @@ describe('RgbTransform', function () {
         const transform = new RgbTransform(meta);
         stream.pipe(transform);
         let all = Buffer.from('');
-        transform.on('data', function (chunk) {
+        transform.on('data', (chunk) => {
             return (all = Buffer.concat([all, chunk]));
         });
-        transform.on('end', function () {
+        transform.on('end', () => {
             expect(all).to.have.length(15);
             expect(all.readUInt8(0)).to.equal(150);
             expect(all.readUInt8(1)).to.equal(100);

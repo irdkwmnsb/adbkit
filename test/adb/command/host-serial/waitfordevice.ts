@@ -6,14 +6,14 @@ import Protocol from '../../../../src/adb/protocol';
 import { WaitForDeviceCommand } from '../../../../src/adb/command/host-serial';
 import Connection from '../../../../src/adb/connection';
 
-describe('WaitForDeviceCommand', function () {
-    it("should send 'host-serial:<serial>:wait-for-any-device'", function () {
+describe('WaitForDeviceCommand', () => {
+    it("should send 'host-serial:<serial>:wait-for-any-device'", () => {
         const conn = new MockConnection();
         const cmd = new WaitForDeviceCommand(conn as any as Connection);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('host-serial:abba:wait-for-any-device').toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
@@ -23,7 +23,7 @@ describe('WaitForDeviceCommand', function () {
     it('should resolve with id when the device is connected', async () => {
         const conn = new MockConnection();
         const cmd = new WaitForDeviceCommand(conn as any as Connection);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
@@ -32,10 +32,10 @@ describe('WaitForDeviceCommand', function () {
         expect(id).to.equal('abba');
         return true;
     });
-    return it('should reject with error if unable to connect', async function () {
+    return it('should reject with error if unable to connect', async () => {
         const conn = new MockConnection();
         const cmd = new WaitForDeviceCommand(conn as any as Connection);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead(Protocol.FAIL);
             conn.getSocket().causeRead(Protocol.encodeData('not sure how this might happen'));

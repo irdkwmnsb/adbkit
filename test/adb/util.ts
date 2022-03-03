@@ -4,9 +4,9 @@ import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import util from '../../src/adb/util';
 
-describe('util', function () {
-    return describe('readAll(stream)', function () {
-        it('should return a cancellable Bluebird Promise', function (done) {
+describe('util', () => {
+    return describe('readAll(stream)', () => {
+        it('should return a cancellable Bluebird Promise', (done) => {
             const stream = new Stream.PassThrough();
             const promise = util.readAll(stream);
             expect(promise).to.be.an.instanceOf(Promise);

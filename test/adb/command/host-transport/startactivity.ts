@@ -6,11 +6,11 @@ import Protocol from '../../../../src/adb/protocol';
 import StartActivityCommand from '../../../../src/adb/command/host-transport/startactivity';
 import { StartActivityOptions } from '../../../../src/';
 
-describe('StartActivityCommand', function () {
-    it("should succeed when 'Success' returned", function () {
+describe('StartActivityCommand', () => {
+    it("should succeed when 'Success' returned", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             const socket = conn.getSocket();
             socket.causeRead(Protocol.OKAY);
             socket.causeRead('Success');
@@ -21,10 +21,10 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should fail when 'Error' returned", function (done) {
+    it("should fail when 'Error' returned", (done) => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Error: foo\n');
             return conn.getSocket().causeEnd();
@@ -37,15 +37,15 @@ describe('StartActivityCommand', function () {
             done();
         });
     });
-    it("should send 'am start -n <pkg>'", function () {
+    it("should send 'am start -n <pkg>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData("shell:am start -n 'com.dummy.component/.Main'").toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
             return conn.getSocket().causeEnd();
@@ -55,15 +55,15 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -W -D --user 0 -n <pkg>'", function () {
+    it("should send 'am start -W -D --user 0 -n <pkg>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData("shell:am start -n 'com.dummy.component/.Main' -D -W --user 0").toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
             return conn.getSocket().causeEnd();
@@ -76,15 +76,15 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -a <action>'", function () {
+    it("should send 'am start -a <action>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData("shell:am start -a 'foo.ACTION_BAR'").toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
             return conn.getSocket().causeEnd();
@@ -94,13 +94,13 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -d <data>'", function () {
+    it("should send 'am start -d <data>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData("shell:am start -d 'foo://bar'").toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
             return conn.getSocket().causeEnd();
@@ -110,13 +110,13 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -t <mimeType>'", function () {
+    it("should send 'am start -t <mimeType>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData("shell:am start -t 'text/plain'").toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
             return conn.getSocket().causeEnd();
@@ -126,15 +126,15 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -c <category>'", function () {
+    it("should send 'am start -c <category>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData("shell:am start -c 'android.intent.category.LAUNCHER'").toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
             return conn.getSocket().causeEnd();
@@ -144,17 +144,17 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -c <category1> -c <category2>'", function () {
+    it("should send 'am start -c <category1> -c <category2>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData(
                     "shell:am start -c 'android.intent.category.LAUNCHER' -c 'android.intent.category.DEFAULT'",
                 ).toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
             return conn.getSocket().causeEnd();
@@ -164,13 +164,13 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -f <flags>'", function () {
+    it("should send 'am start -f <flags>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData(`shell:am start -f ${0x10210000}`).toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
             return conn.getSocket().causeEnd();
@@ -180,17 +180,17 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -n <pgk> --es <extras>'", function () {
+    it("should send 'am start -n <pgk> --es <extras>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData(
                     "shell:am start --es 'key1' 'value1' --es 'key2' 'value2' -n 'com.dummy.component/.Main'",
                 ).toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
             return conn.getSocket().causeEnd();
@@ -210,17 +210,17 @@ describe('StartActivityCommand', function () {
         } as StartActivityOptions;
         return cmd.execute(options);
     });
-    it("should send 'am start -n <pgk> --ei <extras>'", function () {
+    it("should send 'am start -n <pgk> --ei <extras>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData(
                     "shell:am start --ei 'key1' 1 --ei 'key2' 2 -n 'com.dummy.component/.Main'",
                 ).toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
             return conn.getSocket().causeEnd();
@@ -242,17 +242,17 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -n <pgk> --ez <extras>'", function () {
+    it("should send 'am start -n <pgk> --ez <extras>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData(
                     "shell:am start --ez 'key1' 'true' --ez 'key2' 'false' -n 'com.dummy.component/.Main'",
                 ).toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success');
             return conn.getSocket().causeEnd();
@@ -274,17 +274,17 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -n <pgk> --el <extras>'", function () {
+    it("should send 'am start -n <pgk> --el <extras>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData(
                     "shell:am start --el 'key1' 1 --el 'key2' '2' -n 'com.dummy.component/.Main'",
                 ).toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success');
             return conn.getSocket().causeEnd();
@@ -306,17 +306,17 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -n <pgk> --eu <extras>'", function () {
+    it("should send 'am start -n <pgk> --eu <extras>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData(
                     "shell:am start --eu 'key1' 'http://example.org' --eu 'key2' 'http://example.org' -n 'com.dummy.component/.Main'",
                 ).toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success');
             return conn.getSocket().causeEnd();
@@ -338,17 +338,17 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -n <pgk> --es <extras>'", function () {
+    it("should send 'am start -n <pgk> --es <extras>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData(
                     "shell:am start --es 'key1' 'a' --es 'key2' 'b' -n 'com.dummy.component/.Main'",
                 ).toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success');
             return conn.getSocket().causeEnd();
@@ -370,17 +370,17 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -n <pgk> --eia <extras with arr>'", function () {
+    it("should send 'am start -n <pgk> --eia <extras with arr>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData(
                     "shell:am start --eia 'key1' '2,3' --ela 'key2' '20,30' --ei 'key3' 5 -n 'com.dummy.component/.Main'",
                 ).toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success');
             return conn.getSocket().causeEnd();
@@ -407,17 +407,17 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it("should send 'am start -n <pgk> --esn <extras>'", function () {
+    it("should send 'am start -n <pgk> --esn <extras>'", () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData(
                     "shell:am start --esn 'key1' --esn 'key2' -n 'com.dummy.component/.Main'",
                 ).toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success');
             return conn.getSocket().causeEnd();
@@ -437,7 +437,7 @@ describe('StartActivityCommand', function () {
         };
         return cmd.execute(options);
     });
-    it('should throw when calling with an unknown extra type', function (done) {
+    it('should throw when calling with an unknown extra type', (done) => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
         const options = {
@@ -450,22 +450,22 @@ describe('StartActivityCommand', function () {
                 },
             ],
         } as unknown;
-        expect(function () {
+        expect(() => {
             return cmd.execute(options as StartActivityOptions);
         }).to.throw;
         done();
     });
-    it('should accept mixed types of extras', function () {
+    it('should accept mixed types of extras', () => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData(
                     "shell:am start --ez 'key1' 'true' --es 'key2' 'somestr' --es 'key3' 'defaultType' --ei 'key4' 3 --el 'key5' '4' --eu 'key6' 'http://example.org' --esn 'key7' -n 'com.dummy.component/.Main'",
                 ).toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success');
             return conn.getSocket().causeEnd();
@@ -510,7 +510,7 @@ describe('StartActivityCommand', function () {
         } as StartActivityOptions;
         return cmd.execute(options);
     });
-    return it('should map short extras to long extras', function (done) {
+    return it('should map short extras to long extras', (done) => {
         const conn = new MockConnection();
         const cmd = new StartActivityCommand(conn);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

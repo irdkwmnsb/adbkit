@@ -5,7 +5,7 @@ import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import ConnectCommand from '../../../../src/adb/command/host/connect';
 
-describe('ConnectCommand', function () {
+describe('ConnectCommand', () => {
     it("should send 'host:connect:<host>:<port>'", () => {
         const conn = new MockConnection();
         const cmd = new ConnectCommand(conn);

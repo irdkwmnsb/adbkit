@@ -5,7 +5,7 @@ import PsCommand from '../../../../src/adb/command/host-transport/ps';
 import getTester from './commonTest';
 const { testTr, testPr } = getTester(PsCommand);
 
-describe('psCommand', function () {
+describe('psCommand', () => {
     it("should send 'ps'", () => testTr('shell:ps'));
 
     it("should send 'ps -f'", () => testTr('shell:ps -f', '-f'));

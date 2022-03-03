@@ -14,9 +14,9 @@ function bPromiseTest(promise: any) {
     return false;
 }
 
-describe('Parser', function () {
-    describe('end()', function () {
-        return it('should end the stream and consume all remaining data', async function () {
+describe('Parser', () => {
+    describe('end()', () => {
+        return it('should end the stream and consume all remaining data', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('F');
@@ -25,8 +25,8 @@ describe('Parser', function () {
             return await parser.end();
         });
     });
-    describe('readAll()', function () {
-        it('should return a cancellable Promise', function (done) {
+    describe('readAll()', () => {
+        it('should return a cancellable Promise', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readAll();
@@ -34,7 +34,7 @@ describe('Parser', function () {
                 parser.end();
             done();
         });
-        it('should read all remaining content until the stream ends', async function () {
+        it('should read all remaining content until the stream ends', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readAll()
@@ -47,7 +47,7 @@ describe('Parser', function () {
             expect(buf.toString()).to.equal('FOO');
             return true;
         });
-        return it("should resolve with an empty Buffer if the stream has already ended and there's nothing more to read", async function () {
+        return it("should resolve with an empty Buffer if the stream has already ended and there's nothing more to read", async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readAll();
@@ -57,8 +57,8 @@ describe('Parser', function () {
             return true;
         });
     });
-    describe('readBytes(howMany)', function () {
-        it('should return a cancellable Promise', function (done) {
+    describe('readBytes(howMany)', () => {
+        it('should return a cancellable Promise', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.readBytes(1);
@@ -67,7 +67,7 @@ describe('Parser', function () {
                 parser.end()
             done();
         });
-        it('should read as many bytes as requested', async function () {
+        it('should read as many bytes as requested', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readBytes(4);
@@ -80,7 +80,7 @@ describe('Parser', function () {
             expect(buf2.toString()).to.equal('FA');
             return true;
         });
-        it('should wait for enough data to appear', async function () {
+        it('should wait for enough data to appear', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readBytes(5);
@@ -90,7 +90,7 @@ describe('Parser', function () {
             expect(buf.toString()).to.equal('BYTES');
             return true;
         });
-        it('should keep data waiting even when nothing has been requested', async function () {
+        it('should keep data waiting even when nothing has been requested', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('FOO');
@@ -101,7 +101,7 @@ describe('Parser', function () {
             return true;
         });
 
-        return it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', function (done) {
+        return it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('F');
@@ -146,7 +146,7 @@ describe('Parser', function () {
             expect(target.read()).to.eql(Buffer.from('PIE'));
         });
     });
-    describe('readAscii(howMany)', function () {
+    describe('readAscii(howMany)', () => {
         it('should return a cancellable Bluebird Promise', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -253,8 +253,8 @@ describe('Parser', function () {
             return stream.end();
         });
     });
-    describe('searchLine(re)', function () {
-        it('should return a cancellable Bluebird Promise', function (done) {
+    describe('searchLine(re)', () => {
+        it('should return a cancellable Bluebird Promise', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const promise = parser.searchLine(/foo/);
@@ -283,7 +283,7 @@ describe('Parser', function () {
             stream.end();
         });
     });
-    describe('readLine()', function () {
+    describe('readLine()', () => {
         it('should return a cancellable Bluebird Promise', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -329,7 +329,7 @@ describe('Parser', function () {
             }
         });
     });
-    describe('readUntil(code)', function () {
+    describe('readUntil(code)', () => {
         it('should return a cancellable Bluebird Promise', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -356,19 +356,19 @@ describe('Parser', function () {
             stream.end();
         });
     });
-    describe('raw()', function () {
-        return it('should return the resumed raw stream', function () {
+    describe('raw()', () => {
+        return it('should return the resumed raw stream', () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const raw = parser.raw();
             expect(raw).to.equal(stream);
-            raw.on('data', function () {
+            raw.on('data', () => {
                 // done();
             });
             return raw.write('foo');
         });
     });
-    return describe('unexpected(data, expected)', function () {
+    return describe('unexpected(data, expected)', () => {
         return it('should reject with Parser.UnexpectedDataError', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);

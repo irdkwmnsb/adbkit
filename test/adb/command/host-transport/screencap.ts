@@ -6,26 +6,26 @@ import Protocol from '../../../../src/adb/protocol';
 import Parser from '../../../../src/adb/parser';
 import ScreencapCommand from '../../../../src/adb/command/host-transport/screencap';
 
-describe('ScreencapCommand', function () {
-    it("should send 'screencap -p'", function () {
+describe('ScreencapCommand', () => {
+    it("should send 'screencap -p'", () => {
         const conn = new MockConnection();
         const cmd = new ScreencapCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData('shell:echo && screencap -p 2>/dev/null').toString(),
             );
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('\r\nlegit image');
             return conn.getSocket().causeEnd();
         });
         return cmd.execute()
     });
-    it('should resolve with the PNG stream', async function () {
+    it('should resolve with the PNG stream', async () => {
         const conn = new MockConnection();
         const cmd = new ScreencapCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('\r\nlegit image');
             return conn.getSocket().causeEnd();
@@ -35,21 +35,21 @@ describe('ScreencapCommand', function () {
         const out = await new Parser(stream).readAll();
         expect(out.toString()).to.equal('legit image');
     });
-    it('should reject if command not supported', function (done) {
+    it('should reject if command not supported', (done) => {
         const conn = new MockConnection();
         const cmd = new ScreencapCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeEnd();
         });
-        cmd.execute().catch(function () {
+        cmd.execute().catch(() => {
             done();
         });
     });
-    it('should perform CRLF transformation by default', async function () {
+    it('should perform CRLF transformation by default', async () => {
         const conn = new MockConnection();
         const cmd = new ScreencapCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('\r\nfoo\r\n');
             return conn.getSocket().causeEnd();
@@ -59,10 +59,10 @@ describe('ScreencapCommand', function () {
         const out = await new Parser(stream).readAll();
         expect(out.toString()).to.equal('foo\n');
     });
-    return it('should not perform CRLF transformation if not needed', async function () {
+    return it('should not perform CRLF transformation if not needed', async () => {
         const conn = new MockConnection();
         const cmd = new ScreencapCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('\nfoo\r\n');
             return conn.getSocket().causeEnd();

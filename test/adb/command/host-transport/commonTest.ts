@@ -33,7 +33,7 @@ function testTr(cmdClass: CommandConstructor<any, any>, expectWrite: string, ...
 async function testPr(cmdClass: CommandConstructor<any, any>, readData?: string | string[], ...args: string[]) {
     const conn = new MockConnection();
     const cmd = new cmdClass(conn);
-    setImmediate(function () {
+    setImmediate(() => {
         conn.getSocket().causeRead(Protocol.OKAY);
         if (readData) {
             if (typeof readData === 'string' || readData instanceof String) {
@@ -59,7 +59,7 @@ async function testPr(cmdClass: CommandConstructor<any, any>, readData?: string 
 //    ) {
 //    const conn = new MockConnection();
 //    const cmd = new cmdClass(conn);
-//    setImmediate(function () {
+//    setImmediate(() => {
 //        conn.getSocket().causeRead(Protocol.OKAY);
 //        if (readData) {
 //            if (typeof readData === 'string' || readData instanceof String) {

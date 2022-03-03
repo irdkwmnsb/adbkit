@@ -5,14 +5,14 @@ import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import RootCommand from '../../../../src/adb/command/host-transport/root';
 
-describe('RootCommand', function () {
+describe('RootCommand', () => {
     it("should send 'root:'", async () => {
         const conn = new MockConnection();
         const cmd = new RootCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('root:').toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('restarting adbd as root\n');
             return conn.getSocket().causeEnd();
@@ -23,7 +23,7 @@ describe('RootCommand', function () {
     return it('should reject on unexpected reply', (done) => {
         const conn = new MockConnection();
         const cmd = new RootCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('adbd cannot run as root in production builds\n');
             return conn.getSocket().causeEnd();

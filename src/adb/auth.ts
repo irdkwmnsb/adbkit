@@ -22,7 +22,7 @@ const BigInteger = forge.jsbn.BigInteger;
 export default class Auth {
   private static RE = /^((?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?)\0?( .*|)\s*$/;
   public static parsePublicKey(buffer: string): Promise<ExtendedPublicKey> {
-    return new Promise<ExtendedPublicKey>(function (resolve, reject) {
+    return new Promise<ExtendedPublicKey>((resolve, reject) => {
       const match = Auth.RE.exec(buffer);
       if (match) {
         const struct = Buffer.from(match[1], 'base64');

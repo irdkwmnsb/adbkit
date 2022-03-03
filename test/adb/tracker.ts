@@ -13,12 +13,12 @@ import Util from '../../src/adb/util';
 
 const getClient = () => null as DeviceClient;
 
-describe('Tracker', function () {
+describe('Tracker', () => {
     let writer: Transform;
     let conn: Connection;
     let cmd: HostTrackDevicesCommand;
     let tracker: Tracker;
-    beforeEach(function () {
+    beforeEach(() => {
         writer = new Stream.PassThrough();
         conn = {
             parser: new Parser(writer),
@@ -28,7 +28,7 @@ describe('Tracker', function () {
         cmd = new HostTrackDevicesCommand(conn);
         tracker = new Tracker(cmd);
     });
-    it("should emit 'add' when a device is added", function (done) {
+    it("should emit 'add' when a device is added", (done) => {
         const spy = Sinon.spy();
         tracker.on('add', spy);
         const device1: Device = { id: 'a', type: 'device', getClient};
@@ -39,7 +39,7 @@ describe('Tracker', function () {
         expect(spy).to.have.been.calledWith(device2);
         done();
     });
-    it("should emit 'remove' when a device is removed", function (done) {
+    it("should emit 'remove' when a device is removed", (done) => {
         const spy = Sinon.spy();
         tracker.on('remove', spy);
         const device1: Device = { id: 'a', type: 'device', getClient };
@@ -50,7 +50,7 @@ describe('Tracker', function () {
         expect(spy).to.have.been.calledWith(device2);
         done();
     });
-    it("should emit 'change' when a device changes", function (done) {
+    it("should emit 'change' when a device changes", (done) => {
         const spy = Sinon.spy();
         tracker.on('change', spy);
         const deviceOld: Device = { id: 'a', type: 'device', getClient };
@@ -61,7 +61,7 @@ describe('Tracker', function () {
         expect(spy).to.have.been.calledWith(deviceNew, deviceOld);
         done();
     });
-    it("should emit 'changeSet' with all changes", function (done) {
+    it("should emit 'changeSet' with all changes", (done) => {
         const spy = Sinon.spy();
         tracker.on('changeSet', spy);
         const device1: Device = { id: 'a', type: 'device', getClient };
@@ -131,10 +131,10 @@ d\toffline`),
     //         });
     //         tracker.end();
     //     });
-    //     return it('should not cause an error to be emit', function (done) {
+    //     return it('should not cause an error to be emit', (done) => {
     //         const spy = Sinon.spy();
     //         tracker.on('error', spy);
-    //         tracker.on('end', function () {
+    //         tracker.on('end', () => {
     //             expect(spy).to.not.have.been.called;
     //             done();
     //         });

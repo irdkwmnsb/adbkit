@@ -6,7 +6,7 @@ import getTester from './commonTest';
 
 const {testTr, testPr} = getTester(IpRouteCommand);
 
-describe('ipRouteCommand', function () {
+describe('ipRouteCommand', () => {
     it("should send 'ip route'", () => testTr('shell:ip route'));
 
     it("should send 'ip route list table all'", () => testTr('shell:ip route list table all', 'list table all'));

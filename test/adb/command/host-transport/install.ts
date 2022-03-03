@@ -11,7 +11,7 @@ describe('InstallCommand', () => {
     it("should send 'pm install -r <apk>'", () => {
         const conn = new MockConnection();
         const cmd = new InstallCommand(conn);
-        conn.getSocket().on('write', function (chunk) {
+        conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('shell:pm install -r "foo"').toString());
         });
         setImmediate(() => {
@@ -21,20 +21,20 @@ describe('InstallCommand', () => {
         });
         return cmd.execute('foo');
     });
-    it("should succeed when command responds with 'Success'", function () {
+    it("should succeed when command responds with 'Success'", () => {
         const conn = new MockConnection();
         const cmd = new InstallCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\r\n');
             return conn.getSocket().causeEnd();
         });
         return cmd.execute('foo');
     });
-    it("should reject if command responds with 'Failure [REASON]'", function (done) {
+    it("should reject if command responds with 'Failure [REASON]'", (done) => {
         const conn = new MockConnection();
         const cmd = new InstallCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Failure [BAR]\r\n');
             return conn.getSocket().causeEnd();
@@ -43,10 +43,10 @@ describe('InstallCommand', () => {
             done();
         });
     });
-    it("should give detailed reason in rejection's code property", function (done) {
+    it("should give detailed reason in rejection's code property", (done) => {
         const conn = new MockConnection();
         const cmd = new InstallCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Failure [ALREADY_EXISTS]\r\n');
             return conn.getSocket().causeEnd();
@@ -56,10 +56,10 @@ describe('InstallCommand', () => {
             done();
         });
     });
-    return it('should ignore any other data', function () {
+    return it('should ignore any other data', () => {
         const conn = new MockConnection();
         const cmd = new InstallCommand(conn);
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('open: Permission failed\r\n');
             conn.getSocket().causeRead('Success\r\n');
