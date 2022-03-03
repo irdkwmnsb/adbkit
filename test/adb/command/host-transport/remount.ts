@@ -12,7 +12,7 @@ describe('RemountCommand', () => {
         conn.getSocket().on('write', (chunk) => {
             expect(chunk.toString()).to.equal(Protocol.encodeData('remount:').toString());
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute();
     });

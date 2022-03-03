@@ -16,7 +16,7 @@ function bPromiseTest(promise: any) {
 
 describe('Parser', () => {
     describe('end()', () => {
-        return it('should end the stream and consume all remaining data', async () => {
+        it('should end the stream and consume all remaining data', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('F');
@@ -47,7 +47,7 @@ describe('Parser', () => {
             expect(buf.toString()).to.equal('FOO');
             return true;
         });
-        return it("should resolve with an empty Buffer if the stream has already ended and there's nothing more to read", async () => {
+        it("should resolve with an empty Buffer if the stream has already ended and there's nothing more to read", async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readAll();
@@ -242,7 +242,7 @@ describe('Parser', () => {
             })
             stream.write('000cepic failure');
         });
-        return it('should reject with Parser.PrematureEOFError if stream ends before the error can be read', (done) => {
+        it('should reject with Parser.PrematureEOFError if stream ends before the error can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readError().catch(err => {
@@ -272,7 +272,7 @@ describe('Parser', () => {
             expect(line.input).to.equal('zip zap');
             return true;
         });
-        return it('should reject with Parser.PrematureEOFError if stream ends before a line is found', (done) => {
+        it('should reject with Parser.PrematureEOFError if stream ends before a line is found', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.searchLine(/nope/).catch(err => {
@@ -316,7 +316,7 @@ describe('Parser', () => {
             expect(buf.toString()).to.equal('foo bar');
             return true;
         });
-        return it('should reject with Parser.PrematureEOFError if stream ends before a line is found', async () => {
+        it('should reject with Parser.PrematureEOFError if stream ends before a line is found', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('foo bar');
@@ -345,7 +345,7 @@ describe('Parser', () => {
             const buf = await parser.readUntil('p'.charCodeAt(0))
             expect(buf.toString()).to.equal('foo bar\nzi');
         });
-        return it('should reject with Parser.PrematureEOFError if stream ends before a line is found', (done) => {
+        it('should reject with Parser.PrematureEOFError if stream ends before a line is found', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             parser.readUntil('z'.charCodeAt(0)).catch(err => {
@@ -357,7 +357,7 @@ describe('Parser', () => {
         });
     });
     describe('raw()', () => {
-        return it('should return the resumed raw stream', () => {
+        it('should return the resumed raw stream', () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const raw = parser.raw();
@@ -369,7 +369,7 @@ describe('Parser', () => {
         });
     });
     return describe('unexpected(data, expected)', () => {
-        return it('should reject with Parser.UnexpectedDataError', (done) => {
+        it('should reject with Parser.UnexpectedDataError', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             parser.unexpected('foo', "'bar' or end of stream").catch(e => {

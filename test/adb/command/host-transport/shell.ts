@@ -11,11 +11,11 @@ describe('ShellCommand', () => {
         const conn = new MockConnection();
         const cmd = new ShellCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(Protocol.encodeData("shell:foo 'bar").toString());
+            expect(chunk.toString()).to.equal(Protocol.encodeData("shell:foo 'bar").toString());
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute("foo 'bar");
     });
@@ -23,11 +23,11 @@ describe('ShellCommand', () => {
         const conn = new MockConnection();
         const cmd = new ShellCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(Protocol.encodeData(`shell:'foo' ''"'"'bar'"'"'' '"'`).toString());
+            expect(chunk.toString()).to.equal(Protocol.encodeData(`shell:'foo' ''"'"'bar'"'"'' '"'`).toString());
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute(['foo', "'bar'", '"']);
     });
@@ -35,11 +35,11 @@ describe('ShellCommand', () => {
         const conn = new MockConnection();
         const cmd = new ShellCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(Protocol.encodeData(`shell:'foo' 67`).toString());
+            expect(chunk.toString()).to.equal(Protocol.encodeData(`shell:'foo' 67`).toString());
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute(['foo', 67]);
     });
@@ -47,12 +47,12 @@ describe('ShellCommand', () => {
         const conn = new MockConnection();
         const cmd = new ShellCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(Protocol.encodeData(`shell:'foo'`).toString());
+            expect(chunk.toString()).to.equal(Protocol.encodeData(`shell:'foo'`).toString());
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.FAIL);
             conn.getSocket().causeRead(Protocol.encodeData('mystery'));
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         try {
             await cmd.execute(['foo']);

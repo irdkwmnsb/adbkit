@@ -10,12 +10,12 @@ describe('RootCommand', () => {
         const conn = new MockConnection();
         const cmd = new RootCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(Protocol.encodeData('root:').toString());
+            expect(chunk.toString()).to.equal(Protocol.encodeData('root:').toString());
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('restarting adbd as root\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         const val = await cmd.execute();
         expect(val).to.be.true;
@@ -26,7 +26,7 @@ describe('RootCommand', () => {
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('adbd cannot run as root in production builds\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         cmd.execute().catch((err) => {
             expect(err.message).to.eql('adbd cannot run as root in production builds');

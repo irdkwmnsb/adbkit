@@ -50,7 +50,7 @@ describe('Sync', () => {
         deviceList = devices;
     });
     describe('end()', () => {
-        return it('should end the sync connection', () => {
+        it('should end the sync connection', () => {
             const conn = new MockConnection();
             const sync = new Sync(conn);
             Sinon.stub(conn, 'end');
@@ -75,7 +75,7 @@ describe('Sync', () => {
             sync.push(__filename, 'foo');
             return expect(sync.pushFile).to.have.been.called;
         });
-        return it('should return a PushTransfer instance', () => {
+        it('should return a PushTransfer instance', () => {
             const conn = new MockConnection();
             const sync = new Sync(conn);
             const stream = new Stream.PassThrough();

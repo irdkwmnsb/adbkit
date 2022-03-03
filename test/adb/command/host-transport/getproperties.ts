@@ -2,17 +2,17 @@ import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import GetPropertiesCommand from '../../../../src/adb/command/host-transport/getproperties';
-import getTester from './commonTest';
-const { testTr, testPr } = getTester(GetPropertiesCommand);
+import Tester from './Tester';
+const t = new Tester(GetPropertiesCommand);
 
 describe('GetPropertiesCommand', () => {
-    it("should send 'getprop'", () => testTr('shell:getprop'));
+    it("should send 'getprop'", () => t.testTr('shell:getprop'));
     it('should return an empty object for an empty property list', async () => {
-        const properties = await testPr();
+        const properties = await t.testPr();
         expect(Object.keys(properties)).to.be.empty;
     });
     return it('should return a map of properties', async () => {
-        const properties = await testPr(`[ro.product.locale.region]: [US]
+        const properties = await t.testPr(`[ro.product.locale.region]: [US]
 [ro.product.manufacturer]: [samsung]\r
 [ro.product.model]: [SC-04E]
 [ro.product.name]: [SC-04E]`);

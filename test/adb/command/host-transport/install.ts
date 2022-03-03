@@ -4,8 +4,8 @@ Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import InstallCommand from '../../../../src/adb/command/host-transport/install';
-import getTester from './commonTest';
-const { testTr, testPr } = getTester(InstallCommand);
+import Tester from './Tester';
+const t = new Tester(InstallCommand);
 
 describe('InstallCommand', () => {
     it("should send 'pm install -r <apk>'", () => {

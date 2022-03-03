@@ -21,7 +21,7 @@ describe('FrameBufferCommand', () => {
         });
         return cmd.execute('raw');
     });
-    return it("should parse meta header and return it as the 'meta' property of the stream", async () => {
+    it("should parse meta header and return it as the 'meta' property of the stream", async () => {
         const conn = new MockConnection();
         const cmd = new FrameBufferCommand(conn);
         conn.getSocket().on('write', (chunk) => {

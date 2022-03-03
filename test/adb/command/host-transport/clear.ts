@@ -4,8 +4,8 @@ Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import ClearCommand from '../../../../src/adb/command/host-transport/clear';
-import getTester from './commonTest';
-const { testPr } = getTester(ClearCommand);
+import Tester from './Tester';
+const t = new Tester(ClearCommand);
 
 describe('ClearCommand', () => {
     it("should send 'pm clear <pkg>'", () => {
@@ -55,7 +55,7 @@ describe('ClearCommand', () => {
         });
     });
     return it('should ignore irrelevant lines', async () => {
-        const result = await testPr(['Open: foo error\n\n', 'Success\r\n'], 'foo.bar.c')
+        const result = await t.testPr(['Open: foo error\n\n', 'Success\r\n'], 'foo.bar.c')
         return expect(result).to.be.eq(true);
     });
 });

@@ -76,7 +76,7 @@ describe('LineTransform', () => {
             duplex.causeRead('\nbar\r\n');
             duplex.causeEnd();
         });
-        return it('should transform as usual if first byte is not 0x0a', (done) => {
+        it('should transform as usual if first byte is not 0x0a', (done) => {
             const duplex = new MockDuplex();
             const transform = new LineTransform({
                 autoDetect: true,
@@ -95,7 +95,7 @@ describe('LineTransform', () => {
         });
     });
     describe('without autoDetect', () => {
-        return it('should transform as usual even if first byte is 0x0a', (done) => {
+        it('should transform as usual even if first byte is 0x0a', (done) => {
             const duplex = new MockDuplex();
             const transform = new LineTransform();
             let buffer = Buffer.from('');

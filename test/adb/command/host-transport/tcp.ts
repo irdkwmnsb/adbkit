@@ -11,11 +11,11 @@ describe('TcpCommand', () => {
         const conn = new MockConnection();
         const cmd = new TcpCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(Protocol.encodeData('tcp:8080').toString());
+            expect(chunk.toString()).to.equal(Protocol.encodeData('tcp:8080').toString());
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute(8080);
     });
@@ -23,11 +23,11 @@ describe('TcpCommand', () => {
         const conn = new MockConnection();
         const cmd = new TcpCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(Protocol.encodeData('tcp:8080:127.0.0.1').toString());
+            expect(chunk.toString()).to.equal(Protocol.encodeData('tcp:8080:127.0.0.1').toString());
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute(8080, '127.0.0.1');
     });
@@ -35,7 +35,7 @@ describe('TcpCommand', () => {
         const conn = new MockConnection();
         const cmd = new TcpCommand(conn);
         setImmediate(() => {
-            return conn.getSocket().causeRead(Protocol.OKAY);
+            conn.getSocket().causeRead(Protocol.OKAY);
         });
         const stream = await cmd.execute(8080);
         stream.end();

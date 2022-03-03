@@ -12,7 +12,7 @@ describe('SyncCommand', () => {
         conn.getSocket().on('write', (chunk) => {
             expect(chunk.toString()).to.equal(Protocol.encodeData('sync:').toString());
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute();
     });

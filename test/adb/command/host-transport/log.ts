@@ -5,25 +5,20 @@ Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import LogCommand from '../../../../src/adb/command/host-transport/log';
+import Tester from './Tester';
+const t = new Tester(LogCommand);
 
 describe('LogCommand', () => {
-    it("should send 'log:<log>'", () => {
-        const conn = new MockConnection();
-        const cmd = new LogCommand(conn);
-        conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(Protocol.encodeData('log:main').toString());
-        });
-        setImmediate(() => {
-            conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
-        });
-        return cmd.execute('main');
+    it("should send 'log:<log>'", async () => {
+        await t.testTr('log:main', 'main');
+        // return a Duplex;
+        return true;
     });
     return it('should resolve with the log stream', async () => {
         const conn = new MockConnection();
         const cmd = new LogCommand(conn);
         setImmediate(() => {
-            return conn.getSocket().causeRead(Protocol.OKAY);
+            conn.getSocket().causeRead(Protocol.OKAY);
         });
         const stream = await cmd.execute('main');
         stream.end();

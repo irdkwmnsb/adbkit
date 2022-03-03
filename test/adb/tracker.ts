@@ -131,7 +131,7 @@ d\toffline`),
     //         });
     //         tracker.end();
     //     });
-    //     return it('should not cause an error to be emit', (done) => {
+    //     it('should not cause an error to be emit', (done) => {
     //         const spy = Sinon.spy();
     //         tracker.on('error', spy);
     //         tracker.on('end', () => {

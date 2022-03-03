@@ -13,7 +13,7 @@ describe('util', () => {
             stream.end();
             done();
         });
-        return it('should read all remaining content until the stream ends', async () => {
+        it('should read all remaining content until the stream ends', async () => {
             const stream = new Stream.PassThrough();
             stream.write('F');
             stream.write('O');

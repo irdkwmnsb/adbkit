@@ -16,7 +16,7 @@ describe('Adb', () => {
         done();
     });
     return describe('@createClient(options)', () => {
-        return it('should return a Client instance', (done) => {
+        it('should return a Client instance', (done) => {
             expect(Adb.createClient()).to.be.an.instanceOf(Client);
             done();
         });

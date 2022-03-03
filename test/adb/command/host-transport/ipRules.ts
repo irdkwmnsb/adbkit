@@ -2,17 +2,17 @@ import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import { IpRuleCommand } from '../../../../src/adb/command/host-transport';
-import getTester from './commonTest';
+import Tester from './Tester';
 
-const {testTr, testPr} = getTester(IpRuleCommand);
+const t = new Tester(IpRuleCommand);
 
 describe('ipRouteCommand', () => {
-    it("should send 'ip rule'", () => testTr('shell:ip rule'));
+    it("should send 'ip rule'", () => t.testTr('shell:ip rule'));
 
-    it("should send 'ip rule list'", () => testTr('shell:ip rule list', 'list'));
+    it("should send 'ip rule list'", () => t.testTr('shell:ip rule list', 'list'));
 
     it('should return a list of rule', async() => {
-        const result = await testPr(`0:      from all lookup local 
+        const result = await t.testPr(`0:      from all lookup local 
 10000:  from all fwmark 0xc0000/0xd0000 lookup 99 
 10500:  from all iif lo oif dummy0 uidrange 0-0 lookup 1003`);
         expect(result).to.have.length(3);

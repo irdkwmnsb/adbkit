@@ -31,7 +31,7 @@ describe('HostVersionCommand', () => {
         expect(version).to.equal(0x1234);
         return true;
     });
-    return it('should handle old-style version', async () => {
+    it('should handle old-style version', async () => {
         const conn = new MockConnection();
         const cmd = new HostVersionCommand(conn);
         setImmediate(() => {

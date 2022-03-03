@@ -11,14 +11,14 @@ describe('ScreencapCommand', () => {
         const conn = new MockConnection();
         const cmd = new ScreencapCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(
+            expect(chunk.toString()).to.equal(
                 Protocol.encodeData('shell:echo && screencap -p 2>/dev/null').toString(),
             );
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('\r\nlegit image');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         return cmd.execute()
     });
@@ -28,7 +28,7 @@ describe('ScreencapCommand', () => {
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('\r\nlegit image');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         const stream = await cmd
             .execute();
@@ -40,7 +40,7 @@ describe('ScreencapCommand', () => {
         const cmd = new ScreencapCommand(conn);
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         cmd.execute().catch(() => {
             done();
@@ -52,7 +52,7 @@ describe('ScreencapCommand', () => {
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('\r\nfoo\r\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         const stream = await cmd
             .execute();
@@ -65,7 +65,7 @@ describe('ScreencapCommand', () => {
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('\nfoo\r\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         const stream = await cmd
             .execute();

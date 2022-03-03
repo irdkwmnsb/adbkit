@@ -12,7 +12,7 @@ describe('StartServiceCommand', () => {
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         const options = {
             component: 'com.dummy.component/.Main',
@@ -25,7 +25,7 @@ describe('StartServiceCommand', () => {
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Error: foo\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         const options = {
             component: 'com.dummy.component/.Main',
@@ -39,14 +39,14 @@ describe('StartServiceCommand', () => {
         const conn = new MockConnection();
         const cmd = new StartServiceCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(
+            expect(chunk.toString()).to.equal(
                 Protocol.encodeData("shell:am startservice -n 'com.dummy.component/.Main' --user 0").toString(),
             );
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         const options = {
             component: 'com.dummy.component/.Main',
@@ -58,14 +58,14 @@ describe('StartServiceCommand', () => {
         const conn = new MockConnection();
         const cmd = new StartServiceCommand(conn);
         conn.getSocket().on('write', (chunk) => {
-            return expect(chunk.toString()).to.equal(
+            expect(chunk.toString()).to.equal(
                 Protocol.encodeData("shell:am startservice -n 'com.dummy.component/.Main'").toString(),
             );
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\n');
-            return conn.getSocket().causeEnd();
+            conn.getSocket().causeEnd();
         });
         const options = {
             component: 'com.dummy.component/.Main',

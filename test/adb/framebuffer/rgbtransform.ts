@@ -181,7 +181,7 @@ describe('RgbTransform', () => {
         stream.write(pixel.slice(3, 4));
         stream.end();
     });
-    return it('should transform a stream of multiple pixels', (done) => {
+    it('should transform a stream of multiple pixels', (done) => {
         const meta: FramebufferMeta = {
             bpp: 32,
             red_offset: 16,

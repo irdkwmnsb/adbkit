@@ -17,7 +17,7 @@ describe('MonkeyCommand', () => {
         });
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeRead(':Monkey: foo\n');
+            conn.getSocket().causeRead(':Monkey: foo\n');
         });
         return cmd.execute(1080);
     });
@@ -26,7 +26,7 @@ describe('MonkeyCommand', () => {
         const cmd = new MonkeyCommand(conn);
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
-            return conn.getSocket().causeRead(':Monkey: foo\n');
+            conn.getSocket().causeRead(':Monkey: foo\n');
         });
         const stream = await cmd.execute(1080);
         stream.end();

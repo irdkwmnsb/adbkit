@@ -2,16 +2,16 @@ import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import PsCommand from '../../../../src/adb/command/host-transport/ps';
-import getTester from './commonTest';
-const { testTr, testPr } = getTester(PsCommand);
+import Tester from './Tester';
+const t = new Tester(PsCommand);
 
 describe('psCommand', () => {
-    it("should send 'ps'", () => testTr('shell:ps'));
+    it("should send 'ps'", () => t.testTr('shell:ps'));
 
-    it("should send 'ps -f'", () => testTr('shell:ps -f', '-f'));
+    it("should send 'ps -f'", () => t.testTr('shell:ps -f', '-f'));
 
     it('should return a list of PsEntry', async () => {
-        const result = await testPr(`UID             PID   PPID C STIME TTY          TIME CMD
+        const result = await t.testPr(`UID             PID   PPID C STIME TTY          TIME CMD
 shell         30941   3021 0 15:35:50 pts/3 00:00:00 sh
 shell         31350  30941 21 16:18:23 pts/3 00:00:00 ps -f
 `);
@@ -22,7 +22,7 @@ shell         31350  30941 21 16:18:23 pts/3 00:00:00 ps -f
     });
 
     it('should return a list of PsEntry -A', async () => {
-        const result = await testPr(`USER            PID   PPID     VSZ    RSS WCHAN            ADDR S NAME
+        const result = await t.testPr(`USER            PID   PPID     VSZ    RSS WCHAN            ADDR S NAME
 root              1      0 10826728  3728 0                   0 S init
 root              2      0       0      0 0                   0 S [kthreadd]`);
         return expect(result).to.eql([
