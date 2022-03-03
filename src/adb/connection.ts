@@ -8,6 +8,7 @@ import { Socket } from 'net';
 import { promisify } from 'util';
 import { ClientOptions } from '../ClientOptions';
 import { ObjectEncodingOptions } from 'fs';
+import { Client } from '..';
 
 const debug = d('adb:connection');
 
@@ -17,12 +18,16 @@ export default class Connection extends EventEmitter {
   private triedStarting: boolean;
   public options: ClientOptions;
 
-  constructor(options?: ClientOptions) {
+  constructor(private _parent: Client) {
     super();
-    this.options = options || { port: 0 };
+    this.options = _parent.options || { port: 0 };
     // this.socket = null;
     // this.parser = null;
     this.triedStarting = false;
+  }
+
+  public get parent(): Client {
+    return this._parent;
   }
 
   public async connect(): Promise<Connection> {

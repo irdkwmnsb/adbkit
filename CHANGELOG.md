@@ -2,6 +2,8 @@
 
 ## v3.1.0 (2022-03-02)
 
+* add ip route command
+* DeviceClient can be obtain from a Device object using getClient()
 * drop all bluebird references, use only native Promise.
 * bump all depencences
 * replace @devicefarmer/adbkit-monkey by @u4/adbkit-monkey

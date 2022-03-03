@@ -1,12 +1,13 @@
 import Connection from '../../src/adb/connection';
 import Parser from '../../src/adb/parser';
 import MockDuplex from './duplex';
+import MockClient from './client';
 
 export default class MockConnection extends Connection {
     _socket = new MockDuplex();
 
     constructor() {
-        super();
+        super(new MockClient());
         this.parser = new Parser(this._socket);
     }
 

@@ -1,6 +1,7 @@
 import Command from '../../command';
 import Protocol from '../../protocol';
 import Device from '../../../Device';
+import DeviceClient from '../../DeviceClient';
 
 export default class HostDevicesCommand extends Command<Device[]> {
   async execute(): Promise<Device[]> {
@@ -31,6 +32,7 @@ export default class HostDevicesCommand extends Command<Device[]> {
         return {
           id,
           type: type as 'emulator' | 'device' | 'offline',
+          getClient: () => new DeviceClient(this.connection.parent, id),
         };
       });
   }

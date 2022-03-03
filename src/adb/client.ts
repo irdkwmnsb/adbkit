@@ -37,7 +37,7 @@ export default class Client extends EventEmitter {
   }
 
   public connection(): Promise<Connection> {
-    const connection = new Connection(this.options);
+    const connection = new Connection(this);
     // Reemit unhandled connection errors, so they can be handled externally.
     // If not handled at all, these will crash node.
     connection.on('error', (err) => this.emit('error', err));
@@ -76,6 +76,10 @@ export default class Client extends EventEmitter {
     return new DeviceClient(this, deviceId);
   }
 
+  /**
+   * list connected device
+   * @returns list of device serial number + types
+   */
   public async listDevices(): Promise<Device[]> {
     const conn = await this.connection();
     return await new HostDevicesCommand(conn).execute();

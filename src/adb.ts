@@ -3,7 +3,7 @@ import Client from './adb/client';
 import util from './adb/util';
 import { ClientOptions } from './ClientOptions';
 
-interface Options {
+export interface Options {
   host?: string;
   port?: number;
   bin?: string;

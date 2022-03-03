@@ -1,6 +1,7 @@
 import Command from '../../command';
 import Protocol from '../../protocol';
 import DeviceWithPath from '../../../DeviceWithPath';
+import DeviceClient from '../../DeviceClient';
 
 export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[]> {
   async execute(): Promise<DeviceWithPath[]> {
@@ -37,6 +38,7 @@ export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[
           model,
           device,
           transportId,
+          getClient: () => new DeviceClient(this.connection.parent, id),
         };
       });
   }

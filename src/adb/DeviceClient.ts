@@ -1,4 +1,4 @@
-import { Monkey,  Client as MonkeyClient } from '@u4/adbkit-monkey';
+import { Monkey, Client as MonkeyClient } from '@u4/adbkit-monkey';
 import Logcat from '@u4/adbkit-logcat';
 import Connection from './connection';
 import Sync from './sync';
@@ -41,6 +41,7 @@ import {
   KnownServices,
   ServiceCheckCommand,
   ServiceCallCommand,
+  IpRouteCommand,
 } from './command/host-transport';
 import {
   ForwardCommand,
@@ -69,6 +70,7 @@ import JdwpTracker from './jdwptracker';
 import DeviceWithPath from '../DeviceWithPath';
 import Client from './client';
 import Util from './util';
+import { IpRouteEntry } from './command/host-transport/ip_route';
 
 const debug = d('adb:client');
 
@@ -153,6 +155,17 @@ export default class DeviceClient {
   public async getPs(...flags: string[]): Promise<Array<Partial<PsEntry>>> {
     const transport = await this.transport();
     return await new PsCommand(transport).execute(...flags);
+  }
+
+
+  /**
+   * call ip rout command
+   *
+   * @returns a IpRouteEntry array
+   */
+  public async getIpRoute(...args: string[]): Promise<Array<IpRouteEntry>> {
+    const transport = await this.transport();
+    return await new IpRouteCommand(transport).execute(...args);
   }
 
   /**
