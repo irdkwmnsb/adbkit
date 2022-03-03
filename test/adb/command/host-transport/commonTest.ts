@@ -13,7 +13,7 @@ interface CommandConstructor<T extends Command<U>, U> {
 /**
  * check under the hood sent data
  */
-export function testTr(cmdClass: CommandConstructor<any, any>, expectWrite: string, ...args: string[]) {
+function testTr(cmdClass: CommandConstructor<any, any>, expectWrite: string, ...args: string[]) {
     const conn = new MockConnection();
     const cmd = new cmdClass(conn);
     if (expectWrite)
@@ -30,7 +30,7 @@ export function testTr(cmdClass: CommandConstructor<any, any>, expectWrite: stri
 /**
  * check command parser
  */
-export async function testPr(cmdClass: CommandConstructor<any, any>, readData?: string | string[]) {
+async function testPr(cmdClass: CommandConstructor<any, any>, readData?: string | string[], ...args: string[]) {
     const conn = new MockConnection();
     const cmd = new cmdClass(conn);
     setImmediate(function () {
@@ -44,14 +44,43 @@ export async function testPr(cmdClass: CommandConstructor<any, any>, readData?: 
         }
         conn.getSocket().causeEnd();
     });
-    const result = await cmd.execute();
+    const result = cmd.execute(...args);
     // expect(result).to.eql(parsedData);
     return result;
 }
+
+/**
+ * check command parser
+ */
+//async function test(cmdClass: CommandConstructor<any, any>,
+//    readData: string | string[],
+//    expectWrite: string | string[],
+//    ...args: string[]
+//    ) {
+//    const conn = new MockConnection();
+//    const cmd = new cmdClass(conn);
+//    setImmediate(function () {
+//        conn.getSocket().causeRead(Protocol.OKAY);
+//        if (readData) {
+//            if (typeof readData === 'string' || readData instanceof String) {
+//                conn.getSocket().causeRead(readData as string);
+//            } else for (const rd of readData) {
+//                conn.getSocket().causeRead(rd);
+//            }
+//        }
+//        conn.getSocket().causeEnd();
+//    });
+//    const result = await cmd.execute();
+//    // expect(result).to.eql(parsedData);
+//    return result;
+// }
+
+
+
 // , parsedData: any
 export default function getTester(cmdClass: CommandConstructor<any, any>): {
     testTr: (expectWrite: string, ...args: string[]) => Promise<any>
-    testPr: (readData?: string | string[]) => Promise<any>,
+    testPr: (readData?: string | string[], ...args: string[]) => Promise<any>,
 } {
     return {
         testTr: testTr.bind(null, cmdClass),

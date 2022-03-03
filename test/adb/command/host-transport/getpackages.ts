@@ -5,7 +5,7 @@ import GetPackagesCommand from '../../../../src/adb/command/host-transport/getpa
 import getTester from './commonTest';
 const { testTr, testPr } = getTester(GetPackagesCommand);
 
-describe('GetPackagesCommand', function () {
+describe('GetPackagesCommand', () => {
     it("should send 'pm list packages'", () => testTr('shell:pm list packages 2>/dev/null'));
     it("should send 'pm list packages' with flag", () => testTr('shell:pm list packages -3 2>/dev/null', '-3'));
 

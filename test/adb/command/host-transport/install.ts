@@ -4,15 +4,17 @@ Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import InstallCommand from '../../../../src/adb/command/host-transport/install';
+import getTester from './commonTest';
+const { testTr, testPr } = getTester(InstallCommand);
 
-describe('InstallCommand', function () {
-    it("should send 'pm install -r <apk>'", function () {
+describe('InstallCommand', () => {
+    it("should send 'pm install -r <apk>'", () => {
         const conn = new MockConnection();
         const cmd = new InstallCommand(conn);
         conn.getSocket().on('write', function (chunk) {
             return expect(chunk.toString()).to.equal(Protocol.encodeData('shell:pm install -r "foo"').toString());
         });
-        setImmediate(function () {
+        setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead('Success\r\n');
             return conn.getSocket().causeEnd();
