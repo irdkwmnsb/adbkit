@@ -20,11 +20,11 @@ export default class MockConnection extends Connection {
         return this;
     }
 
-    public write(chunk: string | Uint8Array): Promise<void> {
+    public write(chunk: string | Uint8Array): Promise<boolean> {
         return new Promise((accept, reject) => {
-            this._socket.write(chunk, (err) => {
+            const flushed = this._socket.write(chunk, (err) => {
                 if (err) reject(err);
-                else accept();
+                else accept(flushed);
             });
         })
     }

@@ -58,7 +58,7 @@ export default class Sync extends EventEmitter {
   public async readdir(path: string): Promise<Entry[]> {
     const files: Entry[] = [];
     await this._sendCommandWithArg(Protocol.LIST, path);
-    for (;;) {
+    for (; ;) {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
         case Protocol.DENT:
@@ -104,8 +104,8 @@ export default class Sync extends EventEmitter {
     return this._writeData(stream, Math.floor(Date.now() / 1000));
   }
 
-  public pull(path: string): PullTransfer {
-    this._sendCommandWithArg(Protocol.RECV, `${path}`);
+  public async pull(path: string): Promise<PullTransfer> {
+    await this._sendCommandWithArg(Protocol.RECV, `${path}`);
     return this._readData();
   }
 
@@ -139,19 +139,21 @@ export default class Sync extends EventEmitter {
 
       // const track = () => transfer.pop();
       const writeAll = async (): Promise<void> => {
-        for (;;) {
+        for (; ;) {
           const chunk = stream.read(DATA_MAX_LENGTH) || stream.read();
           if (!chunk) return;
           this._sendCommandWithLength(Protocol.DATA, chunk.length);
           transfer.push(chunk.length);
+          let flushed = true;
           try {
-            await this.connection.write(chunk); 
+            flushed = await this.connection.write(chunk);
           } catch (e) {
-            // need some test;
             console.error(e);
+            throw e;
           }
-          transfer.pop()
-          await this.connection.waitForDrain();
+          if (!flushed)
+            await this.connection.waitForDrain();
+          transfer.pop();
         }
       };
 
@@ -171,7 +173,7 @@ export default class Sync extends EventEmitter {
         stream.removeListener('readable', readableListener);
         stream.removeListener('error', errorListener);
         this.connection.removeListener('error', connErrorListener);
-      // writer.cancel();
+        // writer.cancel();
       });
 
 
@@ -209,7 +211,7 @@ export default class Sync extends EventEmitter {
   private _readData(): PullTransfer {
     const transfer = new PullTransfer();
     const readAll = async (): Promise<boolean> => {
-      for (;;) {
+      for (; ;) {
         const reply = await this.parser.readAscii(4);
         switch (reply) {
           case Protocol.DATA:
@@ -247,8 +249,13 @@ export default class Sync extends EventEmitter {
       await this.parser.end();
     }
   }
-
-  private async _sendCommandWithLength(cmd: string, length: number): Promise<void> {
+  /**
+   * 
+   * @param cmd 
+   * @param length 
+   * @returns if return false, some data had been cached, use drain to flush that
+   */
+  private async _sendCommandWithLength(cmd: string, length: number): Promise<boolean> {
     if (cmd !== Protocol.DATA) {
       debug(cmd);
     }
@@ -258,7 +265,13 @@ export default class Sync extends EventEmitter {
     return this.connection.write(payload);
   }
 
-  private _sendCommandWithArg(cmd: string, arg: string): Promise<void> {
+  /**
+   * 
+   * @param cmd 
+   * @param arg 
+   * @returns if return false, some data had been cached, use drain to flush that
+   */
+  private _sendCommandWithArg(cmd: string, arg: string): Promise<boolean> {
     debug(`${cmd} ${arg}`);
     const arglen = Buffer.byteLength(arg, 'utf-8');
     const payload = Buffer.alloc(cmd.length + 4 + arglen);

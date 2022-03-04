@@ -25,7 +25,10 @@ export default abstract class Command<T> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   public abstract execute(...args: any[]): Promise<T>;
 
-  public _send(data: string | Buffer): Promise<void> {
+  /**
+   * @returns if return false, some data had been cached, use drain to flush that
+   */
+  public _send(data: string | Buffer): Promise<boolean> {
     const encoded = Protocol.encodeData(data);
     if (debug.enabled) {
       debug(`Send '${encoded}'`);
@@ -52,8 +55,9 @@ export default abstract class Command<T> {
   }
   /**
    * called once per command, only affect shell based command.
+   * @returns if return false, some data had been cached, use drain to flush that
    */
-  protected sendCommand(data: string): Promise<void> {
+  protected sendCommand(data: string): Promise<boolean> {
     if (this.options.sudo && data.startsWith('shell:')) {
       data = data.replace('shell:', 'shell:su -c ');
     }

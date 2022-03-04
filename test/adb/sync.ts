@@ -120,8 +120,8 @@ describe('Sync', () => {
                     const transfer = await sync.pushStream(stream, SURELY_WRITABLE_FILE);
                     expect(transfer).to.be.an.instanceof(PushTransfer);
                     transfer.on('error', reject);
-                    transfer.on('end', () => {
-                        const transfer = sync.pull(SURELY_WRITABLE_FILE);
+                    transfer.on('end', async () => {
+                        const transfer = await sync.pull(SURELY_WRITABLE_FILE);
                         expect(transfer).to.be.an.instanceof(PullTransfer);
                         transfer.on('error', reject);
                         return transfer.on('readable', () => {
@@ -141,15 +141,15 @@ describe('Sync', () => {
         });
         dt('should emit error for non-existing files', (done) => {
             return forEachSyncDevice((sync) => {
-                return new Promise((resolve) => {
-                    const transfer = sync.pull(SURELY_NONEXISTING_PATH);
+                return new Promise(async (resolve) => {
+                    const transfer = await sync.pull(SURELY_NONEXISTING_PATH);
                     return transfer.on('error', resolve);
                 });
             }).finally(done);
         });
         dt('should return a PullTransfer instance', (done) => {
-            return forEachSyncDevice( (sync) => {
-                const rval = sync.pull(SURELY_EXISTING_FILE);
+            return forEachSyncDevice( async (sync) => {
+                const rval = await sync.pull(SURELY_EXISTING_FILE);
                 expect(rval).to.be.an.instanceof(PullTransfer);
                 return rval.cancel();
             }).finally(done);
@@ -157,8 +157,8 @@ describe('Sync', () => {
         return describe('Stream', () => {
             dt("should emit 'end' when pull is done", (done) => {
                 return forEachSyncDevice((sync) => {
-                    return new Promise((resolve, reject) => {
-                        const transfer = sync.pull(SURELY_EXISTING_FILE);
+                    return new Promise(async (resolve, reject) => {
+                        const transfer = await sync.pull(SURELY_EXISTING_FILE);
                         transfer.on('error', reject);
                         transfer.on('end', resolve);
                         return transfer.resume();

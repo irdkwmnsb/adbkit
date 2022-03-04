@@ -642,7 +642,8 @@ export default class DeviceClient {
    */
   public async pull(path: string): Promise<PullTransfer> {
     const sync = await this.syncService();
-    return sync.pull(path).on('end', () => sync.end());
+    const pullTransfer = await sync.pull(path);
+    return pullTransfer.on('end', () => sync.end());
   }
 
   /**

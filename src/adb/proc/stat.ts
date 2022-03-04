@@ -46,8 +46,8 @@ export default class ProcStat extends EventEmitter {
       throw Error('Closed');
     }
     try {
-      const out = await new Parser(this.sync.pull('/proc/stat'))
-        .readAll();
+      const transfert = await this.sync.pull('/proc/stat');
+      const out = await new Parser(transfert).readAll();
       return this._parse(out.toString());
     } catch (err) {
       this._error(err as Error);

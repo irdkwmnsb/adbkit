@@ -95,12 +95,12 @@ export default class Connection extends EventEmitter {
     return this;
   }
 
-  public write(data: Buffer): Promise<void> {
+  public write(data: Buffer): Promise<boolean> {
     return new Promise((accept, reject) => {
       const enc = dump(data);
-      this.socket.write(enc, (err) => {
+      const flushed = this.socket.write(enc, (err) => {
         if (err) reject(err);
-        else accept();
+        else accept(flushed);
       });
     })
   }
