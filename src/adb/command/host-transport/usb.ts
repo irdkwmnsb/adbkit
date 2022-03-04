@@ -3,8 +3,8 @@ import Command from '../../command';
 
 const RE_OK = /restarting in/;
 
-export default class UsbCommand extends Command<boolean> {
-  async execute(): Promise<boolean> {
+export default class UsbCommand extends Command<true> {
+  async execute(): Promise<true> {
     this._send('usb:');
     const reply = await this.parser.readAscii(4);
     switch (reply) {

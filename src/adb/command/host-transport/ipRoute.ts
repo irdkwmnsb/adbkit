@@ -1,7 +1,7 @@
 import Command from '../../command';
 import Protocol from '../../protocol';
 import pc from 'picocolors'
-import { ShellExecError } from '.';
+import ShellExecError from './ShellExecError';
 
 export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
   async execute(...args: string[]): Promise<Array<IpRouteEntry>> {

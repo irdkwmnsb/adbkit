@@ -1,8 +1,8 @@
 import Protocol from '../../protocol';
 import Command from '../../command';
 
-export default class RemountCommand extends Command<boolean> {
-  async execute(): Promise<boolean> {
+export default class RemountCommand extends Command<true> {
+  async execute(): Promise<true> {
     this._send('remount:');
     const reply = await this.parser.readAscii(4);
     switch (reply) {

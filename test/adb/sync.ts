@@ -39,7 +39,7 @@ describe('Sync', () => {
             try {
                 return await iterator(sync);
             } finally {
-                return sync.end();
+                sync.end();
             }
         });
         return Promise.all(promises);

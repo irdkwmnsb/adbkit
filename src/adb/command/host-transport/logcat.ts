@@ -2,9 +2,7 @@ import LineTransform from '../../linetransform';
 import Protocol from '../../protocol';
 import Command from '../../command';
 
-// FIXME(intentional any): not "any" will break it all
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default class LogcatCommand extends Command<any> {
+export default class LogcatCommand extends Command<LineTransform> {
   async execute(options: { clear?: boolean } = {}): Promise<LineTransform> {
     // For some reason, LG G Flex requires a filter spec with the -B option.
     // It doesn't actually use it, though. Regardless of the spec we always get

@@ -33,21 +33,21 @@ export default abstract class Command<T> {
     return this.connection.write(encoded);
   }
 
-  public _escape(arg: number | WithToString): number | string {
+  public escape(arg: number | WithToString): number | string {
     switch (typeof arg) {
       case 'number':
         return arg;
       default:
-        return "'" + arg.toString().replace(RE_SQUOT, "'\"'\"'") + "'";
+        return `'${arg.toString().replace(RE_SQUOT, "'\"'\"'")}'`;
     }
   }
 
-  public _escapeCompat(arg: number | WithToString): number | string {
+  public escapeCompat(arg: number | WithToString): number | string {
     switch (typeof arg) {
       case 'number':
         return arg;
       default:
-        return '"' + arg.toString().replace(RE_ESCAPE, '\\$1') + '"';
+        return `"${arg.toString().replace(RE_ESCAPE, '\\$1')}"`;
     }
   }
   /**

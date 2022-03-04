@@ -1,8 +1,8 @@
 import Protocol from '../../protocol';
 import Command from '../../command';
 
-export default class RebootCommand extends Command<boolean> {
-  async execute(): Promise<boolean> {
+export default class RebootCommand extends Command<true> {
+  async execute(): Promise<true> {
     this._send('reboot:');
     const reply = await this.parser.readAscii(4);
     switch (reply) {

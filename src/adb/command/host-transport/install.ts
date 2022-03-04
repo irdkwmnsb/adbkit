@@ -3,7 +3,7 @@ import Command from '../../command';
 
 export default class InstallCommand extends Command<boolean> {
   async execute(apk: string): Promise<boolean> {
-    this._send(`shell:pm install -r ${this._escapeCompat(apk)}`);
+    this._send(`shell:pm install -r ${this.escapeCompat(apk)}`);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:

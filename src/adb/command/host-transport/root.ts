@@ -3,8 +3,8 @@ import Command from '../../command';
 
 const RE_OK = /restarting adbd as root/;
 
-export default class RootCommand extends Command<boolean> {
-  async execute(): Promise<boolean> {
+export default class RootCommand extends Command<true> {
+  async execute(): Promise<true> {
     this._send('root:');
     const reply = await this.parser.readAscii(4);
     switch (reply) {

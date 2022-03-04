@@ -1,8 +1,8 @@
 import Protocol from '../../protocol';
 import Command from '../../command';
 
-export default class ReverseCommand extends Command<boolean> {
-  async execute(remote: string, local: string): Promise<boolean> {
+export default class ReverseCommand extends Command<true> {
+  async execute(remote: string, local: string): Promise<true> {
     this._send(`reverse:forward:${remote};${local}`);
     let reply = await this.parser.readAscii(4);
     switch (reply) {
