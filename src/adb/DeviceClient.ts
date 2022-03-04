@@ -654,7 +654,9 @@ export default class DeviceClient {
    */
   public async push(contents: string | ReadStream, path: string, mode?: number): Promise<PushTransfer> {
     const sync = await this.syncService();
-    return sync.push(contents, path, mode).on('end', () => sync.end());
+    const transfert = await sync.push(contents, path, mode);
+    transfert.on('end', () => sync.end());
+    return transfert;
   }
 
   /**

@@ -95,9 +95,14 @@ export default class Connection extends EventEmitter {
     return this;
   }
 
-  public write(data: Buffer, callback?: (err?: Error) => void): this {
-    this.socket.write(dump(data), callback);
-    return this;
+  public write(data: Buffer): Promise<void> {
+    return new Promise((accept, reject) => {
+      const enc = dump(data);
+      this.socket.write(enc, (err) => {
+        if (err) reject(err);
+        else accept();
+      });
+    })
   }
 
   public startServer(): Promise<{ stdout: string; stderr: string; }> {

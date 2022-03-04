@@ -20,10 +20,13 @@ export default class MockConnection extends Connection {
         return this;
     }
 
-    // public write(data: string | Uint8Array, callback?: (err?: Error) => void): this {
-    public write(chunk: string | Uint8Array, cb?: (error: Error | null | undefined) => void): this {
-        this._socket.write(chunk, cb);
-        return this;
+    public write(chunk: string | Uint8Array): Promise<void> {
+        return new Promise((accept, reject) => {
+            this._socket.write(chunk, (err) => {
+                if (err) reject(err);
+                else accept();
+            });
+        })
     }
 
     on(): this {

@@ -25,13 +25,12 @@ export default abstract class Command<T> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   public abstract execute(...args: any[]): Promise<T>;
 
-  public _send(data: string | Buffer): Command<T> {
+  public _send(data: string | Buffer): Promise<void> {
     const encoded = Protocol.encodeData(data);
     if (debug.enabled) {
       debug(`Send '${encoded}'`);
     }
-    this.connection.write(encoded);
-    return this;
+    return this.connection.write(encoded);
   }
 
   public _escape(arg: number | WithToString): number | string {
@@ -54,7 +53,7 @@ export default abstract class Command<T> {
   /**
    * called once per command, only affect shell based command.
    */
-  protected sendCommand(data: string): Command<T> {
+  protected sendCommand(data: string): Promise<void> {
     if (this.options.sudo && data.startsWith('shell:')) {
       data = data.replace('shell:', 'shell:su -c ');
     }

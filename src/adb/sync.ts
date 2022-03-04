@@ -35,7 +35,7 @@ export default class Sync extends EventEmitter {
   }
 
   public async stat(path: string): Promise<Stats> {
-    this._sendCommandWithArg(Protocol.STAT, path);
+    await this._sendCommandWithArg(Protocol.STAT, path);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.STAT:
@@ -57,7 +57,7 @@ export default class Sync extends EventEmitter {
 
   public async readdir(path: string): Promise<Entry[]> {
     const files: Entry[] = [];
-    this._sendCommandWithArg(Protocol.LIST, path);
+    await this._sendCommandWithArg(Protocol.LIST, path);
     for (;;) {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
@@ -85,7 +85,7 @@ export default class Sync extends EventEmitter {
     }
   }
 
-  public push(contents: string | Readable, path: string, mode?: number): PushTransfer {
+  public async push(contents: string | Readable, path: string, mode?: number): Promise<PushTransfer> {
     if (typeof contents === 'string') {
       return this.pushFile(contents, path, mode);
     } else {
@@ -93,14 +93,14 @@ export default class Sync extends EventEmitter {
     }
   }
 
-  pushFile(file: string, path: string, mode = DEFAULT_CHMOD): PushTransfer {
+  public async pushFile(file: string, path: string, mode = DEFAULT_CHMOD): Promise<PushTransfer> {
     mode || (mode = DEFAULT_CHMOD);
     return this.pushStream(Fs.createReadStream(file), path, mode);
   }
 
-  public pushStream(stream: Readable, path: string, mode = DEFAULT_CHMOD): PushTransfer {
+  public async pushStream(stream: Readable, path: string, mode = DEFAULT_CHMOD): Promise<PushTransfer> {
     mode |= Stats.S_IFREG;
-    this._sendCommandWithArg(Protocol.SEND, `${path},${mode}`);
+    await this._sendCommandWithArg(Protocol.SEND, `${path},${mode}`);
     return this._writeData(stream, Math.floor(Date.now() / 1000));
   }
 
@@ -137,16 +137,21 @@ export default class Sync extends EventEmitter {
       };
       stream.on('end', endListener);
 
-      const track = () => transfer.pop();
+      // const track = () => transfer.pop();
       const writeAll = async (): Promise<void> => {
         for (;;) {
           const chunk = stream.read(DATA_MAX_LENGTH) || stream.read();
           if (!chunk) return;
           this._sendCommandWithLength(Protocol.DATA, chunk.length);
           transfer.push(chunk.length);
-          if (!this.connection.write(chunk, track)) {
-            await this.connection.waitForDrain();
+          try {
+            await this.connection.write(chunk); 
+          } catch (e) {
+            // need some test;
+            console.error(e);
           }
+          transfer.pop()
+          await this.connection.waitForDrain();
         }
       };
 
@@ -243,7 +248,7 @@ export default class Sync extends EventEmitter {
     }
   }
 
-  private _sendCommandWithLength(cmd: string, length: number): Connection {
+  private async _sendCommandWithLength(cmd: string, length: number): Promise<void> {
     if (cmd !== Protocol.DATA) {
       debug(cmd);
     }
@@ -253,7 +258,7 @@ export default class Sync extends EventEmitter {
     return this.connection.write(payload);
   }
 
-  private _sendCommandWithArg(cmd: string, arg: string): Connection {
+  private _sendCommandWithArg(cmd: string, arg: string): Promise<void> {
     debug(`${cmd} ${arg}`);
     const arglen = Buffer.byteLength(arg, 'utf-8');
     const payload = Buffer.alloc(cmd.length + 4 + arglen);

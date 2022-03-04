@@ -75,11 +75,11 @@ describe('Sync', () => {
             sync.push(__filename, 'foo');
             return expect(sync.pushFile).to.have.been.called;
         });
-        it('should return a PushTransfer instance', () => {
+        it('should return a PushTransfer instance', async () => {
             const conn = new MockConnection();
             const sync = new Sync(conn);
             const stream = new Stream.PassThrough();
-            const transfer = sync.push(stream, 'foo');
+            const transfer = await sync.push(stream, 'foo');
             expect(transfer).to.be.an.instanceof(PushTransfer);
             const ret = transfer.cancel();
             console.log('cancel return ', ret);
@@ -87,21 +87,21 @@ describe('Sync', () => {
         });
     });
     describe('pushStream(stream, path[, mode])', () => {
-        it('should return a PushTransfer instance', () => {
+        it('should return a PushTransfer instance', async () => {
             const conn = new MockConnection();
             const sync = new Sync(conn);
             const stream = new Stream.PassThrough();
-            const transfer = sync.pushStream(stream, 'foo');
+            const transfer = await sync.pushStream(stream, 'foo');
             expect(transfer).to.be.an.instanceof(PushTransfer);
             transfer.cancel();
             return true;
         });
         dt('should be able to push >65536 byte chunks without error', async () => {
             await forEachSyncDevice((sync) => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
                     const stream = new Stream.PassThrough();
                     const content = Buffer.alloc(1000000);
-                    const transfer = sync.pushStream(stream, SURELY_WRITABLE_FILE);
+                    const transfer = await sync.pushStream(stream, SURELY_WRITABLE_FILE);
                     transfer.on('error', reject);
                     transfer.on('end', resolve);
                     stream.write(content);
@@ -114,10 +114,10 @@ describe('Sync', () => {
     describe('pull(path)', () => {
         dt('should retrieve the same content pushStream() pushed', async () => {
             await forEachSyncDevice((sync) => {
-                return new Promise<void>((resolve, reject) => {
+                return new Promise<void>(async (resolve, reject) => {
                     const stream = new Stream.PassThrough();
                     const content = 'ABCDEFGHI' + Date.now();
-                    const transfer = sync.pushStream(stream, SURELY_WRITABLE_FILE);
+                    const transfer = await sync.pushStream(stream, SURELY_WRITABLE_FILE);
                     expect(transfer).to.be.an.instanceof(PushTransfer);
                     transfer.on('error', reject);
                     transfer.on('end', () => {
