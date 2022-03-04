@@ -15,21 +15,21 @@ export default class MockConnection extends Connection {
         return this._socket;
     }
 
-    end(): this {
+    public end(): this {
         this._socket.causeEnd();
         return this;
     }
 
-    public write(chunk: string | Uint8Array): Promise<boolean> {
+    public write(chunk: string | Uint8Array): Promise<number> {
         return new Promise((accept, reject) => {
-            const flushed = this._socket.write(chunk, (err) => {
+            this._socket.write(chunk, (err) => {
                 if (err) reject(err);
-                else accept(flushed);
+                else accept(chunk.length);
             });
         })
     }
 
-    on(): this {
+    public on(): this {
         return this;
     }
 }

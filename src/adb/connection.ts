@@ -17,12 +17,11 @@ export default class Connection extends EventEmitter {
   public parser!: Parser;
   private triedStarting: boolean;
   public options: ClientOptions;
+  private _errored?: Error
 
   constructor(private _parent: Client) {
     super();
     this.options = _parent.options || { port: 0 };
-    // this.socket = null;
-    // this.parser = null;
     this.triedStarting = false;
   }
 
@@ -76,18 +75,6 @@ export default class Connection extends EventEmitter {
     return this.socket;
   }
 
-  public async waitForDrain(): Promise<void> {
-    let drainListener!: () => void;
-    try {
-      return await new Promise<void>((resolve) => {
-        drainListener = () => { resolve(undefined); };
-        this.on('drain', drainListener);
-      });
-    } finally {
-      this.removeListener('drain', drainListener);
-    }
-  }
-
   public end(): this {
     if (this.socket) {
       this.socket.end();
@@ -95,13 +82,80 @@ export default class Connection extends EventEmitter {
     return this;
   }
 
-  public write(data: Buffer): Promise<boolean> {
-    return new Promise((accept, reject) => {
+  /**
+   * New Writen Call imported from Piotr Roszatycki implementation
+   * https://github.com/dex4er/js-promise-writable
+   * this method take care of any drain needed.
+   * 
+   * @param data data to write
+   * @returns number of byte writen
+   */
+  write(data: Buffer): Promise<number> {
+    const socket = this.socket
+    let rejected = false
+    return new Promise((resolve, reject) => {
+      // permit exta log to adbkit.dump if ADBKIT_DUMP env variable is set
       const enc = dump(data);
-      const flushed = this.socket.write(enc, (err) => {
-        if (err) reject(err);
-        else accept(flushed);
-      });
+      if (this._errored) {
+        const err = this._errored
+        this._errored = undefined
+        return reject(err)
+      }
+
+      if (!socket.writable || socket.destroyed) {
+        return reject(new Error("write in a closed socket"))
+      }
+
+      const writeErrorHandler = (err: Error) => {
+        this._errored = undefined
+        rejected = true
+        reject(err)
+      }
+
+      socket.once("error", writeErrorHandler)
+
+      const canWrite = socket.write(enc)
+
+      socket.removeListener("error", writeErrorHandler)
+
+      if (canWrite) {
+        if (!rejected) {
+          resolve(data.length)
+        }
+      } else {
+        const errorHandler = (err: Error): void => {
+          this._errored = undefined
+          removeListeners()
+          reject(err)
+        }
+
+        const drainHandler = (): void => {
+          removeListeners()
+          resolve(data.length)
+        }
+
+        const closeHandler = (): void => {
+          removeListeners()
+          resolve(data.length)
+        }
+
+        const finishHandler = (): void => {
+          removeListeners()
+          resolve(data.length)
+        }
+
+        const removeListeners = () => {
+          socket.removeListener("close", closeHandler)
+          socket.removeListener("drain", drainHandler)
+          socket.removeListener("error", errorHandler)
+          socket.removeListener("finish", finishHandler)
+        }
+
+        socket.on("close", closeHandler)
+        socket.on("drain", drainHandler)
+        socket.on("error", errorHandler)
+        socket.on("finish", finishHandler)
+      }
     })
   }
 
@@ -121,6 +175,4 @@ export default class Connection extends EventEmitter {
     debug(`CLI: ${this.options.bin} ${args.join(' ')}`);
     return promisify(execFile)(this.options.bin, args, options);
   }
-
-  // _handleError(err) {}
 }

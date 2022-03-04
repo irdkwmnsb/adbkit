@@ -26,9 +26,9 @@ export default abstract class Command<T> {
   public abstract execute(...args: any[]): Promise<T>;
 
   /**
-   * @returns if return false, some data had been cached, use drain to flush that
+   * @returns byte write count
    */
-  public _send(data: string | Buffer): Promise<boolean> {
+  public _send(data: string | Buffer): Promise<number> {
     const encoded = Protocol.encodeData(data);
     if (debug.enabled) {
       debug(`Send '${encoded}'`);
@@ -55,9 +55,9 @@ export default abstract class Command<T> {
   }
   /**
    * called once per command, only affect shell based command.
-   * @returns if return false, some data had been cached, use drain to flush that
+   * @returns byte write count
    */
-  protected sendCommand(data: string): Promise<boolean> {
+  protected sendCommand(data: string): Promise<number> {
     if (this.options.sudo && data.startsWith('shell:')) {
       data = data.replace('shell:', 'shell:su -c ');
     }

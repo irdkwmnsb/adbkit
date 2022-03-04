@@ -144,15 +144,7 @@ export default class Sync extends EventEmitter {
           if (!chunk) return;
           this._sendCommandWithLength(Protocol.DATA, chunk.length);
           transfer.push(chunk.length);
-          let flushed = true;
-          try {
-            flushed = await this.connection.write(chunk);
-          } catch (e) {
-            console.error(e);
-            throw e;
-          }
-          if (!flushed)
-            await this.connection.waitForDrain();
+          await this.connection.write(chunk);
           transfer.pop();
         }
       };
@@ -253,9 +245,9 @@ export default class Sync extends EventEmitter {
    * 
    * @param cmd 
    * @param length 
-   * @returns if return false, some data had been cached, use drain to flush that
+   * @returns byte write count
    */
-  private async _sendCommandWithLength(cmd: string, length: number): Promise<boolean> {
+  private async _sendCommandWithLength(cmd: string, length: number): Promise<number> {
     if (cmd !== Protocol.DATA) {
       debug(cmd);
     }
@@ -269,9 +261,9 @@ export default class Sync extends EventEmitter {
    * 
    * @param cmd 
    * @param arg 
-   * @returns if return false, some data had been cached, use drain to flush that
+   * @returns byte write count
    */
-  private _sendCommandWithArg(cmd: string, arg: string): Promise<boolean> {
+  private _sendCommandWithArg(cmd: string, arg: string): Promise<number> {
     debug(`${cmd} ${arg}`);
     const arglen = Buffer.byteLength(arg, 'utf-8');
     const payload = Buffer.alloc(cmd.length + 4 + arglen);
