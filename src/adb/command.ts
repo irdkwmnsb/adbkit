@@ -12,11 +12,13 @@ export default abstract class Command<T> {
   public parser: Parser;
   public protocol: Protocol;
   public connection: Connection;
+  public options: {sudo: boolean};
 
-  constructor(connection: Connection) {
+  constructor(connection: Connection, options?: {sudo?: boolean}) {
     this.connection = connection;
     this.parser = this.connection.parser;
     this.protocol = Protocol;
+    this.options = {...options || {}, ...{sudo: false}};
   }
 
   // FIXME(intentional any): not "any" will break it all
@@ -49,4 +51,14 @@ export default abstract class Command<T> {
         return '"' + arg.toString().replace(RE_ESCAPE, '\\$1') + '"';
     }
   }
+  /**
+   * called once per command, only affect shell based command.
+   */
+  protected sendCommand(data: string): Command<T> {
+    if (this.options.sudo && data.startsWith('shell:')) {
+      data = data.replace('shell:', 'shell:su -c ');
+    }
+    return this._send(data);
+  }
+
 }

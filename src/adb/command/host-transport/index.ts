@@ -32,3 +32,6 @@ export { default as ServiceCheckCommand } from './serviceCheck';
 export { default as ServiceCallCommand } from './serviceCall';
 export { default as IpRouteCommand, IpRouteEntry } from './ipRoute';
 export { default as IpRuleCommand, IpRuleEntry } from './ipRule';
+
+// not a command
+export { default as ShellExecError } from './ShellExecError';

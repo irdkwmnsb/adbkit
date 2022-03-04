@@ -20,7 +20,7 @@ import pc from 'picocolors'
  */
 export default class IpRuleCommand extends Command<Array<IpRuleEntry>> {
   async execute(...args: string[]): Promise<Array<IpRuleEntry>> {
-    this._send(['shell:ip', 'rule', ...args].join(' ')); //  2>/dev/null
+    this.sendCommand(['shell:ip', 'rule', ...args].join(' '));
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:

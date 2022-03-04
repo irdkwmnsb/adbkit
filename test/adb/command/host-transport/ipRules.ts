@@ -6,7 +6,7 @@ import Tester from './Tester';
 
 const t = new Tester(IpRuleCommand);
 
-describe('ipRouteCommand', () => {
+describe('IpRuleCommand', () => {
     it("should send 'ip rule'", () => t.testTr('shell:ip rule'));
 
     it("should send 'ip rule list'", () => t.testTr('shell:ip rule list', 'list'));

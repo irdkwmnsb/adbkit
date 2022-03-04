@@ -1,7 +1,7 @@
 import Protocol from './protocol';
 import { Duplex } from 'stream';
 
-class FailError extends Error {
+export class FailError extends Error {
   constructor(message: string) {
     super(`Failure: '${message}'`);
     Object.setPrototypeOf(this, FailError.prototype);
@@ -88,15 +88,15 @@ export default class Parser {
           all = Buffer.concat([all, chunk]);
         }
         if (this.ended) {
-          return resolve(all);
+          resolve(all);
         }
       };
       errorListener = (err) => {
-        return reject(err);
+        reject(err);
       };
       endListener = () => {
         this.ended = true;
-        return resolve(all);
+        resolve(all);
       };
       this.stream.on('readable', tryRead);
       this.stream.on('error', errorListener);

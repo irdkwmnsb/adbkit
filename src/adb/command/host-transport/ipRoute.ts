@@ -1,10 +1,11 @@
 import Command from '../../command';
 import Protocol from '../../protocol';
 import pc from 'picocolors'
+import { ShellExecError } from '.';
 
 export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
   async execute(...args: string[]): Promise<Array<IpRouteEntry>> {
-    this._send(['shell:ip', 'route', ...args].join(' ')); //  2>/dev/null
+    super.sendCommand(['shell:ip', 'route', ...args].join(' ')); //  2>/dev/null
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
@@ -18,6 +19,11 @@ export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
   }
 
   private parseIpRoute(value: string): Array<IpRouteEntry> {
+    if (value.startsWith('Error: ')) {
+      throw new ShellExecError(value.substring(7));
+    }
+    // const value = await this.readValue();
+
     const lines: string[] = value.split(/[\r\n]+/g).filter(a => a);
     const result: IpRouteEntry[] = [];
     for (const line of lines) {
@@ -45,6 +51,7 @@ export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
           case 'via':
           case 'src':
           case 'tos':
+          case 'mtu':
           case 'expires':
             entry[next] = value;
             break;
@@ -88,6 +95,7 @@ export class IpRouteEntry {
   // prefix?: CIDR;
   via?: string;
   dev?: string;
+  mtu?: string;
   // is a number is canned a user
   // is a mapped table name is called as root
   table?: string | number;
@@ -112,7 +120,7 @@ export class IpRouteEntry {
       if (this[field])
         out.push(this[field]);
     }
-    for (const field of ['via', 'dev', 'table', 'expires', 'proto', 'scope', 'tos', 'src', 'metric', 'pref'] as const) {
+    for (const field of ['via', 'dev', 'table', 'expires', 'proto', 'scope', 'tos', 'src', 'metric', 'pref', 'mtu'] as const) {
       if (this[field] || this[field] === 0) {
         out.push(field);
         out.push(String(this[field]));
@@ -120,4 +128,13 @@ export class IpRouteEntry {
     }
     return out.join(' ')
   }
+
+  public clone(): IpRouteEntry {
+    const cp = new IpRouteEntry();
+    for (const key of Object.keys(this))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (cp as any)[key] = (this as any)[key];
+    return cp;
+  }
+
 }

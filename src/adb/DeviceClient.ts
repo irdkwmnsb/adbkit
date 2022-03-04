@@ -40,10 +40,14 @@ const debug = d('adb:client');
 const NoUserOptionError = (err: Error) => err.message.indexOf('--user') !== -1;
 
 export default class DeviceClient {
+  private specialOptions = {sudo: false};
   constructor(public readonly client: Client, public readonly serial: string) {
     // no code
   }
 
+  set sudo(value: boolean) {
+    this.specialOptions.sudo = value;
+  }
   /**
    * Gets the serial number of the device identified by the given serial number. With our API this doesn't really make much sense, but it has been implemented for completeness. _FYI: in the raw ADB protocol you can specify a device in other ways, too._
    *
@@ -127,7 +131,7 @@ export default class DeviceClient {
    */
   public async getIpRoute(...args: string[]): Promise<Array<hostCmd.IpRouteEntry>> {
     const transport = await this.transport();
-    return await new hostCmd.IpRouteCommand(transport).execute(...args);
+    return await new hostCmd.IpRouteCommand(transport, this.specialOptions).execute(...args);
   }
 
   /**
@@ -137,7 +141,7 @@ export default class DeviceClient {
    */
   public async getIpRule(...args: string[]): Promise<Array<hostCmd.IpRuleEntry>> {
     const transport = await this.transport();
-    return await new hostCmd.IpRuleCommand(transport).execute(...args);
+    return await new hostCmd.IpRuleCommand(transport, this.specialOptions).execute(...args);
   }
 
   /**
