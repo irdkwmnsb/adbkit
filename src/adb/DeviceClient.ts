@@ -55,7 +55,7 @@ export default class DeviceClient {
    */
   public async getSerialNo(): Promise<string> {
     const conn = await this.connection();
-    return await new GetSerialNoCommand(conn).execute(this.serial);
+    return new GetSerialNoCommand(conn).execute(this.serial);
   }
 
   /**
@@ -64,7 +64,7 @@ export default class DeviceClient {
    */
   public async getDevicePath(): Promise<DeviceWithPath['path']> {
     const conn = await this.connection();
-    return await new GetDevicePathCommand(conn).execute(this.serial);
+    return new GetDevicePathCommand(conn).execute(this.serial);
   }
   /**
    * Gets the state of the device identified by the given serial number.
@@ -73,7 +73,7 @@ export default class DeviceClient {
    */
   public async getState(): Promise<string> {
     const conn = await this.connection();
-    return await new GetStateCommand(conn).execute(this.serial);
+    return new GetStateCommand(conn).execute(this.serial);
   }
 
   /**
@@ -83,7 +83,7 @@ export default class DeviceClient {
    */
   public async getProperties(): Promise<Properties> {
     const transport = await this.transport();
-    return await new hostCmd.GetPropertiesCommand(transport).execute();
+    return new hostCmd.GetPropertiesCommand(transport).execute();
   }
 
   /**
@@ -99,7 +99,7 @@ export default class DeviceClient {
    */
   public async getFeatures(): Promise<Features> {
     const transport = await this.transport();
-    return await new hostCmd.GetFeaturesCommand(transport).execute();
+    return new hostCmd.GetFeaturesCommand(transport).execute();
   }
 
   /**
@@ -110,7 +110,7 @@ export default class DeviceClient {
    */
   public async getPackages(flags?: string): Promise<string[]> {
     const transport = await this.transport();
-    return await new hostCmd.GetPackagesCommand(transport).execute(flags);
+    return new hostCmd.GetPackagesCommand(transport).execute(flags);
   }
 
   /**
@@ -121,7 +121,7 @@ export default class DeviceClient {
    */
   public async getPs(...flags: string[]): Promise<Array<Partial<hostCmd.PsEntry>>> {
     const transport = await this.transport();
-    return await new hostCmd.PsCommand(transport).execute(...flags);
+    return new hostCmd.PsCommand(transport).execute(...flags);
   }
 
   /**
@@ -129,9 +129,9 @@ export default class DeviceClient {
    *
    * @returns a IpRouteEntry array
    */
-  public async getIpRoute(...args: string[]): Promise<Array<hostCmd.IpRouteEntry>> {
+  public async ipRoute(...args: string[]): Promise<Array<hostCmd.IpRouteEntry>> {
     const transport = await this.transport();
-    return await new hostCmd.IpRouteCommand(transport, this.specialOptions).execute(...args);
+    return new hostCmd.IpRouteCommand(transport, this.specialOptions).execute(...args);
   }
 
   /**
@@ -139,9 +139,9 @@ export default class DeviceClient {
    *
    * @returns a IpRuleEntry array
    */
-  public async getIpRule(...args: string[]): Promise<Array<hostCmd.IpRuleEntry>> {
+  public async ipRule(...args: string[]): Promise<Array<hostCmd.IpRuleEntry>> {
     const transport = await this.transport();
-    return await new hostCmd.IpRuleCommand(transport, this.specialOptions).execute(...args);
+    return new hostCmd.IpRuleCommand(transport, this.specialOptions).execute(...args);
   }
 
   /**
@@ -151,7 +151,7 @@ export default class DeviceClient {
    */
   public async getServices(): Promise<Array<hostCmd.AdbServiceInfo>> {
     const transport = await this.transport();
-    return await new hostCmd.ServicesListCommand(transport).execute();
+    return new hostCmd.ServicesListCommand(transport).execute();
   }
 
   /**
@@ -161,7 +161,7 @@ export default class DeviceClient {
    */
   public async checkService(serviceName: hostCmd.KnownServices | string): Promise<boolean> {
     const transport = await this.transport();
-    return await new hostCmd.ServiceCheckCommand(transport).execute(serviceName);
+    return new hostCmd.ServiceCheckCommand(transport).execute(serviceName);
   }
 
   /**
@@ -171,7 +171,7 @@ export default class DeviceClient {
    */
   public async callServiceRaw(serviceName: hostCmd.KnownServices | string, code: number | string): Promise<Buffer> {
     const transport = await this.transport();
-    return await new hostCmd.ServiceCallCommand(transport).execute(serviceName, code);
+    return new hostCmd.ServiceCallCommand(transport).execute(serviceName, code);
   }
 
   /**
@@ -206,7 +206,7 @@ export default class DeviceClient {
    */
   public async forward(local: string, remote: string): Promise<boolean> {
     const conn = await this.connection();
-    return await new ForwardCommand(conn).execute(this.serial, local, remote);
+    return new ForwardCommand(conn).execute(this.serial, local, remote);
   }
 
   /**
@@ -219,7 +219,7 @@ export default class DeviceClient {
    */
   public async listForwards(): Promise<Forward[]> {
     const conn = await this.connection();
-    return await new ListForwardsCommand(conn).execute(this.serial);
+    return new ListForwardsCommand(conn).execute(this.serial);
   }
 
   /**
@@ -233,7 +233,7 @@ export default class DeviceClient {
    */
   public async reverse(remote: string, local: string): Promise<boolean> {
     const transport = await this.transport();
-    return await new hostCmd.ReverseCommand(transport).execute(remote, local);
+    return new hostCmd.ReverseCommand(transport).execute(remote, local);
   }
   /**
    * Lists forwarded connections on the device. This is analogous to `adb reverse --list`.
@@ -244,7 +244,7 @@ export default class DeviceClient {
    */
   public async listReverses(): Promise<Reverse[]> {
     const transport = await this.transport();
-    return await new hostCmd.ListReversesCommand(transport).execute();
+    return new hostCmd.ListReversesCommand(transport).execute();
   }
 
   /**
@@ -272,7 +272,7 @@ export default class DeviceClient {
    */
   public async shell(command: string | ArrayLike<WithToString>): Promise<Duplex> {
     const transport = await this.transport();
-    return await new hostCmd.ShellCommand(transport).execute(command);
+    return new hostCmd.ShellCommand(transport).execute(command);
   }
 
   /**
@@ -282,7 +282,7 @@ export default class DeviceClient {
    */
   public async reboot(): Promise<boolean> {
     const transport = await this.transport();
-    return await new hostCmd.RebootCommand(transport).execute();
+    return new hostCmd.RebootCommand(transport).execute();
   }
 
   /**
@@ -292,7 +292,7 @@ export default class DeviceClient {
    */
   public async remount(): Promise<boolean> {
     const transport = await this.transport();
-    return await new hostCmd.RemountCommand(transport).execute();
+    return new hostCmd.RemountCommand(transport).execute();
   }
 
   /**
@@ -302,7 +302,7 @@ export default class DeviceClient {
    */
   public async root(): Promise<boolean> {
     const transport = await this.transport();
-    return await new hostCmd.RootCommand(transport).execute();
+    return new hostCmd.RootCommand(transport).execute();
   }
 
   /**
@@ -323,7 +323,7 @@ export default class DeviceClient {
    */
   public async trackJdwp(): Promise<JdwpTracker> {
     const transport = await this.transport();
-    return await new hostCmd.TrackJdwpCommand(transport).execute();
+    return new hostCmd.TrackJdwpCommand(transport).execute();
   }
 
   /**
@@ -337,7 +337,7 @@ export default class DeviceClient {
    */
   public async framebuffer(format = 'raw'): Promise<FramebufferStreamWithMeta> {
     const transport = await this.transport();
-    return await new hostCmd.FrameBufferCommand(transport).execute(format);
+    return new hostCmd.FrameBufferCommand(transport).execute(format);
   }
 
   /**
@@ -355,7 +355,7 @@ export default class DeviceClient {
       return await new hostCmd.ScreencapCommand(transport).execute();
     } catch (err) {
       debug(`Emulating screencap command due to '${err}'`);
-      return await this.framebuffer('png');
+      return this.framebuffer('png');
     }
   }
 
@@ -368,7 +368,7 @@ export default class DeviceClient {
    */
   public async openLocal(path: string): Promise<Duplex> {
     const transport = await this.transport();
-    return await new hostCmd.LocalCommand(transport).execute(path);
+    return new hostCmd.LocalCommand(transport).execute(path);
   }
 
   /**
@@ -380,7 +380,7 @@ export default class DeviceClient {
    */
   public async openLog(name: string): Promise<Duplex> {
     const transport = await this.transport();
-    return await new hostCmd.LogCommand(transport).execute(name);
+    return new hostCmd.LogCommand(transport).execute(name);
   }
 
   /**
@@ -393,7 +393,7 @@ export default class DeviceClient {
      */
   public async openTcp(port: number, host?: string): Promise<Duplex> {
     const transport = await this.transport();
-    return await new hostCmd.TcpCommand(transport).execute(port, host);
+    return new hostCmd.TcpCommand(transport).execute(port, host);
   }
 
   /**
@@ -479,7 +479,7 @@ export default class DeviceClient {
    */
   public async clear(pkg: string): Promise<boolean> {
     const transport = await this.transport();
-    return await new hostCmd.ClearCommand(transport).execute(pkg);
+    return new hostCmd.ClearCommand(transport).execute(pkg);
   }
 
   /**
@@ -536,7 +536,7 @@ export default class DeviceClient {
    */
   public async uninstall(pkg: string): Promise<boolean> {
     const transport = await this.transport();
-    return await new hostCmd.UninstallCommand(transport).execute(pkg);
+    return new hostCmd.UninstallCommand(transport).execute(pkg);
   }
 
   /**
@@ -548,7 +548,7 @@ export default class DeviceClient {
    */
   public async isInstalled(pkg: string): Promise<boolean> {
     const transport = await this.transport();
-    return await new hostCmd.IsInstalledCommand(transport).execute(pkg);
+    return new hostCmd.IsInstalledCommand(transport).execute(pkg);
   }
 
   /**
@@ -596,7 +596,7 @@ export default class DeviceClient {
    */
   public async syncService(): Promise<Sync> {
     const transport = await this.transport();
-    return await new hostCmd.SyncCommand(transport).execute();
+    return new hostCmd.SyncCommand(transport).execute();
   }
 
   /**
@@ -668,7 +668,7 @@ export default class DeviceClient {
    */
   public async tcpip(port = 5555): Promise<number> {
     const transport = await this.transport();
-    return await new hostCmd.TcpIpCommand(transport).execute(port);
+    return new hostCmd.TcpIpCommand(transport).execute(port);
   }
 
   /**
@@ -678,7 +678,7 @@ export default class DeviceClient {
    */
   public async usb(): Promise<boolean> {
     const transport = await this.transport();
-    return await new hostCmd.UsbCommand(transport).execute();
+    return new hostCmd.UsbCommand(transport).execute();
   }
 
   /**
@@ -688,7 +688,7 @@ export default class DeviceClient {
    */
   public async waitBootComplete(): Promise<boolean> {
     const transport = await this.transport();
-    return await new hostCmd.WaitBootCompleteCommand(transport).execute();
+    return new hostCmd.WaitBootCompleteCommand(transport).execute();
   }
 
   /**
@@ -698,6 +698,6 @@ export default class DeviceClient {
    */
   public async waitForDevice(): Promise<string> {
     const conn = await this.connection();
-    return await new WaitForDeviceCommand(conn).execute(this.serial);
+    return new WaitForDeviceCommand(conn).execute(this.serial);
   }
 }

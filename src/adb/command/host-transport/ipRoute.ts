@@ -2,8 +2,14 @@ import Command from '../../command';
 import Protocol from '../../protocol';
 import pc from 'picocolors'
 import ShellExecError from './ShellExecError';
+import Connection from '../../connection';
 
 export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
+
+  constructor(connection: Connection, options?: {sudo?: boolean}) {
+    super(connection, options);
+  }
+
   async execute(...args: string[]): Promise<Array<IpRouteEntry>> {
     super.sendCommand(['shell:ip', 'route', ...args].join(' ')); //  2>/dev/null
     const reply = await this.parser.readAscii(4);
@@ -20,7 +26,7 @@ export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
 
   private parseIpRoute(value: string): Array<IpRouteEntry> {
     if (value.startsWith('Error: ')) {
-      throw new ShellExecError(value.substring(7));
+      throw new ShellExecError(`Sending command:\n${this.lastCommand}\n cause ${value.trim()}`);
     }
     // const value = await this.readValue();
 

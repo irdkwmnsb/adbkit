@@ -12,13 +12,18 @@ export default abstract class Command<T> {
   public parser: Parser;
   public protocol: Protocol;
   public connection: Connection;
-  public options: {sudo: boolean};
+  public readonly options: {sudo: boolean};
+  private lastCmd: string;
 
-  constructor(connection: Connection, options?: {sudo?: boolean}) {
+  get lastCommand(): string {
+    return this.lastCmd || '';
+  }
+
+  constructor(connection: Connection, options = {} as {sudo?: boolean}) {
     this.connection = connection;
     this.parser = this.connection.parser;
     this.protocol = Protocol;
-    this.options = {...options || {}, ...{sudo: false}};
+    this.options = {sudo: false, ...options};
   }
 
   // FIXME(intentional any): not "any" will break it all
@@ -53,15 +58,18 @@ export default abstract class Command<T> {
         return `"${arg.toString().replace(RE_ESCAPE, '\\$1')}"`;
     }
   }
+
   /**
    * called once per command, only affect shell based command.
-   * @returns byte write count
+   * @returns sent data
    */
-  protected sendCommand(data: string): Promise<number> {
+  protected async sendCommand(data: string): Promise<string> {
     if (this.options.sudo && data.startsWith('shell:')) {
       data = data.replace('shell:', 'shell:su -c ');
     }
-    return this._send(data);
+    this.lastCmd = data;
+    await this._send(data);
+    return data;
   }
 
 }
