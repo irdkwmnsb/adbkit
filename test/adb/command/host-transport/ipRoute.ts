@@ -9,6 +9,8 @@ const t = new Tester(IpRouteCommand);
 describe('ipRouteCommand', () => {
     it("should send 'ip route'", () => t.testTr('shell:ip route'));
 
+    it("should send 'su -c p iroute'", () => t.sudo().testTr('shell:ip route'));
+
     it("should send 'ip route list table all'", () => t.testTr('shell:ip route list table all', 'list table all'));
 
     it("should send 'ip route list table all' split", () => t.testTr('shell:ip route list table all', 'list', 'table', 'all'));
