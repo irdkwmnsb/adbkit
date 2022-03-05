@@ -1,4 +1,3 @@
-import Protocol from '../../protocol';
 import Parser from '../../parser';
 import Command from '../../command';
 
@@ -7,7 +6,7 @@ export default class IsInstalledCommand extends Command<boolean> {
     this._send(`shell:pm path ${pkg} 2>/dev/null`);
     let reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         try {
           reply = await this.parser.readAscii(8);
           switch (reply) {
@@ -22,7 +21,7 @@ export default class IsInstalledCommand extends Command<boolean> {
           }
           throw err;
         }
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

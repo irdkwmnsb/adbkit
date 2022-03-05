@@ -1,4 +1,3 @@
-import Protocol from '../../protocol';
 import Command from '../../command';
 
 export default class GetDevicePathCommand extends Command<string> {
@@ -6,10 +5,10 @@ export default class GetDevicePathCommand extends Command<string> {
     this._send(`host-serial:${serial}:get-devpath`);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         const value = this.parser.readValue()
         return value.toString();
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

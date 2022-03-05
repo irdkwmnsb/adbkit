@@ -1,5 +1,4 @@
 import Command from '../../command';
-import Protocol from '../../protocol';
 import Forward from '../../../Forward';
 
 export default class ListForwardsCommand extends Command<Forward[]> {
@@ -7,10 +6,10 @@ export default class ListForwardsCommand extends Command<Forward[]> {
     this._send(`host-serial:${serial}:list-forward`);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         const value = await this.parser.readValue()
         return this._parseForwards(value);
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

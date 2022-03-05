@@ -1,4 +1,3 @@
-import Protocol from '../../protocol';
 import Command from '../../command';
 import { Properties } from '../../../Properties';
 
@@ -9,10 +8,10 @@ export default class GetPropertiesCommand extends Command<Properties> {
     this._send('shell:getprop');
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         const data = await this.parser.readAll()
         return this._parseProperties(data.toString());
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

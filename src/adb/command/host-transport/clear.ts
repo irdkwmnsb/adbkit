@@ -1,4 +1,3 @@
-import Protocol from '../../protocol';
 import Command from '../../command';
 
 export default class ClearCommand extends Command<boolean> {
@@ -6,7 +5,7 @@ export default class ClearCommand extends Command<boolean> {
     this._send(`shell:pm clear ${pkg}`);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         try {
           const result = await this.parser.searchLine(/^(Success|Failed)$/)
           switch (result[0]) {
@@ -21,7 +20,7 @@ export default class ClearCommand extends Command<boolean> {
         } finally {
           this.parser.end()
         }
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

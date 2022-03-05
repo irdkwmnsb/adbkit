@@ -1,5 +1,4 @@
 import Connection from '../../connection';
-import Protocol from '../../protocol';
 import Command from '../../command';
 import { Duplex } from 'stream';
 import Utils from '../../../adb/util';
@@ -20,7 +19,7 @@ export default class MonkeyCommand extends Command<Duplex> {
     this._send(`shell:EXTERNAL_STORAGE=/data/local/tmp monkey --port ${port} -v`);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         // The monkey command is a bit weird in that it doesn't look like
         // it starts in daemon mode, but it actually does. So even though
         // the command leaves the terminal "hanging", Ctrl-C (or just
@@ -35,7 +34,7 @@ export default class MonkeyCommand extends Command<Duplex> {
         const parse = this.parser.searchLine(/^:Monkey:/);
         await Promise.race([pTimeout, parse])
         return this.parser.raw();
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

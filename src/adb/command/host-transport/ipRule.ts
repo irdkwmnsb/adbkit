@@ -1,5 +1,4 @@
 import Command from '../../command';
-import Protocol from '../../protocol';
 import pc from 'picocolors'
 
 /**
@@ -23,10 +22,10 @@ export default class IpRuleCommand extends Command<Array<IpRuleEntry>> {
     this.sendCommand(['shell:ip', 'rule', ...args].join(' '));
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         const data = await this.parser.readAll()
         return this.parseIpRule(data.toString());
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

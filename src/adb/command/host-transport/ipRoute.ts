@@ -1,5 +1,4 @@
 import Command from '../../command';
-import Protocol from '../../protocol';
 import pc from 'picocolors'
 import ShellExecError from './ShellExecError';
 import Connection from '../../connection';
@@ -14,10 +13,10 @@ export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
     super.sendCommand(['shell:ip', 'route', ...args].join(' ')); //  2>/dev/null
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         const data = await this.parser.readAll()
         return this.parseIpRoute(data.toString());
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

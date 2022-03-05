@@ -1,4 +1,3 @@
-import Protocol from '../../protocol';
 import Command from '../../command';
 
 export default class UninstallCommand extends Command<boolean> {
@@ -6,7 +5,7 @@ export default class UninstallCommand extends Command<boolean> {
     this._send(`shell:pm uninstall ${pkg}`);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         try {
           const match = await this.parser.searchLine(/^(Success|Failure.*|.*Unknown package:.*)$/);
           if (match[1] === 'Success') {
@@ -19,7 +18,7 @@ export default class UninstallCommand extends Command<boolean> {
         } finally {
           this.parser.readAll();
         }
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

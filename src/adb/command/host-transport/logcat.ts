@@ -1,5 +1,4 @@
 import LineTransform from '../../linetransform';
-import Protocol from '../../protocol';
 import Command from '../../command';
 
 export default class LogcatCommand extends Command<LineTransform> {
@@ -14,12 +13,12 @@ export default class LogcatCommand extends Command<LineTransform> {
     this._send(`shell:echo && ${cmd}`);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         return this.parser.raw().pipe(
           new LineTransform({
             autoDetect: true,
           }));
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

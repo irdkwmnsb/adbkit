@@ -1,5 +1,4 @@
 import Command from '../../command';
-import Protocol from '../../protocol';
 
 export default class GetPackagesCommand extends Command<string[]> {
   async execute(flags?: string): Promise<string[]> {
@@ -10,10 +9,10 @@ export default class GetPackagesCommand extends Command<string[]> {
     }
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         const data = await this.parser.readAll();
         return this._parsePackages(data.toString());
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

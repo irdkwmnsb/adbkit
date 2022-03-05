@@ -1,4 +1,3 @@
-import Protocol from '../../protocol';
 import Command from '../../command';
 import Reverse from '../../../Reverse';
 
@@ -7,10 +6,10 @@ export default class ListReversesCommand extends Command<Reverse[]> {
     this._send('reverse:list-forward');
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         const value = await this.parser.readValue()
         return this._parseReverses(value);
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

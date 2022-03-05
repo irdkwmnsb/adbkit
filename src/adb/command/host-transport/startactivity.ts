@@ -1,4 +1,3 @@
-import Protocol from '../../protocol';
 import Parser from '../../parser';
 import Command from '../../command';
 import StartActivityOptions from '../../../StartActivityOptions';
@@ -36,7 +35,7 @@ export default class StartActivityCommand extends Command<boolean> {
     this._send(`shell:am ${command} ${args.join(' ')}`);
     const reply = await this.parser.readAscii(4)
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         try {
           const match = await this.parser.searchLine(RE_ERROR);
           throw new Error(match[1]);
@@ -48,7 +47,7 @@ export default class StartActivityCommand extends Command<boolean> {
         }
         // may be incorrect.
         return this.parser.readError();
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

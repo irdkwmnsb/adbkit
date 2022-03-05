@@ -1,5 +1,4 @@
 import Command from '../../command';
-import Protocol from '../../protocol';
 import DeviceWithPath from '../../../DeviceWithPath';
 import DeviceClient from '../../DeviceClient';
 
@@ -8,9 +7,9 @@ export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[
     this._send('host:devices-l');
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         return this._readDevices();
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

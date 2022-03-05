@@ -1,7 +1,6 @@
 import { spawn } from 'child_process';
 import d from 'debug';
 import RgbTransform from '../../framebuffer/rgbtransform';
-import Protocol from '../../protocol';
 import Command from '../../command';
 import { Readable } from 'stream';
 import FramebufferMeta, { ColorFormat } from '../../../FramebufferMeta';
@@ -14,7 +13,7 @@ export default class FrameBufferCommand extends Command<FramebufferStreamWithMet
     this._send('framebuffer:');
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         const header = await this.parser.readBytes(52)
         let stream: FramebufferStreamWithMeta;
         const meta = this._parseHeader(header);
@@ -28,7 +27,7 @@ export default class FrameBufferCommand extends Command<FramebufferStreamWithMet
             stream.meta = meta;
             return stream;
         }
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

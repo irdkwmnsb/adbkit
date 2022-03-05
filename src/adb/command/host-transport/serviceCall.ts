@@ -1,5 +1,4 @@
 import Command from '../../command';
-import Protocol from '../../protocol';
 import { KnownServices } from './servicesList';
 
 export default class ServiceListCommand extends Command<Buffer> {
@@ -7,10 +6,10 @@ export default class ServiceListCommand extends Command<Buffer> {
     this._send(`shell:service call ${serviceName} ${code} 2>/dev/null`);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         const data = await this.parser.readAll();
         return this._parse(data.toString());
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

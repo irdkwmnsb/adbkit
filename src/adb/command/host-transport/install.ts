@@ -1,4 +1,3 @@
-import Protocol from '../../protocol';
 import Command from '../../command';
 
 export default class InstallCommand extends Command<boolean> {
@@ -6,7 +5,7 @@ export default class InstallCommand extends Command<boolean> {
     this._send(`shell:pm install -r ${this.escapeCompat(apk)}`);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.OKAY:
+      case this.protocol.OKAY:
         try {
           const match = await this.parser.searchLine(/^(Success|Failure \[(.*?)\])$/);
           if (match[1] === 'Success') {
@@ -22,7 +21,7 @@ export default class InstallCommand extends Command<boolean> {
           // connection.
           this.parser.readAll();
         }
-      case Protocol.FAIL:
+      case this.protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

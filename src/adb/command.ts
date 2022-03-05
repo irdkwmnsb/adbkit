@@ -10,7 +10,7 @@ const RE_ESCAPE = /([$`\\!"])/g;
 
 export default abstract class Command<T> {
   public parser: Parser;
-  public protocol: Protocol;
+  public protocol = Protocol;
   public connection: Connection;
   public readonly options: {sudo: boolean};
   private lastCmd: string;
@@ -22,7 +22,6 @@ export default abstract class Command<T> {
   constructor(connection: Connection, options = {} as {sudo?: boolean}) {
     this.connection = connection;
     this.parser = this.connection.parser;
-    this.protocol = Protocol;
     this.options = {sudo: false, ...options};
   }
 
