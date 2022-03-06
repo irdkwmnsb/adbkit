@@ -21,4 +21,18 @@ export default class PullTransfer extends Stream.PassThrough {
     }
     return super.write(chunk, encoding, callback);
   }
+
+  promiseWrite(
+    chunk: Buffer,
+    encoding?: BufferEncoding
+  ): Promise<void> {
+    this.stats.bytesTransferred += chunk.length;
+    this.emit('progress', this.stats);
+    return new Promise<void>((accept, reject) => {
+      super.write(chunk, encoding, (err) => {
+        if (err) reject(err);
+        else accept();
+      });
+    })
+  }
 }

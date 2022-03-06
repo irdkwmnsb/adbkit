@@ -1,20 +1,12 @@
 import Command from '../../command';
-import Protocol from '../../protocol';
 import DeviceWithPath from '../../../DeviceWithPath';
 import DeviceClient from '../../DeviceClient';
 
 export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[]> {
   async execute(): Promise<DeviceWithPath[]> {
     this._send('host:devices-l');
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case Protocol.OKAY:
-        return this._readDevices();
-      case Protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.readOKAY();
+    return this._readDevices();
   }
 
   public async _readDevices(): Promise<DeviceWithPath[]> {

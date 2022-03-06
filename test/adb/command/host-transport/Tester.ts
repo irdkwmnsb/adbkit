@@ -33,12 +33,23 @@ export default class Tester {
     constructor(private cmdClass: CommandConstructor<any, any>) {
     }
 
+    // enable su sudo next command
+    private _sudo = false;
+
+    public sudo(): this {
+        this._sudo = true;
+        return this;
+    }
     /**
      * check under the hood sent data
      */
     testTr(expectWrite: string, ...args: string[]): Promise<any> {
         const conn = new MockConnection();
         const cmd = new this.cmdClass(conn);
+        if (this.sudo) {
+            cmd.sudo = true;
+            this._sudo = false;
+        }
         if (expectWrite)
             conn.getSocket().on('write', (chunk) => {
                 return expect(chunk.toString()).to.equal(Protocol.encodeData(expectWrite).toString());
@@ -56,6 +67,10 @@ export default class Tester {
     testTr2(expectWrite: string, causeRead?: string, ...args: string[]): Promise<any> {
         const conn = new MockConnection();
         const cmd = new this.cmdClass(conn);
+        if (this.sudo) {
+            cmd.sudo = true;
+            this._sudo = false;
+        }
         if (expectWrite)
             conn.getSocket().on('write', (chunk) => {
                 return expect(chunk.toString()).to.equal(Protocol.encodeData(expectWrite).toString());

@@ -1,20 +1,12 @@
 import Command from '../../command';
-import Protocol from '../../protocol';
 import Device from '../../../Device';
 import DeviceClient from '../../DeviceClient';
 
 export default class HostDevicesCommand extends Command<Device[]> {
   async execute(): Promise<Device[]> {
     this._send('host:devices');
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case Protocol.OKAY:
-        return this._readDevices();
-      case Protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.readOKAY();
+    return this._readDevices();
   }
 
   public async _readDevices(): Promise<Device[]> {

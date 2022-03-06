@@ -1,5 +1,4 @@
 import Command from '../../command';
-import Protocol from '../../protocol';
 
 /**
  * see Android Interface Definition Language (AIDL) files
@@ -20,16 +19,9 @@ export interface AdbServiceInfo {
 export default class ServiceListCommand extends Command<AdbServiceInfo[]> {
   async execute(): Promise<AdbServiceInfo[]> {
     this._send('shell:service list 2>/dev/null');
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case Protocol.OKAY:
-        const data = await this.parser.readAll()
-        return this._parse(data.toString());
-      case Protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.readOKAY();
+    const data = await this.parser.readAll()
+    return this._parse(data.toString());
   }
 
   private _parse(value: string): AdbServiceInfo[] {

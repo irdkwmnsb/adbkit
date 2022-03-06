@@ -1,4 +1,3 @@
-import Protocol from '../../protocol';
 import Parser from '../../parser';
 import Command from '../../command';
 import StartActivityOptions from '../../../StartActivityOptions';
@@ -27,32 +26,25 @@ export default class StartActivityCommand extends Command<boolean> {
       args.push('-W');
     }
     if (options.user || options.user === 0) {
-      args.push('--user', this._escape(options.user));
+      args.push('--user', this.escape(options.user));
     }
     return this._run('start', args);
   }
 
   async _run(command: string, args: Array<string | number>): Promise<boolean> {
     this._send(`shell:am ${command} ${args.join(' ')}`);
-    const reply = await this.parser.readAscii(4)
-    switch (reply) {
-      case Protocol.OKAY:
-        try {
-          const match = await this.parser.searchLine(RE_ERROR);
-          throw new Error(match[1]);
-        } catch (err) {
-          if (err instanceof Parser.PrematureEOFError)
-            return true;
-        } finally {
-          this.parser.end();
-        }
-        // may be incorrect.
-        return this.parser.readError();
-      case Protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
+    await this.readOKAY();
+    try {
+      const match = await this.parser.searchLine(RE_ERROR);
+      throw new Error(match[1]);
+    } catch (err) {
+      if (err instanceof Parser.PrematureEOFError)
+        return true;
+    } finally {
+      this.parser.end();
     }
+    // may be incorrect.
+    return this.parser.readError();
   }
 
   protected _intentArgs(options: StartActivityOptions): Array<string | number> {
@@ -61,28 +53,28 @@ export default class StartActivityCommand extends Command<boolean> {
       args.push(...this._formatExtras(options.extras));
     }
     if (options.action) {
-      args.push('-a', this._escape(options.action));
+      args.push('-a', this.escape(options.action));
     }
     if (options.data) {
-      args.push('-d', this._escape(options.data));
+      args.push('-d', this.escape(options.data));
     }
     if (options.mimeType) {
-      args.push('-t', this._escape(options.mimeType));
+      args.push('-t', this.escape(options.mimeType));
     }
     if (options.category) {
       if (Array.isArray(options.category)) {
         options.category.forEach((category) => {
-          return args.push('-c', this._escape(category));
+          return args.push('-c', this.escape(category));
         });
       } else {
-        args.push('-c', this._escape(options.category));
+        args.push('-c', this.escape(options.category));
       }
     }
     if (options.component) {
-      args.push('-n', this._escape(options.component));
+      args.push('-n', this.escape(options.component));
     }
     if (options.flags) {
-      args.push('-f', this._escape(options.flags));
+      args.push('-f', this.escape(options.flags));
     }
     return args;
   }
@@ -150,16 +142,16 @@ export default class StartActivityCommand extends Command<boolean> {
     }
     if (extra.type === 'null') {
       args.push(`--e${type}`);
-      args.push(this._escape(extra.key));
+      args.push(this.escape(extra.key));
     } else if (Array.isArray(extra.value)) {
       args.push(`--e${type}a`);
-      args.push(this._escape(extra.key));
-      args.push(this._escape(extra.value.join(',')));
+      args.push(this.escape(extra.key));
+      args.push(this.escape(extra.value.join(',')));
     } else {
       //if (extra.value) {
       args.push(`--e${type}`);
-      args.push(this._escape(extra.key));
-      args.push(this._escape(extra.value));
+      args.push(this.escape(extra.key));
+      args.push(this.escape(extra.value));
       //}
     }
     return args;

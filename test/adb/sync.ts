@@ -39,7 +39,7 @@ describe('Sync', () => {
             try {
                 return await iterator(sync);
             } finally {
-                return sync.end();
+                sync.end();
             }
         });
         return Promise.all(promises);
@@ -75,11 +75,11 @@ describe('Sync', () => {
             sync.push(__filename, 'foo');
             return expect(sync.pushFile).to.have.been.called;
         });
-        it('should return a PushTransfer instance', () => {
+        it('should return a PushTransfer instance', async () => {
             const conn = new MockConnection();
             const sync = new Sync(conn);
             const stream = new Stream.PassThrough();
-            const transfer = sync.push(stream, 'foo');
+            const transfer = await sync.push(stream, 'foo');
             expect(transfer).to.be.an.instanceof(PushTransfer);
             const ret = transfer.cancel();
             console.log('cancel return ', ret);
@@ -87,21 +87,21 @@ describe('Sync', () => {
         });
     });
     describe('pushStream(stream, path[, mode])', () => {
-        it('should return a PushTransfer instance', () => {
+        it('should return a PushTransfer instance', async () => {
             const conn = new MockConnection();
             const sync = new Sync(conn);
             const stream = new Stream.PassThrough();
-            const transfer = sync.pushStream(stream, 'foo');
+            const transfer = await sync.pushStream(stream, 'foo');
             expect(transfer).to.be.an.instanceof(PushTransfer);
             transfer.cancel();
             return true;
         });
         dt('should be able to push >65536 byte chunks without error', async () => {
             await forEachSyncDevice((sync) => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
                     const stream = new Stream.PassThrough();
                     const content = Buffer.alloc(1000000);
-                    const transfer = sync.pushStream(stream, SURELY_WRITABLE_FILE);
+                    const transfer = await sync.pushStream(stream, SURELY_WRITABLE_FILE);
                     transfer.on('error', reject);
                     transfer.on('end', resolve);
                     stream.write(content);
@@ -114,14 +114,14 @@ describe('Sync', () => {
     describe('pull(path)', () => {
         dt('should retrieve the same content pushStream() pushed', async () => {
             await forEachSyncDevice((sync) => {
-                return new Promise<void>((resolve, reject) => {
+                return new Promise<void>(async (resolve, reject) => {
                     const stream = new Stream.PassThrough();
                     const content = 'ABCDEFGHI' + Date.now();
-                    const transfer = sync.pushStream(stream, SURELY_WRITABLE_FILE);
+                    const transfer = await sync.pushStream(stream, SURELY_WRITABLE_FILE);
                     expect(transfer).to.be.an.instanceof(PushTransfer);
                     transfer.on('error', reject);
-                    transfer.on('end', () => {
-                        const transfer = sync.pull(SURELY_WRITABLE_FILE);
+                    transfer.on('end', async () => {
+                        const transfer = await sync.pull(SURELY_WRITABLE_FILE);
                         expect(transfer).to.be.an.instanceof(PullTransfer);
                         transfer.on('error', reject);
                         return transfer.on('readable', () => {
@@ -141,15 +141,15 @@ describe('Sync', () => {
         });
         dt('should emit error for non-existing files', (done) => {
             return forEachSyncDevice((sync) => {
-                return new Promise((resolve) => {
-                    const transfer = sync.pull(SURELY_NONEXISTING_PATH);
+                return new Promise(async (resolve) => {
+                    const transfer = await sync.pull(SURELY_NONEXISTING_PATH);
                     return transfer.on('error', resolve);
                 });
             }).finally(done);
         });
         dt('should return a PullTransfer instance', (done) => {
-            return forEachSyncDevice( (sync) => {
-                const rval = sync.pull(SURELY_EXISTING_FILE);
+            return forEachSyncDevice( async (sync) => {
+                const rval = await sync.pull(SURELY_EXISTING_FILE);
                 expect(rval).to.be.an.instanceof(PullTransfer);
                 return rval.cancel();
             }).finally(done);
@@ -157,8 +157,8 @@ describe('Sync', () => {
         return describe('Stream', () => {
             dt("should emit 'end' when pull is done", (done) => {
                 return forEachSyncDevice((sync) => {
-                    return new Promise((resolve, reject) => {
-                        const transfer = sync.pull(SURELY_EXISTING_FILE);
+                    return new Promise(async (resolve, reject) => {
+                        const transfer = await sync.pull(SURELY_EXISTING_FILE);
                         transfer.on('error', reject);
                         transfer.on('end', resolve);
                         return transfer.resume();

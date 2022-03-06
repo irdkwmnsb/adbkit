@@ -1,7 +1,6 @@
 import { spawn } from 'child_process';
 import d from 'debug';
 import RgbTransform from '../../framebuffer/rgbtransform';
-import Protocol from '../../protocol';
 import Command from '../../command';
 import { Readable } from 'stream';
 import FramebufferMeta, { ColorFormat } from '../../../FramebufferMeta';
@@ -9,31 +8,22 @@ import FramebufferStreamWithMeta from '../../../FramebufferStreamWithMeta';
 
 const debug = d('adb:command:framebuffer');
 
-// FIXME(intentional any): not "any" will break it all
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default class FrameBufferCommand extends Command<any> {
+export default class FrameBufferCommand extends Command<FramebufferStreamWithMeta> {
   async execute(format: string): Promise<FramebufferStreamWithMeta> {
     this._send('framebuffer:');
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case Protocol.OKAY:
-        const header = await this.parser.readBytes(52)
-        let stream: FramebufferStreamWithMeta;
-        const meta = this._parseHeader(header);
-        switch (format) {
-          case 'raw':
-            stream = this.parser.raw() as FramebufferStreamWithMeta;
-            stream.meta = meta;
-            return stream;
-          default:
-            stream = this._convert(meta, format) as FramebufferStreamWithMeta;
-            stream.meta = meta;
-            return stream;
-        }
-      case Protocol.FAIL:
-        return this.parser.readError();
+    await this.readOKAY();
+    const header = await this.parser.readBytes(52)
+    let stream: FramebufferStreamWithMeta;
+    const meta = this._parseHeader(header);
+    switch (format) {
+      case 'raw':
+        stream = this.parser.raw() as FramebufferStreamWithMeta;
+        stream.meta = meta;
+        return stream;
       default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
+        stream = this._convert(meta, format) as FramebufferStreamWithMeta;
+        stream.meta = meta;
+        return stream;
     }
   }
 

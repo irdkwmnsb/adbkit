@@ -46,7 +46,7 @@ export default class Client extends EventEmitter {
 
   public async version(): Promise<number> {
     const conn = await this.connection();
-    return await new HostVersionCommand(conn).execute();
+    return new HostVersionCommand(conn).execute();
   }
 
   public async connect(host: string, port = 5555): Promise<string> {
@@ -59,7 +59,7 @@ export default class Client extends EventEmitter {
       }
     }
     const conn = await this.connection();
-    return await new HostConnectCommand(conn).execute(host, port);
+    return new HostConnectCommand(conn).execute(host, port);
   }
 
   public async disconnect(host: string, port = 5555): Promise<DeviceClient> {
@@ -82,22 +82,22 @@ export default class Client extends EventEmitter {
    */
   public async listDevices(): Promise<Device[]> {
     const conn = await this.connection();
-    return await new HostDevicesCommand(conn).execute();
+    return new HostDevicesCommand(conn).execute();
   }
 
   public async listDevicesWithPaths(): Promise<DeviceWithPath[]> {
     const conn = await this.connection();
-    return await new HostDevicesWithPathsCommand(conn).execute();
+    return new HostDevicesWithPathsCommand(conn).execute();
   }
 
   public async trackDevices(): Promise<Tracker> {
     const conn = await this.connection();
-    return await new HostTrackDevicesCommand(conn).execute();
+    return new HostTrackDevicesCommand(conn).execute();
   }
 
   public async kill(): Promise<boolean> {
     const conn = await this.connection();
-    return await new HostKillCommand(conn).execute();
+    return new HostKillCommand(conn).execute();
   }
 
   public getDevice(serial: string): DeviceClient {

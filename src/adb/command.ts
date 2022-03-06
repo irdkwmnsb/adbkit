@@ -10,55 +10,79 @@ const RE_ESCAPE = /([$`\\!"])/g;
 
 export default abstract class Command<T> {
   public parser: Parser;
-  public protocol: Protocol;
+  public protocol = Protocol;
   public connection: Connection;
-  public options: {sudo: boolean};
+  public readonly options: { sudo: boolean };
+  private lastCmd: string;
 
-  constructor(connection: Connection, options?: {sudo?: boolean}) {
+  get lastCommand(): string {
+    return this.lastCmd || '';
+  }
+
+  constructor(connection: Connection, options = {} as { sudo?: boolean }) {
     this.connection = connection;
     this.parser = this.connection.parser;
-    this.protocol = Protocol;
-    this.options = {...options || {}, ...{sudo: false}};
+    this.options = { sudo: false, ...options };
   }
 
   // FIXME(intentional any): not "any" will break it all
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   public abstract execute(...args: any[]): Promise<T>;
 
-  public _send(data: string | Buffer): Command<T> {
+  /**
+   * @returns byte write count
+   */
+  public _send(data: string | Buffer): Promise<number> {
     const encoded = Protocol.encodeData(data);
     if (debug.enabled) {
       debug(`Send '${encoded}'`);
     }
-    this.connection.write(encoded);
-    return this;
+    return this.connection.write(encoded);
   }
 
-  public _escape(arg: number | WithToString): number | string {
+  public escape(arg: number | WithToString): number | string {
     switch (typeof arg) {
       case 'number':
         return arg;
       default:
-        return "'" + arg.toString().replace(RE_SQUOT, "'\"'\"'") + "'";
+        return `'${arg.toString().replace(RE_SQUOT, "'\"'\"'")}'`;
     }
   }
 
-  public _escapeCompat(arg: number | WithToString): number | string {
+  public escapeCompat(arg: number | WithToString): number | string {
     switch (typeof arg) {
       case 'number':
         return arg;
       default:
-        return '"' + arg.toString().replace(RE_ESCAPE, '\\$1') + '"';
+        return `"${arg.toString().replace(RE_ESCAPE, '\\$1')}"`;
     }
   }
+
   /**
    * called once per command, only affect shell based command.
+   * @returns sent data
    */
-  protected sendCommand(data: string): Command<T> {
+  protected async sendCommand(data: string): Promise<string> {
     if (this.options.sudo && data.startsWith('shell:')) {
       data = data.replace('shell:', 'shell:su -c ');
     }
-    return this._send(data);
+    this.lastCmd = data;
+    await this._send(data);
+    return data;
   }
 
+  /**
+   * most common action: read for Okey
+   */
+  protected async readOKAY(): Promise<void> {
+    const reply = await this.parser.readAscii(4);
+    switch (reply) {
+      case this.protocol.OKAY:
+        return;
+      case this.protocol.FAIL:
+        return this.parser.readError();
+      default:
+        return this.parser.unexpected(reply, 'OKAY or FAIL');
+    }
+  }
 }
