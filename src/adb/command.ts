@@ -12,17 +12,17 @@ export default abstract class Command<T> {
   public parser: Parser;
   public protocol = Protocol;
   public connection: Connection;
-  public readonly options: {sudo: boolean};
+  public readonly options: { sudo: boolean };
   private lastCmd: string;
 
   get lastCommand(): string {
     return this.lastCmd || '';
   }
 
-  constructor(connection: Connection, options = {} as {sudo?: boolean}) {
+  constructor(connection: Connection, options = {} as { sudo?: boolean }) {
     this.connection = connection;
     this.parser = this.connection.parser;
-    this.options = {sudo: false, ...options};
+    this.options = { sudo: false, ...options };
   }
 
   // FIXME(intentional any): not "any" will break it all
@@ -71,4 +71,18 @@ export default abstract class Command<T> {
     return data;
   }
 
+  /**
+   * most common action: read for Okey
+   */
+  protected async readOKAY(): Promise<void> {
+    const reply = await this.parser.readAscii(4);
+    switch (reply) {
+      case this.protocol.OKAY:
+        return;
+      case this.protocol.FAIL:
+        return this.parser.readError();
+      default:
+        return this.parser.unexpected(reply, 'OKAY or FAIL');
+    }
+  }
 }

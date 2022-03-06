@@ -35,7 +35,7 @@ export default class Sync extends EventEmitter {
   }
 
   public async stat(path: string): Promise<Stats> {
-    await this._sendCommandWithArg(Protocol.STAT, path);
+    await this.sendCommandWithArg(Protocol.STAT, path);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.STAT:
@@ -44,12 +44,12 @@ export default class Sync extends EventEmitter {
         const size = stat.readUInt32LE(4);
         const mtime = stat.readUInt32LE(8);
         if (mode === 0) {
-          return this._enoent(path);
+          return this.enoent(path);
         } else {
           return new Stats(mode, size, mtime);
         }
       case Protocol.FAIL:
-        return this._readError();
+        return this.readError();
       default:
         return this.parser.unexpected(reply, 'STAT or FAIL');
     }
@@ -57,7 +57,7 @@ export default class Sync extends EventEmitter {
 
   public async readdir(path: string): Promise<Entry[]> {
     const files: Entry[] = [];
-    await this._sendCommandWithArg(Protocol.LIST, path);
+    await this.sendCommandWithArg(Protocol.LIST, path);
     for (; ;) {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
@@ -78,7 +78,7 @@ export default class Sync extends EventEmitter {
           await this.parser.readBytes(16)
           return files;
         case Protocol.FAIL:
-          return this._readError();
+          return this.readError();
         default:
           return this.parser.unexpected(reply, 'DENT, DONE or FAIL');
       }
@@ -100,13 +100,13 @@ export default class Sync extends EventEmitter {
 
   public async pushStream(stream: Readable, path: string, mode = DEFAULT_CHMOD): Promise<PushTransfer> {
     mode |= Stats.S_IFREG;
-    await this._sendCommandWithArg(Protocol.SEND, `${path},${mode}`);
+    await this.sendCommandWithArg(Protocol.SEND, `${path},${mode}`);
     return this._writeData(stream, Math.floor(Date.now() / 1000));
   }
 
   public async pull(path: string): Promise<PullTransfer> {
-    await this._sendCommandWithArg(Protocol.RECV, `${path}`);
-    return this._readData();
+    await this.sendCommandWithArg(Protocol.RECV, `${path}`);
+    return this.readData();
   }
 
   public end(): Sync {
@@ -130,8 +130,8 @@ export default class Sync extends EventEmitter {
 
       const writer = Promise.resolve();
       endListener = () => {
-        writer.then(() => {
-          this._sendCommandWithLength(Protocol.DONE, timeStamp);
+        writer.then(async () => {
+          await this.sendCommandWithLength(Protocol.DONE, timeStamp);
           return resolve(undefined);
         });
       };
@@ -142,7 +142,7 @@ export default class Sync extends EventEmitter {
         for (; ;) {
           const chunk = stream.read(DATA_MAX_LENGTH) || stream.read();
           if (!chunk) return;
-          this._sendCommandWithLength(Protocol.DATA, chunk.length);
+          await this.sendCommandWithLength(Protocol.DATA, chunk.length);
           transfer.push(chunk.length);
           await this.connection.write(chunk);
           transfer.pop();
@@ -170,13 +170,14 @@ export default class Sync extends EventEmitter {
 
 
     const readReply = async (): Promise<boolean> => {
+      // may be replace by Command.readOKAY()
       const reply = await this.parser.readAscii(4);
       switch (reply) {
         case Protocol.OKAY:
           await this.parser.readBytes(4);
           return true;
         case Protocol.FAIL:
-          return this._readError();
+          return this.readError();
         default:
           return this.parser.unexpected(reply, 'OKAY or FAIL');
       }
@@ -200,7 +201,7 @@ export default class Sync extends EventEmitter {
     return transfer;
   }
 
-  private _readData(): PullTransfer {
+  private readData(): PullTransfer {
     const transfer = new PullTransfer();
     const readAll = async (): Promise<boolean> => {
       for (; ;) {
@@ -215,7 +216,7 @@ export default class Sync extends EventEmitter {
             await this.parser.readBytes(4)
             return true;
           case Protocol.FAIL:
-            return this._readError();
+            return this.readError();
           default:
             return this.parser.unexpected(reply, 'DATA, DONE or FAIL');
         }
@@ -232,11 +233,11 @@ export default class Sync extends EventEmitter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async _readError(): Promise<never> {
+  private async readError(): Promise<never> {
     try {
       const length = await this.parser.readBytes(4);
       const buf = await this.parser.readBytes(length.readUInt32LE(0));
-      return await Promise.reject(new Parser.FailError(buf.toString()));
+      return Promise.reject(new Parser.FailError(buf.toString()));
     } finally {
       await this.parser.end();
     }
@@ -247,7 +248,7 @@ export default class Sync extends EventEmitter {
    * @param length 
    * @returns byte write count
    */
-  private async _sendCommandWithLength(cmd: string, length: number): Promise<number> {
+  private sendCommandWithLength(cmd: string, length: number): Promise<number> {
     if (cmd !== Protocol.DATA) {
       debug(cmd);
     }
@@ -263,7 +264,7 @@ export default class Sync extends EventEmitter {
    * @param arg 
    * @returns byte write count
    */
-  private _sendCommandWithArg(cmd: string, arg: string): Promise<number> {
+  private sendCommandWithArg(cmd: string, arg: string): Promise<number> {
     debug(`${cmd} ${arg}`);
     const arglen = Buffer.byteLength(arg, 'utf-8');
     const payload = Buffer.alloc(cmd.length + 4 + arglen);
@@ -277,7 +278,7 @@ export default class Sync extends EventEmitter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private _enoent(path: string): Promise<any> {
+  private enoent(path: string): Promise<any> {
     const err: ENOENT = new Error(`ENOENT, no such file or directory '${path}'`) as ENOENT;
     err.errno = 34;
     err.code = 'ENOENT';

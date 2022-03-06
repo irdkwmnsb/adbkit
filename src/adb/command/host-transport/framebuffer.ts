@@ -11,26 +11,19 @@ const debug = d('adb:command:framebuffer');
 export default class FrameBufferCommand extends Command<FramebufferStreamWithMeta> {
   async execute(format: string): Promise<FramebufferStreamWithMeta> {
     this._send('framebuffer:');
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case this.protocol.OKAY:
-        const header = await this.parser.readBytes(52)
-        let stream: FramebufferStreamWithMeta;
-        const meta = this._parseHeader(header);
-        switch (format) {
-          case 'raw':
-            stream = this.parser.raw() as FramebufferStreamWithMeta;
-            stream.meta = meta;
-            return stream;
-          default:
-            stream = this._convert(meta, format) as FramebufferStreamWithMeta;
-            stream.meta = meta;
-            return stream;
-        }
-      case this.protocol.FAIL:
-        return this.parser.readError();
+    await this.readOKAY();
+    const header = await this.parser.readBytes(52)
+    let stream: FramebufferStreamWithMeta;
+    const meta = this._parseHeader(header);
+    switch (format) {
+      case 'raw':
+        stream = this.parser.raw() as FramebufferStreamWithMeta;
+        stream.meta = meta;
+        return stream;
       default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
+        stream = this._convert(meta, format) as FramebufferStreamWithMeta;
+        stream.meta = meta;
+        return stream;
     }
   }
 

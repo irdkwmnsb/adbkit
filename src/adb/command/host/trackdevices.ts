@@ -6,14 +6,7 @@ export default class HostTrackDevicesCommand extends HostDevicesCommand {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async execute(): Promise<any> {
     this._send('host:track-devices');
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case this.protocol.OKAY:
-        return new Tracker(this);
-      case this.protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.readOKAY();
+    return new Tracker(this);
   }
 }

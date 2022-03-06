@@ -19,16 +19,9 @@ export interface AdbServiceInfo {
 export default class ServiceListCommand extends Command<AdbServiceInfo[]> {
   async execute(): Promise<AdbServiceInfo[]> {
     this._send('shell:service list 2>/dev/null');
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case this.protocol.OKAY:
-        const data = await this.parser.readAll()
-        return this._parse(data.toString());
-      case this.protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.readOKAY();
+    const data = await this.parser.readAll()
+    return this._parse(data.toString());
   }
 
   private _parse(value: string): AdbServiceInfo[] {

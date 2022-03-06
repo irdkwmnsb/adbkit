@@ -35,16 +35,9 @@ export default class PsCommand extends Command<Array<Partial<PsEntry>>> {
     } else {
       this._send(`shell:ps ${args.join(' ')}`); //  2>/dev/null
     }
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case this.protocol.OKAY:
-        const data = await this.parser.readAll()
-        return this._parsePs(data.toString());
-      case this.protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.readOKAY();
+    const data = await this.parser.readAll()
+    return this._parsePs(data.toString());
   }
 
   private _parsePs(value: string): Array<Partial<PsEntry>> {

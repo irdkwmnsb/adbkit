@@ -4,16 +4,9 @@ import Reverse from '../../../Reverse';
 export default class ListReversesCommand extends Command<Reverse[]> {
   async execute(): Promise<Reverse[]> {
     this._send('reverse:list-forward');
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case this.protocol.OKAY:
-        const value = await this.parser.readValue()
-        return this._parseReverses(value);
-      case this.protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.readOKAY();
+    const value = await this.parser.readValue()
+    return this._parseReverses(value);
   }
 
   private _parseReverses(value: Buffer): Reverse[] {

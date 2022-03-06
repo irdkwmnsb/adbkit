@@ -32,6 +32,37 @@ const main = async () => {
   const default4G = routes4G.find(r => r.dest === 'default')
   console.log(`default Wifi is: ${defaultWifi}`);
   console.log(`default   4G is: ${default4G}`);
+
+
+
+  // double rules
+  // try {
+  //   console.log(`ip route add ${defaultWifi.toString()} table wlan0`);
+  //   await deviceClient.getIpRoute(`add ${defaultWifi.toString()} table wlan0`);
+  // } catch (e) {
+  //   if (e instanceof Error)
+  //     console.log(e.message);
+  // }
+
+  await deviceClient.ipRoute(`del ${defaultWifi.toString()} table wlan0`);
+  await deviceClient.ipRoute(`add ${default4G.toString()} table wlan0`);
+  const toWifi = defaultWifi.clone()
+  toWifi.dest = '212.129.20.0/24';
+  await deviceClient.ipRoute(`add ${toWifi.toString()} table wlan0`);
+  // rool back:
+  // console.log(`rool back:`);
+  // await deviceClient.ipRoute(`ip route add ${defaultWifi.toString()} table wlan0`);
+  // await deviceClient.ipRoute(`ip route del ${default4G.toString()} table wlan0`);
+  // await deviceClient.ipRoute(`ip route del ${toWifi.toString()} table wlan0`);
+
+  //ip route add default via 10.38.199.10 dev rmnet_data2 proto static mtu 1500 table 1021
+  //const transport = await deviceClient.transport();
+  //const rules2 = await new IpRuleCommand(transport, {sudo: true}).execute('list');
+  //for (const rule of rules2)
+  //  console.log(rule.toStirng());
+
+
+
 }
 
 main();

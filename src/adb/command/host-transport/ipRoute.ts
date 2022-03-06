@@ -11,16 +11,9 @@ export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
 
   async execute(...args: string[]): Promise<Array<IpRouteEntry>> {
     super.sendCommand(['shell:ip', 'route', ...args].join(' ')); //  2>/dev/null
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case this.protocol.OKAY:
-        const data = await this.parser.readAll()
-        return this.parseIpRoute(data.toString());
-      case this.protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.readOKAY();
+    const data = await this.parser.readAll()
+    return this.parseIpRoute(data.toString());
   }
 
   private parseIpRoute(value: string): Array<IpRouteEntry> {
@@ -32,52 +25,7 @@ export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
     const lines: string[] = value.split(/[\r\n]+/g).filter(a => a);
     const result: IpRouteEntry[] = [];
     for (const line of lines) {
-      const entry: IpRouteEntry = new IpRouteEntry();
-      const words = line.split(' ').filter(a => a);
-      if (ValidTypesSet.has(words[0] as ValidTypesT)) {
-        entry.type = words.shift() as ValidTypesT;
-      }
-
-      if (words[0] === 'default') {
-        entry.dest = words.shift();
-      } else if (words[0].match(/^[0-9.]+(\/\d+)?$/)) {
-        // IP v4
-        entry.dest = words.shift();
-      } else if (words[0].match(/^[0-9a-f:]+(\/\d+)?$/)) {
-        // IP v6
-        entry.dest = words.shift();
-      }
-
-      while (words.length) {
-        const next = words.shift();
-        const value = words.shift();
-        switch (next) {
-          case 'dev':
-          case 'via':
-          case 'src':
-          case 'tos':
-          case 'mtu':
-          case 'expires':
-            entry[next] = value;
-            break;
-          case 'metric':
-          case 'hoplimit':
-            entry[next] = Number(value);
-            break;
-          case 'pref':
-          case 'scope':
-          case 'table':
-          case 'proto':
-            if (value.match(/^\d+$/))
-              entry[next] = Number(value);
-            else
-              (entry[next] as string) = value;
-            break;
-          default:
-            throw Error(`Failed to parse line:\n ${line}\n token: ${pc.yellow(next)} in ip route response, Fix me in ipRoute.ts`);
-        }
-      }
-      result.push(entry);
+      result.push(new IpRouteEntry(line));
     }
     return result;
   }
@@ -119,6 +67,54 @@ export class IpRouteEntry {
    */
   hoplimit?: number;
 
+  constructor(line: string) {
+    const words = line.split(' ').filter(a => a);
+    if (ValidTypesSet.has(words[0] as ValidTypesT)) {
+      this.type = words.shift() as ValidTypesT;
+    }
+
+    if (words[0] === 'default') {
+      this.dest = words.shift();
+    } else if (words[0].match(/^[0-9.]+(\/\d+)?$/)) {
+      // IP v4
+      this.dest = words.shift();
+    } else if (words[0].match(/^[0-9a-f:]+(\/\d+)?$/)) {
+      // IP v6
+      this.dest = words.shift();
+    }
+
+    while (words.length) {
+      const next = words.shift();
+      const value = words.shift();
+      switch (next) {
+        case 'dev':
+        case 'via':
+        case 'src':
+        case 'tos':
+        case 'mtu':
+        case 'expires':
+          this[next] = value;
+          break;
+        case 'metric':
+        case 'hoplimit':
+          this[next] = Number(value);
+          break;
+        case 'pref':
+        case 'scope':
+        case 'table':
+        case 'proto':
+          if (value.match(/^\d+$/))
+            this[next] = Number(value);
+          else
+            (this[next] as string) = value;
+          break;
+        default:
+          throw Error(`Failed to parse line:\n ${line}\n token: ${pc.yellow(next)} in ip route response, Fix me in ipRoute.ts`);
+      }
+    }
+  }
+
+
   public toString(): string {
     const out: string[] = [];
     for (const field of ['type', 'dest'] as const) {
@@ -135,11 +131,7 @@ export class IpRouteEntry {
   }
 
   public clone(): IpRouteEntry {
-    const cp = new IpRouteEntry();
-    for (const key of Object.keys(this))
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (cp as any)[key] = (this as any)[key];
-    return cp;
+    return new IpRouteEntry(this.toString());
   }
 
 }

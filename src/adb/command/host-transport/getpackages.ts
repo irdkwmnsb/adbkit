@@ -7,16 +7,9 @@ export default class GetPackagesCommand extends Command<string[]> {
     } else {
       this._send('shell:pm list packages 2>/dev/null');
     }
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case this.protocol.OKAY:
-        const data = await this.parser.readAll();
-        return this._parsePackages(data.toString());
-      case this.protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.readOKAY();
+    const data = await this.parser.readAll();
+    return this._parsePackages(data.toString());
   }
 
   private _parsePackages(value: string): string[] {

@@ -20,44 +20,16 @@ import pc from 'picocolors'
 export default class IpRuleCommand extends Command<Array<IpRuleEntry>> {
   async execute(...args: string[]): Promise<Array<IpRuleEntry>> {
     this.sendCommand(['shell:ip', 'rule', ...args].join(' '));
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case this.protocol.OKAY:
-        const data = await this.parser.readAll()
-        return this.parseIpRule(data.toString());
-      case this.protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.readOKAY();
+    const data = await this.parser.readAll()
+    return this.parseIpRule(data.toString());
   }
 
   private parseIpRule(value: string): Array<IpRuleEntry> {
     const lines: string[] = value.split(/[\r\n]+/g).filter(a => a);
     const result: IpRuleEntry[] = [];
     for (const line of lines) {
-      const words = line.split(/\s+/g).filter(a => a);
-      const id = words.shift();
-      const entry = new IpRuleEntry(id);
-      while (words.length) {
-        const next = words.shift();
-        switch (next) {
-          case 'from':
-          case 'fwmark':
-          case 'lookup':
-          case 'iif':
-          case 'oif':
-          case 'uidrange':
-            entry[next] = words.shift();
-            break;
-          case 'unreachable':
-            entry[next] = true;
-            break;
-          default:
-            throw Error(`Failed to parse line:\n ${line}\n token: ${pc.yellow(next)} in ip route response, Fix me in ipRule.ts`);
-        }
-      }
-      result.push(entry);
+      result.push(new IpRuleEntry(line));
     }
     return result;
   }
@@ -70,8 +42,28 @@ export default class IpRuleCommand extends Command<Array<IpRuleEntry>> {
  * NODE_SPEC := [ TYPE ] PREFIX [ tos TOS ] [ table TABLE_ID ] [ proto RTPROTO ] [ scope SCOPE ] [ metric METRIC ]
  */
 export class IpRuleEntry {
-  constructor(id: string) {
+  constructor(line: string) {
+    const words = line.split(/\s+/g).filter(a => a);
+    const id = words.shift();
     this.id = Number(id.replace(':', ''))
+    while (words.length) {
+      const next = words.shift();
+      switch (next) {
+        case 'from':
+        case 'fwmark':
+        case 'lookup':
+        case 'iif':
+        case 'oif':
+        case 'uidrange':
+          this[next] = words.shift();
+          break;
+        case 'unreachable':
+          this[next] = true;
+          break;
+        default:
+          throw Error(`Failed to parse line:\n ${line}\n token: ${pc.yellow(next)} in ip route response, Fix me in ipRule.ts`);
+      }
+    }
   }
 
   // route priority

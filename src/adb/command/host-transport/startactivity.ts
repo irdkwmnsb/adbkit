@@ -33,25 +33,18 @@ export default class StartActivityCommand extends Command<boolean> {
 
   async _run(command: string, args: Array<string | number>): Promise<boolean> {
     this._send(`shell:am ${command} ${args.join(' ')}`);
-    const reply = await this.parser.readAscii(4)
-    switch (reply) {
-      case this.protocol.OKAY:
-        try {
-          const match = await this.parser.searchLine(RE_ERROR);
-          throw new Error(match[1]);
-        } catch (err) {
-          if (err instanceof Parser.PrematureEOFError)
-            return true;
-        } finally {
-          this.parser.end();
-        }
-        // may be incorrect.
-        return this.parser.readError();
-      case this.protocol.FAIL:
-        return this.parser.readError();
-      default:
-        return this.parser.unexpected(reply, 'OKAY or FAIL');
+    await this.readOKAY();
+    try {
+      const match = await this.parser.searchLine(RE_ERROR);
+      throw new Error(match[1]);
+    } catch (err) {
+      if (err instanceof Parser.PrematureEOFError)
+        return true;
+    } finally {
+      this.parser.end();
     }
+    // may be incorrect.
+    return this.parser.readError();
   }
 
   protected _intentArgs(options: StartActivityOptions): Array<string | number> {
