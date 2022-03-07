@@ -33,12 +33,8 @@ export default class PacketReader extends EventEmitter {
   constructor(private stream: ReadableStream) {
     super();
     this.stream.on('readable', this._tryRead.bind(this));
-    this.stream.on('error', (err) => {
-      return this.emit('error', err);
-    });
-    this.stream.on('end', () => {
-      return this.emit('end');
-    });
+    this.stream.on('error', (err) => { this.emit('error', err); });
+    this.stream.on('end', () => { this.emit('end'); });
     setImmediate(this._tryRead.bind(this));
   }
 

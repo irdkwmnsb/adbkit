@@ -67,7 +67,7 @@ describe('WaitBootCompleteCommand', () => {
             conn.getSocket().causeRead(Protocol.OKAY);
             return conn.getSocket().causeRead('1\r\n');
         });
-        conn.getSocket().on('end', () => {
+        conn.getSocket().once('end', () => {
             done();
         });
         cmd.execute();

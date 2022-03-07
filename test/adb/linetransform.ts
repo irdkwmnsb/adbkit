@@ -31,9 +31,9 @@ describe('LineTransform', () => {
             });
             let buffer = Buffer.from('');
             transform.on('data', (data) => {
-                return (buffer = Buffer.concat([buffer, data]));
+                buffer = Buffer.concat([buffer, data]);
             });
-            transform.on('end', () => {
+            transform.once('end', () => {
                 expect(buffer.toString()).to.equal('bar\r\n');
                  done();
             });
@@ -48,9 +48,9 @@ describe('LineTransform', () => {
             });
             let buffer = Buffer.from('');
             transform.on('data', (data) => {
-                return (buffer = Buffer.concat([buffer, data]));
+                buffer = Buffer.concat([buffer, data]);
             });
-            transform.on('end', () => {
+            transform.once('end', () => {
                 expect(buffer.toString()).to.equal('bar\n');
                 done();
             });
@@ -65,9 +65,9 @@ describe('LineTransform', () => {
             });
             let buffer = Buffer.from('');
             transform.on('data', (data) => {
-                return (buffer = Buffer.concat([buffer, data]));
+                buffer = Buffer.concat([buffer, data]);
             });
-            transform.on('end', () => {
+            transform.once('end', () => {
                 expect(buffer.toString()).to.equal('bar\n');
                 done();
             });
@@ -82,10 +82,8 @@ describe('LineTransform', () => {
                 autoDetect: true,
             });
             let buffer = Buffer.from('');
-            transform.on('data', (data) => {
-                return (buffer = Buffer.concat([buffer, data]));
-            });
-            transform.on('end', () => {
+            transform.on('data', (data) => { buffer = Buffer.concat([buffer, data]); });
+            transform.once('end', () => {
                 expect(buffer.toString()).to.equal('bar\nfoo');
                 done();
             });
@@ -100,7 +98,7 @@ describe('LineTransform', () => {
             const transform = new LineTransform();
             let buffer = Buffer.from('');
             transform.on('data', (data) => {
-                return (buffer = Buffer.concat([buffer, data]));
+                buffer = Buffer.concat([buffer, data]);
             });
             transform.on('end', () => {
                 expect(buffer.toString()).to.equal('\n\nbar\nfoo');
@@ -165,9 +163,9 @@ describe('LineTransform', () => {
         const transform = new LineTransform();
         let buffer = Buffer.from('');
         transform.on('data', (data) => {
-            return (buffer = Buffer.concat([buffer, data]));
+            buffer = Buffer.concat([buffer, data]);
         });
-        transform.on('end', () => {
+        transform.once('end', () => {
             expect(buffer).to.have.length(3);
             expect(buffer[0]).to.equal(0x62);
             expect(buffer[1]).to.equal(0x0d);
@@ -185,9 +183,9 @@ describe('LineTransform', () => {
         const transform = new LineTransform();
         let buffer = Buffer.from('');
         transform.on('data', (data) => {
-            return (buffer = Buffer.concat([buffer, data]));
+            buffer = Buffer.concat([buffer, data]);
         });
-        transform.on('end', () => {
+        transform.once('end', () => {
             expect(buffer).to.have.length(2);
             expect(buffer[0]).to.equal(0x62);
             expect(buffer[1]).to.equal(0x0a);

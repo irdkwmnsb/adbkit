@@ -213,9 +213,9 @@ describe('RgbTransform', () => {
         stream.pipe(transform);
         let all = Buffer.from('');
         transform.on('data', (chunk) => {
-            return (all = Buffer.concat([all, chunk]));
+            all = Buffer.concat([all, chunk]);
         });
-        transform.on('end', () => {
+        transform.once('end', () => {
             expect(all).to.have.length(15);
             expect(all.readUInt8(0)).to.equal(150);
             expect(all.readUInt8(1)).to.equal(100);
