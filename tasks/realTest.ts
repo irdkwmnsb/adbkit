@@ -16,7 +16,7 @@ const main = async () => {
     return;
   }
   const deviceClient = devices[0].getClient();
-  const scrcpy = deviceClient.scrcpy({});
+  const scrcpy = deviceClient.scrcpy({port: 8099});
   let nbPkg = 0;
   let trData = 0;
   setInterval(() => {
