@@ -21,6 +21,7 @@ specifiers:
   node-forge: ^1.2.1
   picocolors: ^1.0.0
   prettier: ^2.5.1
+  promise-socket: ^7.0.0
   rimraf: ^3.0.2
   sinon: ~13.0.1
   sinon-chai: ~3.7.0
@@ -36,6 +37,7 @@ dependencies:
   debug: 4.3.3
   install: 0.13.0
   node-forge: 1.2.1
+  promise-socket: 7.0.0
   split: 1.0.1
 
 devDependencies:
@@ -541,6 +543,11 @@ packages:
   /concat-map/0.0.1:
     resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
     dev: true
+
+  /core-js/3.21.1:
+    resolution: {integrity: sha512-FRq5b/VMrWlrmCzwRrpDYNxyHP9BcAZC+xHJaqTgIE5091ZV1NTmyh0sGOg5XqpnHvR0svdy0sv1gWA1zmhxig==}
+    requiresBuild: true
+    dev: false
 
   /create-require/1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
@@ -1232,6 +1239,35 @@ packages:
     hasBin: true
     dev: true
 
+  /promise-duplex/6.0.0:
+    resolution: {integrity: sha512-ZL7rquzjTFzInDBeWYcsT+qddolNvzigahk6MI6qLSbQvlyRRCJkU3JztgaVunzvkH28smRa2Qu/cY9RXtSkgA==}
+    engines: {node: '>=10.0.0'}
+    dependencies:
+      core-js: 3.21.1
+      promise-readable: 6.0.0
+      promise-writable: 6.0.0
+    dev: false
+
+  /promise-readable/6.0.0:
+    resolution: {integrity: sha512-5NxtmUswijvX5cAM0zPSy6yiCXH/eKBpiiBq6JfAUrmngMquMbzcBhF2qA+ocs4rYYKdvAfv3cOvZxADLtL1CA==}
+    engines: {node: '>=10.0.0'}
+    dependencies:
+      core-js: 3.21.1
+    dev: false
+
+  /promise-socket/7.0.0:
+    resolution: {integrity: sha512-Oic9BrxmcHOPEnzKp2Js+ehFyvsbd0WxsE5khweCTHuRvdzbXjHUZmSDT6F9TW8SIkAJ0lCzoHjMYnb0WQJPiw==}
+    engines: {node: '>=10.0.0'}
+    dependencies:
+      promise-duplex: 6.0.0
+      tslib: 2.3.1
+    dev: false
+
+  /promise-writable/6.0.0:
+    resolution: {integrity: sha512-b81zre/itgJFS7dwWzIdKNVVqvLiUxYRS/wolUB0H1YY/tAaS146XGKa4Q/5wCbsnXLyn0MCeV6f8HHe4iUHLg==}
+    engines: {node: '>=10.0.0'}
+    dev: false
+
   /punycode/2.1.1:
     resolution: {integrity: sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==}
     engines: {node: '>=6'}
@@ -1433,6 +1469,10 @@ packages:
   /tslib/1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
     dev: true
+
+  /tslib/2.3.1:
+    resolution: {integrity: sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==}
+    dev: false
 
   /tsutils/3.21.0_typescript@4.5.5:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}

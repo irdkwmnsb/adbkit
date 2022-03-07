@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { DeviceClient } from '../src';
 import adb from '../src/adb';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 
@@ -15,6 +16,19 @@ const main = async () => {
     return;
   }
   const deviceClient = devices[0].getClient();
+  const scrcpy = deviceClient.scrcpy({});
+  scrcpy.on('data', (pts: Buffer, data: Buffer) => {
+    if (data.length > 1024)
+      console.log(`[${pts.length}] Data: ${(data.length/1024).toFixed(1)}Kb`)
+    else
+      console.log(`[${pts.length}] Data: ${data.length}b`)
+  });
+  scrcpy.start()
+    .then(info => console.log(`Started -> ${info.name} at ${info.width}x${info.height}`))
+    .catch(e => console.error('Impossible to start', e));
+}
+
+const testRouting = async (deviceClient: DeviceClient) => {
   deviceClient.sudo = true;
   const rules = await deviceClient.ipRule('list');
   // print(rules)
@@ -23,17 +37,15 @@ const main = async () => {
 
   const routesWifi = await deviceClient.ipRoute('show table wlan0');
   // print(routesWifi)
-  
+
   //console.log('4g');
   const routes4G = await deviceClient.ipRoute('show table rmnet_data2');
   // print(routes4G)
-   
+
   const defaultWifi = routesWifi.find(r => r.dest === 'default')
   const default4G = routes4G.find(r => r.dest === 'default')
   console.log(`default Wifi is: ${defaultWifi}`);
   console.log(`default   4G is: ${default4G}`);
-
-
 
   // double rules
   // try {
@@ -60,9 +72,6 @@ const main = async () => {
   //const rules2 = await new IpRuleCommand(transport, {sudo: true}).execute('list');
   //for (const rule of rules2)
   //  console.log(rule.toStirng());
-
-
-
 }
 
 main();

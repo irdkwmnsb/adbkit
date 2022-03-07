@@ -34,6 +34,7 @@ import JdwpTracker from './jdwptracker';
 import DeviceWithPath from '../DeviceWithPath';
 import Client from './client';
 import Util from './util';
+import Scrcpy, { ScrcpyOptions } from './Scrcpy';
 
 const debug = d('adb:client');
 
@@ -643,7 +644,8 @@ export default class DeviceClient {
   public async pull(path: string): Promise<PullTransfer> {
     const sync = await this.syncService();
     const pullTransfer = await sync.pull(path);
-    return pullTransfer.on('end', () => sync.end());
+    pullTransfer.waitForEnd().finally(() => sync.end())
+    return pullTransfer;
   }
 
   /**
@@ -656,7 +658,7 @@ export default class DeviceClient {
   public async push(contents: string | ReadStream, path: string, mode?: number): Promise<PushTransfer> {
     const sync = await this.syncService();
     const transfert = await sync.push(contents, path, mode);
-    transfert.on('end', () => sync.end());
+    transfert.waitForEnd().finally(() => sync.end())
     return transfert;
   }
 
@@ -700,4 +702,11 @@ export default class DeviceClient {
     const conn = await this.connection();
     return new WaitForDeviceCommand(conn).execute(this.serial);
   }
+
+  public scrcpy(options: Partial<ScrcpyOptions>): Scrcpy {
+    const scrcpy = new Scrcpy(this, options);
+    // await scrcpy.start();
+    return scrcpy;
+  }
+
 }

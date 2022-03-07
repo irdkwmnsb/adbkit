@@ -4,6 +4,9 @@
 
 * add ip route command
 * add ip rule command
+* add scrcpy from [node-scrcpy-client](https://github.com/jvictorsoto/node-scrcpy-client) directly in DeviceClient
+* fix event registration leaks.
+* add waitForEnd() in transfert Object.
 * add sudo flag in command
 * DeviceClient can be obtain from a Device object using getClient()
 * drop all bluebird references, use only native Promise.
