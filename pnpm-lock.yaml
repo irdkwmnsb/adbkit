@@ -10,7 +10,6 @@ specifiers:
   '@typescript-eslint/parser': ^5.13.0
   '@u4/adbkit-logcat': 2.1.1
   '@u4/adbkit-monkey': ^1.0.3
-  adbkit-logcat: link:@u4\adbkit-logcat
   bench: ~0.3.6
   chai: ~4.3.6
   commander: 9.0.0
@@ -33,7 +32,6 @@ specifiers:
 dependencies:
   '@u4/adbkit-logcat': 2.1.1
   '@u4/adbkit-monkey': 1.0.3
-  adbkit-logcat: link:@u4/adbkit-logcat
   commander: 9.0.0
   debug: 4.3.3
   install: 0.13.0

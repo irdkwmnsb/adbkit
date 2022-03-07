@@ -1,6 +1,6 @@
 {
     "name": "@u4/adbkit",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "description": "A Typescript client for the Android Debug Bridge.",
     "keywords": [
         "adb",
@@ -51,7 +51,6 @@
     "dependencies": {
         "@u4/adbkit-logcat": "2.1.1",
         "@u4/adbkit-monkey": "^1.0.3",
-        "adbkit-logcat": "link:@u4\\adbkit-logcat",
         "commander": "9.0.0",
         "debug": "~4.3.3",
         "install": "^0.13.0",

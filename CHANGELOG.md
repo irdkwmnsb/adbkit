@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.1.1 (2022-03-07)
+
+* fix error in package.json dependences
+
 ## v3.1.0 (2022-03-02)
 
 * add ip route command
