@@ -17,11 +17,30 @@ const main = async () => {
   }
   const deviceClient = devices[0].getClient();
   const scrcpy = deviceClient.scrcpy({});
+  let nbPkg = 0;
+  let trData = 0;
+  setInterval(() => {
+    if (!nbPkg)
+      return;
+    let str = '';
+    if (trData > 1024 * 1024) {
+      str = (trData / (1024 * 1024)).toFixed(1) + 'MB';
+    } else if (trData > 1024) {
+      str = (trData / 1024).toFixed(1) + 'KB';
+    } else {
+      str = trData + 'B';
+    }
+    console.log(`${nbPkg} packet Transfered for a total of ${str}`);
+    nbPkg = 0;
+    trData = 0;
+  }, 1000);
   scrcpy.on('data', (pts: Buffer, data: Buffer) => {
-    if (data.length > 1024)
-      console.log(`[${pts.length}] Data: ${(data.length/1024).toFixed(1)}Kb`)
-    else
-      console.log(`[${pts.length}] Data: ${data.length}b`)
+    nbPkg++;
+    trData += data.length + pts.length;
+    //if (data.length > 1024)
+    //  console.log(`[${pts.length}] Data: ${(data.length/1024).toFixed(1)}Kb`)
+    //else
+    //  console.log(`[${pts.length}] Data: ${data.length}b`)
   });
   scrcpy.start()
     .then(info => console.log(`Started -> ${info.name} at ${info.width}x${info.height}`))

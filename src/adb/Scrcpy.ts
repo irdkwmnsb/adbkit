@@ -83,7 +83,7 @@ export default class Scrcpy extends EventEmitter {
     const jarDest = '/data/local/tmp/scrcpy-server.jar';
     // Transfer server...
     try {
-      const transfer = await this.client.push(path.join(__dirname, '..', '..', 'bin', 'scrcpy-server.jar'), jarDest);
+      const transfer = await this.client.push(path.join(__dirname, '..', '..', 'bin', 'scrcpy-server-v1.8.jar'), jarDest);
       await transfer.waitForEnd();
       console.log('push Ended');
     } catch (e) {
