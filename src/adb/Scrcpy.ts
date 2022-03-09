@@ -29,7 +29,11 @@ const debug = Debug('scrcpy');
 // eslint-disable-next-line prefer-const
 let scrcpyServerVersion = 20;
 
-
+interface ScrcpyEventEmitter {
+  on(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
+  off(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
+  once(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
+}
 
 /**
  * How scrcpy works?
@@ -51,14 +55,7 @@ let scrcpyServerVersion = 20;
  *        PTS         size      raw packet (of size len)
  * 
  */
-export default class Scrcpy extends EventEmitter {
-
-  on(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  on(eventName: string | symbol, listener: (...args: any[]) => void): this {
-    return super.on(eventName, listener);
-  }
-  
+export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {  
   private config: ScrcpyOptions;
   private videoSocket: PromiseSocket<net.Socket> | undefined;
   private controlSocket: PromiseSocket<net.Socket> | undefined;
@@ -309,16 +306,13 @@ export default class Scrcpy extends EventEmitter {
           // regular end condition
           return;
         }
-        // pts = frameMeta.slice(0, 8);
         pts = frameMeta.readBigUint64BE();
         len = frameMeta.readUInt32BE(8);
         if (pts === 0xFFFFFFFFFFFFFFFFn){
+          // non-media data packet
           pts = -1n;
         }
-        // if pts = 0xFF FF FF FF FF FF FF FF
-        // non-media data packet
-        // else
-        // bufferInfo.presentationTimeUs - ptsOrigin
+        // else {bufferInfo.presentationTimeUs - ptsOrigin}
         // debug(`\tHeader:PTS =`, pts);
         // debug(`\tHeader:len =`, len);
       }
