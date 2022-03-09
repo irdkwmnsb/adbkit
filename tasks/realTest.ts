@@ -37,14 +37,17 @@ const main = async () => {
   scrcpy.on('data', (pts: Buffer, data: Buffer) => {
     nbPkg++;
     trData += data.length + pts.length;
-    //if (data.length > 1024)
-    //  console.log(`[${pts.length}] Data: ${(data.length/1024).toFixed(1)}Kb`)
-    //else
-    //  console.log(`[${pts.length}] Data: ${data.length}b`)
+    // if (data.length > 1024)
+    //   console.log(`[${pts.length}] Data: ${(data.length/1024).toFixed(1)}Kb`)
+    // else
+    //   console.log(`[${pts.length}] Data: ${data.length}b`)
   });
-  scrcpy.start()
-    .then(info => console.log(`Started -> ${info.name} at ${info.width}x${info.height}`))
-    .catch(e => console.error('Impossible to start', e));
+  try {
+    await scrcpy.start();
+    console.log(`Started`);
+  } catch(e) {
+    console.error('Impossible to start', e);
+  }
 }
 
 const testRouting = async (deviceClient: DeviceClient) => {

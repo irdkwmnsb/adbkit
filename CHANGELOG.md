@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v3.1.2 (2022-03-07)
+
+* upgrade scrcpy-server to V 1.20
+* add scrcpy controller commandes
+
 ## v3.1.1 (2022-03-07)
 
 * fix error in package.json dependences
