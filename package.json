@@ -36,7 +36,7 @@
         "url": "https://github.com/UrielCh/adbkit.git"
     },
     "scripts": {
-        "clean": "rimraf dist index.d.ts index.js",
+        "clean": "rimraf dist",
         "keycode": "ts-node tasks/keycode.ts",
         "servicemap": "ts-node tasks/servicemap.ts",
         "prepublish": "npm run clean && npm run compile && npm run test",
