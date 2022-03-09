@@ -11,6 +11,7 @@ import { Duplex } from 'stream';
 
 import { MotionEvent, Orientation, ControlMessage } from './ScrcpyConst';
 import { KeyCodes, Utils } from '..';
+import { Point, ScrcpyOptions } from './ScrcpyModel';
 
 const debug = Debug('scrcpy');
 /**
@@ -28,63 +29,7 @@ const debug = Debug('scrcpy');
 // eslint-disable-next-line prefer-const
 let scrcpyServerVersion = 20;
 
-export interface Point {
-  x: number;
-  y: number;
-}
 
-export interface ScrcpyOptions {
-  /**
-   * local port use for scrcpy
-   */
-  port: number,
-  /**
-   * maxSize         (integer, multiple of 8) 0
-   * Max width
-   */
-  maxSize: number,
-  /**
-   * maximum fps, 0 means not limited (supported after android 10)
-   */
-  maxFps: number;
-  /**
-   * flip the video
-   */
-  flip: boolean;
-  /**
-   * 
-   */
-  bitrate: number,
-  /**
-   * lock screen orientation, LOCK_VIDEO_ORIENTATION_*
-   */
-  lockedVideoOrientation: number;
-
-  /**
-   * use "adb forward" instead of "adb tunnel"
-   */
-  tunnelForward: boolean,
-  tunnelDelay: number,
-  /**
-   * Crop must contains 4 values separated by colons
-   * 
-   * cropZone formated as "width:height:x:y" or '-'
-   */
-  crop: string,
-  sendFrameMeta: boolean,
-  /**
-   * set Control added in scrcpy 1.9
-   */
-  control: boolean;
-  displayId: number,
-  showTouches: boolean;
-  stayAwake: boolean;
-  codecOptions: string;
-  encoderName: string;
-  powerOffScreenOnClose: boolean;
-}
-
-const waitforReadable = (duplex: PromiseDuplex<Duplex>) => new Promise<void>((resolve) => duplex.readable.stream.once('readable', resolve));
 
 /**
  * How scrcpy works?
@@ -107,10 +52,20 @@ const waitforReadable = (duplex: PromiseDuplex<Duplex>) => new Promise<void>((re
  * 
  */
 export default class Scrcpy extends EventEmitter {
+
+  on(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on(eventName: string | symbol, listener: (...args: any[]) => void): this {
+    return super.on(eventName, listener);
+  }
+  
   private config: ScrcpyOptions;
   private videoSocket: PromiseSocket<net.Socket> | undefined;
   private controlSocket: PromiseSocket<net.Socket> | undefined;
-  // private scrcpyServer: PromiseDuplex<Duplex>;
+  /**
+   * used to recive Process Error
+   */
+  private scrcpyServer: PromiseDuplex<Duplex>;
   private _name = '';
   private _width = 0;
   private _height = 0;
@@ -143,10 +98,16 @@ export default class Scrcpy extends EventEmitter {
   get width(): number { return this._width; }
   get height(): number { return this._height; }
 
+  /**
+   * Debugging only
+   * @param duplex 
+   * @param name 
+   * @returns 
+   */
   async dumpReadable(duplex: PromiseDuplex<Duplex>, name: string) {
     try {
       for (; ;) {
-        await waitforReadable(duplex);
+        await Utils.waitforReadable(duplex);
         const data = await duplex.read();
         if (data) {
           const msg = data.toString();
@@ -160,6 +121,7 @@ export default class Scrcpy extends EventEmitter {
   }
 
   /**
+   * Read a message from the contoler Duplex
    * 
    * @param duplex only supoport clipboard
    * @returns 
@@ -168,16 +130,16 @@ export default class Scrcpy extends EventEmitter {
     if (!duplex)
       return;
     // const waitforReadable = () => new Promise<void>((resolve) => duplex.readable.stream.once('readable', resolve));
-    await waitforReadable(duplex);
+    await Utils.waitforReadable(duplex);
     let chunk = (await duplex.read(1)) as Buffer;
     const type = chunk.readUInt8();
     switch (type) {
       case 0: // clipboard
-        await waitforReadable(duplex);
+        await Utils.waitforReadable(duplex);
         chunk = (await duplex.read(4)) as Buffer;
-        await waitforReadable(duplex);
+        await Utils.waitforReadable(duplex);
         const len = chunk.readUint32BE();
-        await waitforReadable(duplex);
+        await Utils.waitforReadable(duplex);
         chunk = (await duplex.read(len)) as Buffer;
         const text = chunk.toString('utf8');
         return text;
@@ -201,32 +163,24 @@ export default class Scrcpy extends EventEmitter {
       throw e;
     }
 
-    // Run server
+    // Start server
     try {
       const args: Array<string | number | boolean> = [];
       const {
-        maxSize: maxWidth, bitrate, maxFps, lockedVideoOrientation, tunnelForward, crop,
-        sendFrameMeta, control,
-        displayId, showTouches, stayAwake, codecOptions, encoderName, powerOffScreenOnClose
+        maxSize, bitrate, maxFps, lockedVideoOrientation, tunnelForward, crop,
+        sendFrameMeta, control, displayId, showTouches, stayAwake, codecOptions,
+        encoderName, powerOffScreenOnClose
       } = this.config;
       args.push(`CLASSPATH=${jarDest}`);
       args.push('app_process');
       args.push('/');
       args.push('com.genymobile.scrcpy.Server');
 
-      if (scrcpyServerVersion < 11) {
-        args.push(maxWidth); // maxWidth (arg 1)
-        args.push(bitrate); // bitRate (arg 2)
-        args.push(tunnelForward); // tunnelForward (arg 3)
-        args.push(crop); // tunnelForward (arg 4)
-        args.push(this.config.sendFrameMeta); // tunnelForward (arg 5)
-        if (scrcpyServerVersion > 8) // for V 1.9 and 1.10
-          args.push(this.config.control); // tunnelForward (arg 6)
-      } else {
+      if (scrcpyServerVersion == 20) {
         // Version 11 => 20
         args.push(`1.${scrcpyServerVersion}`); // arg 0 Scrcpy server version
         args.push("info"); // Log level: info, verbose...
-        args.push(maxWidth); // Max screen width (long side)
+        args.push(maxSize); // Max screen width (long side)
         args.push(bitrate); // Bitrate of video
         args.push(maxFps); // Max frame per second
         args.push(lockedVideoOrientation); // Lock screen orientation: LOCK_SCREEN_ORIENTATION
@@ -241,9 +195,8 @@ export default class Scrcpy extends EventEmitter {
         args.push(encoderName); //     Encoder name
         args.push(powerOffScreenOnClose); // Power off screen after server closed
       }
-      //const duplex = 
-      await this.client.shell(args.map(a => a.toString()).join(' '));
-      // this.scrcpyServer = new PromiseDuplex(duplex);
+      const duplex = await this.client.shell(args.map(a => a.toString()).join(' '));
+      this.scrcpyServer = new PromiseDuplex(duplex);
       // debug only
       // this.dumpReadable(this.scrcpyServer, 'scrcpyServer');
     } catch (e) {
@@ -258,11 +211,18 @@ export default class Scrcpy extends EventEmitter {
       throw e;
     }
 
-    this.videoSocket = new PromiseSocket(new net.Socket());
-    this.controlSocket = new PromiseSocket(new net.Socket());
+    if (Utils.waitforReadable(this.scrcpyServer, this.config.tunnelDelay)) {
+      await this.scrcpyServer.read();
+      // const buffer = await this.scrcpyServer.read();
+      //const info = buffer.toString();
+      // console.log(info);
+      //throw Error()
+    }
 
     // Wait 1 sec to forward to work
     await Util.delay(this.config.tunnelDelay);
+    this.videoSocket = new PromiseSocket(new net.Socket());
+    this.controlSocket = new PromiseSocket(new net.Socket());
 
     // Connect videoSocket
     try {
@@ -282,24 +242,16 @@ export default class Scrcpy extends EventEmitter {
 
     // First chunk is 69 bytes length -> 1 dummy byte, 64 bytes for deviceName, 2 bytes for width & 2 bytes for height
     try {
-      const initRead = (scrcpyServerVersion === 8) ? 69 : 1;
-
-      await waitforReadable(this.videoSocket);
-      const firstChunk = await this.videoSocket.read(initRead) as Buffer;
+      await Utils.waitforReadable(this.videoSocket);
+      const firstChunk = await this.videoSocket.read(1) as Buffer;
       if (!firstChunk) {
         throw Error('fail to read firstChunk, inclease tunnelDelay for this device.');
       }
 
       // old protocol
-      if (firstChunk.length === 69) {
-        this._name = firstChunk.slice(1, 65).toString('utf8');
-        this._width = firstChunk.readUInt16BE(65);
-        this._height = firstChunk.readUInt16BE(67);
-      } else if (firstChunk.length === 1) {
-        const control = firstChunk.at(0);
-        if (firstChunk.at(0) !== 0) {
-          throw Error(`Control code should be 0x00, receves: 0x${control.toString(16)}`);
-        }
+      const control = firstChunk.at(0);
+      if (firstChunk.at(0) !== 0) {
+        throw Error(`Control code should be 0x00, receves: 0x${control.toString(16).padStart(2, '0')}`);
       }
     } catch (e) {
       debug('Impossible to read first chunk:', e);
@@ -318,8 +270,8 @@ export default class Scrcpy extends EventEmitter {
     //await this.rotateDevice();
     //await Util.delay(1500);
     //await this.rotateDevice();
-    //await Util.delay(1500);
-    //await this.rotateDevice();
+    await Util.delay(1500);
+    await this.rotateDevice();
     //await Util.delay(1500);
     //await this.injectKeycodeEvent(MotionEvent.ACTION_DOWN, KeyCodes.KEYCODE_D, 1, 0);
     //await this.injectKeycodeEvent(MotionEvent.ACTION_UP, KeyCodes.KEYCODE_D, 1, 0);
@@ -339,32 +291,43 @@ export default class Scrcpy extends EventEmitter {
 
   private async startStreamWithMeta() {
     this.videoSocket.stream.pause();
-    if (scrcpyServerVersion > 8) {
-      await waitforReadable(this.videoSocket);
-      const chunk = this.videoSocket.stream.read(68) as Buffer;
-      this._name = chunk.toString('utf8', 0, 64).trim();
-      this._width = chunk.readUint16BE(64);
-      this._height = chunk.readUint16BE(66);
-    }
+    //if (scrcpyServerVersion > 8) {
+    await Utils.waitforReadable(this.videoSocket);
+    const chunk = this.videoSocket.stream.read(68) as Buffer;
+    this._name = chunk.toString('utf8', 0, 64).trim();
+    this._width = chunk.readUint16BE(64);
+    this._height = chunk.readUint16BE(66);
+    //}
 
+    let pts = BigInt(0);// Buffer.alloc(0);
     for (; ;) {
-      await waitforReadable(this.videoSocket);
-      const metaChunk = this.videoSocket.stream.read(12) as Buffer;
-      if (!metaChunk) {
-        // regular end condition
-        return;
+      await Utils.waitforReadable(this.videoSocket);
+      let len: number| undefined = undefined;
+      if (this.config.sendFrameMeta) {
+        const frameMeta = this.videoSocket.stream.read(12) as Buffer;
+        if (!frameMeta) {
+          // regular end condition
+          return;
+        }
+        // pts = frameMeta.slice(0, 8);
+        pts = frameMeta.readBigUint64BE();
+        len = frameMeta.readUInt32BE(8);
+        if (pts === 0xFFFFFFFFFFFFFFFFn){
+          pts = -1n;
+        }
+        // if pts = 0xFF FF FF FF FF FF FF FF
+        // non-media data packet
+        // else
+        // bufferInfo.presentationTimeUs - ptsOrigin
+        // debug(`\tHeader:PTS =`, pts);
+        // debug(`\tHeader:len =`, len);
       }
-      const pts = metaChunk.slice(0, 8);
-      const len = metaChunk.readUInt32BE(8);
-      debug(`\tHeader:PTS =`, pts);
-      debug(`\tHeader:len =`, len);
-
       let streamChunk: Buffer | null = null;
       while (streamChunk === null) {
-        await waitforReadable(this.videoSocket);
+        await Utils.waitforReadable(this.videoSocket);
         streamChunk = this.videoSocket.stream.read(len) as Buffer;
         if (streamChunk) {
-          debug('\tPacket length:', streamChunk.length);
+          // debug('\tPacket length:', streamChunk.length);
           this.emit('data', pts, streamChunk);
         } else {
           // large chunk.
@@ -394,7 +357,6 @@ export default class Scrcpy extends EventEmitter {
     chunk.writeUInt32BE(keyCode, 2);
     chunk.writeUint32BE(repeatCount, 6);
     chunk.writeUint32BE(metaState, 10);
-    console.log(chunk);
     await this.controlSocket.write(chunk);
   }
 
@@ -497,7 +459,6 @@ export default class Scrcpy extends EventEmitter {
 
   // TYPE_ROTATE_DEVICE
   async rotateDevice(): Promise<void> {
-    console.log('ROTATE')
     const chunk = Buffer.alloc(1);
     chunk.writeUInt8(ControlMessage.TYPE_ROTATE_DEVICE);
     await this.controlSocket.write(chunk);

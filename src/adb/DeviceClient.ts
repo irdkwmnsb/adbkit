@@ -34,7 +34,8 @@ import JdwpTracker from './jdwptracker';
 import DeviceWithPath from '../DeviceWithPath';
 import Client from './client';
 import Util from './util';
-import Scrcpy, { ScrcpyOptions } from './Scrcpy';
+import Scrcpy from './Scrcpy';
+import type { ScrcpyOptions } from './ScrcpyModel';
 
 const debug = d('adb:client');
 
@@ -703,9 +704,11 @@ export default class DeviceClient {
     return new WaitForDeviceCommand(conn).execute(this.serial);
   }
 
+  /**
+   * prepare a Scrcpy server
+   */
   public scrcpy(options: Partial<ScrcpyOptions>): Scrcpy {
     const scrcpy = new Scrcpy(this, options);
-    // await scrcpy.start();
     return scrcpy;
   }
 

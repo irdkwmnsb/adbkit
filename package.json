@@ -84,6 +84,7 @@
     },
     "files": [
         "dist/src",
-        "bin"
+        "bin/adbkit",
+        "bin/scrcpy-server-v1.20.jar"
     ]
 }

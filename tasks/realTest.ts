@@ -7,6 +7,17 @@ function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
 }
 
+function fmtSize(trData: number): string {
+  let str = '';
+  if (trData > 1024 * 1024) {
+    str = (trData / (1024 * 1024)).toFixed(1) + 'MB';
+  } else if (trData > 1024) {
+    str = (trData / 1024).toFixed(1) + 'KB';
+  } else {
+    str = trData + 'B';
+  }
+  return str;
+}
 
 const main = async () => {
   const adbClient = adb.createClient();
@@ -22,25 +33,17 @@ const main = async () => {
   setInterval(() => {
     if (!nbPkg)
       return;
-    let str = '';
-    if (trData > 1024 * 1024) {
-      str = (trData / (1024 * 1024)).toFixed(1) + 'MB';
-    } else if (trData > 1024) {
-      str = (trData / 1024).toFixed(1) + 'KB';
-    } else {
-      str = trData + 'B';
-    }
-    console.log(`${nbPkg} packet Transfered for a total of ${str}`);
+    console.log(`${nbPkg} packet Transfered for a total of ${fmtSize(trData)}`);
     nbPkg = 0;
     trData = 0;
   }, 1000);
-  scrcpy.on('data', (pts: Buffer, data: Buffer) => {
+  // const mille: BigInt = 1000n;
+  scrcpy.on('data', (pts, data) => {
     nbPkg++;
-    trData += data.length + pts.length;
-    // if (data.length > 1024)
-    //   console.log(`[${pts.length}] Data: ${(data.length/1024).toFixed(1)}Kb`)
-    // else
-    //   console.log(`[${pts.length}] Data: ${data.length}b`)
+    trData += data.length;
+    const asFloat = parseFloat(pts.toString())
+    const sec = asFloat / 1000000;
+    console.log(`[${sec.toFixed(1)}] Data:  ${fmtSize(data.length)}`)
   });
   try {
     await scrcpy.start();
