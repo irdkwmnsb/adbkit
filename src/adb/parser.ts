@@ -30,6 +30,9 @@ export class UnexpectedDataError extends Error {
   }
 }
 
+/**
+ * helper to read in Duplex stream
+ */
 export default class Parser {
   public static FailError = FailError;
   public static PrematureEOFError = PrematureEOFError;
