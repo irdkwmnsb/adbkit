@@ -16,7 +16,24 @@ interface LoadsWithLine {
 
 type Stats = { cpus: LoadsWithLine };
 
-export default class ProcStat extends EventEmitter {
+export interface ProcStatEmitter {
+  on(event: 'load', listener: (arg: Loads) => void): this;
+  on(event: 'error', listener: (arg: Error) => void): this;
+  once(event: 'load', listener: (arg: Loads) => void): this;
+  once(event: 'error', listener: (arg: Error) => void): this;
+  addListener(event: 'load', listener: (arg: Loads) => void): this;
+  addListener(event: 'error', listener: (arg: Error) => void): this;
+  removeListener(event: 'load', listener: (arg: Loads) => void): this;
+  removeListener(event: 'error', listener: (arg: Error) => void): this;
+  prependListener(event: 'load', listener: (arg: Loads) => void): this;
+  prependListener(event: 'error', listener: (arg: Error) => void): this;
+  prependOnceListener(event: 'load', listener: (arg: Loads) => void): this;
+  prependOnceListener(event: 'error', listener: (arg: Error) => void): this;
+  emit(name: 'load', arg: Loads): boolean;
+  emit(name: 'error', arg: Error): boolean;
+}
+
+export default class ProcStat extends EventEmitter implements ProcStatEmitter {
   public interval = 1000;
   public stats: Stats;
   private readonly _ignore: {[key: string]: string};
@@ -85,7 +102,7 @@ export default class ProcStat extends EventEmitter {
         steal: +cols[7] || 0,
         guest: +cols[8] || 0,
         guestnice: +cols[9] || 0,
-        total: total,
+        total,
       };
     }
     return this._set(stats);

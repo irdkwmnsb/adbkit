@@ -451,7 +451,10 @@ export default class DeviceClient {
   }
 
   /**
-   * Tracks `/proc/stat` and emits useful information, such as CPU load. A single sync service instance is used to download the `/proc/stat` file for processing. While doing this does consume some resources, it is very light and should not be a problem.
+   * Tracks `/proc/stat` and emits useful information, such as CPU load.
+   * A single sync service instance is used to download the `/proc/stat` file for processing.
+   * While doing this does consume some resources, it is very light and should not be a problem.
+   * /proc/stat is pulled once per sec, and emit a 'load' event.
    *
    * @returns The `/proc/stat` tracker, which is an [`EventEmitter`][node-events]. Call `stat.end()` to stop tracking. The following events are available:
    *   -   **load** **(loads)** Emitted when a CPU load calculation is available.
