@@ -4,8 +4,12 @@ Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
 import RootCommand from '../../../../src/adb/command/host-transport/root';
+// import Tester from './Tester';
+
+// const t = new Tester(RootCommand);
 
 describe('RootCommand', () => {
+    // it("should send 'root:'", () => t.testTr('root:'));
     it("should send 'root:'", async () => {
         const conn = new MockConnection();
         const cmd = new RootCommand(conn);

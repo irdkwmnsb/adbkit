@@ -36,6 +36,7 @@ import Client from './client';
 import Util from './util';
 import Scrcpy from './Scrcpy';
 import type { ScrcpyOptions } from './ScrcpyModel';
+import { RebootType } from './command/host-transport/reboot';
 
 const debug = d('adb:client');
 
@@ -282,9 +283,9 @@ export default class DeviceClient {
    *
    * @return true
    */
-  public async reboot(): Promise<boolean> {
+  public async reboot(type?: RebootType): Promise<boolean> {
     const transport = await this.transport();
-    return new hostCmd.RebootCommand(transport).execute();
+    return new hostCmd.RebootCommand(transport).execute(type);
   }
 
   /**

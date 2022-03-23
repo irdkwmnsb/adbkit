@@ -40,8 +40,10 @@ export default class Tester {
         this._sudo = true;
         return this;
     }
+
     /**
      * check under the hood sent data
+     * should send 'xxxxxx'
      */
     testTr(expectWrite: string, ...args: string[]): Promise<any> {
         const conn = new MockConnection();
@@ -59,8 +61,8 @@ export default class Tester {
             conn.getSocket().causeEnd();
         });
         return cmd.execute(...args);
-
     }
+
     /**
      * check under the hood sent data
      */
