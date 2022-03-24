@@ -32,3 +32,4 @@ export { PsEntry } from './adb/command/host-transport/ps';
 
 export { default as Scrcpy } from './adb/Scrcpy';
 export * from './adb/ScrcpyModel';
+export { MotionEvent, DeviceMessageType, SurfaceControl, Orientation, KeyEventMeta } from './adb/ScrcpyConst';

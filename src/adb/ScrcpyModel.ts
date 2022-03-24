@@ -36,9 +36,11 @@ export interface ScrcpyOptions {
     tunnelForward: boolean,
     tunnelDelay: number,
     /**
-     * Crop must contains 4 values separated by colons
-     * 
-     * cropZone formated as "width:height:x:y" or '-'
+     * "width:height:x:y" or '-'
+     * Crop the device screen on the server.
+     * The values are expressed in the device natural orientation (typically,
+     * portrait for a phone, landscape for a tablet). Any --max-size value is
+     * cmoputed on the cropped size.
      */
     crop: string,
     sendFrameMeta: boolean,

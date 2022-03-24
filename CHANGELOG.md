@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.1.5
+
+* export Scrcpy const enums
+
 ## v3.1.4 (2022-03-24)
 
 * fix scrcpy-server jar location
