@@ -1,10 +1,8 @@
 index.ts
 src/
 test/
-dist/test/
 tasks/
 bench/
-dist/bench/
 .prettierrc
 .editorconfig
 .semaphore

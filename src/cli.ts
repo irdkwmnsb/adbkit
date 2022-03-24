@@ -1,10 +1,13 @@
 import fs from 'fs';
 import { program } from 'commander';
 import forge from 'node-forge';
-import * as pkg from '../package.json';
 import Adb from './adb';
 import Auth from './adb/auth';
 import PacketReader from './adb/tcpusb/packetreader';
+import path from 'path';
+
+const pkg: {version: string} = JSON.parse(fs.readFileSync(path.join('..', 'package.json'), {encoding: 'utf-8'}));
+// import * as pkg from '../package.json';
 
 program.version(pkg.version);
 

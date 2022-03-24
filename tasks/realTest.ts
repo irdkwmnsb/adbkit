@@ -72,7 +72,8 @@ const testScrcpyTextInput = async (deviceClient: DeviceClient) => {
 }
 
 const testScrcpyswap = async (deviceClient: DeviceClient) => {
-  const scrcpy = deviceClient.scrcpy({port: 8099});
+  // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
+  const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1});
   try {
     const pointerId = BigInt('0xFFFFFFFFFFFFFFFF');
     await scrcpy.start();
@@ -82,20 +83,22 @@ const testScrcpyswap = async (deviceClient: DeviceClient) => {
     const height = await scrcpy.height;
     const position = { x: width/2, y: height * 0.2 };
     const bottom = height * 0.8;
-    await scrcpy.injectTouchEvent(MotionEvent.ACTION_DOWN, pointerId, position, {x:width, y: height}, 0xFFFF);
+    const screenSize = { x:width, y: height }
+    await scrcpy.injectTouchEvent(MotionEvent.ACTION_DOWN, pointerId, position, screenSize, 0xFFFF);
     console.log('start position', position);
     while (position.y < bottom) {
       await Utils.delay(2);
-      await scrcpy.injectTouchEvent(MotionEvent.ACTION_MOVE, pointerId, position, {x:width, y: height}, 0xFFFF);
+      await scrcpy.injectTouchEvent(MotionEvent.ACTION_MOVE, pointerId, position, screenSize, 0xFFFF);
       position.y += 5;
     }
     console.log('end position', position);
-    await scrcpy.injectTouchEvent(MotionEvent.ACTION_UP, pointerId, position, {x:width, y: height}, 0x0000);
+    await scrcpy.injectTouchEvent(MotionEvent.ACTION_UP, pointerId, position, screenSize, 0x0000);
     await Utils.delay(1000);
-    scrcpy.stop();
     console.log(`done`);
   } catch(e) {
-    console.error('Impossible to start', e);
+    console.error('scrcpy failed', e);
+  } finally {
+    scrcpy.stop();
   }
 }
 

@@ -31,10 +31,14 @@ let scrcpyServerVersion = 20;
 
 interface ScrcpyEventEmitter {
   on(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
+  on(event: 'error', listener: (error: Error) => void): this;
   off(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
+  off(event: 'error', listener: (error: Error) => void): this;
   once(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
+  once(event: 'error', listener: (error: Error) => void): this;
+  // emit(event: 'data', pts: BigInt, data: Buffer): boolean;
+  // emit(event: 'error', error: Error): boolean;
 }
-
 
 class BufWrite {
   public buffer: Buffer;
@@ -48,10 +52,6 @@ class BufWrite {
     this.buffer.writeBigUint64BE(val, this.pos);
     this.pos += 8;
   }
-  // writeBigInt64BE(val: bigint) {
-  //   this.buffer.writeBigInt64BE(val, this.pos);
-  //   this.pos += 8;
-  // }
 
   writeUint32BE(val: number) {
     this.buffer.writeUint32BE(val, this.pos);
@@ -84,11 +84,6 @@ class BufWrite {
     this.pos += textData.length;
   }
 
-  // writeUInt8(val: number) {
-  //   this.buffer.writeUInt8(val, this.pos);
-  //   this.pos += 1;
-  // }
-
   writeInt8(val: number) {
     this.buffer.writeInt8(val, this.pos);
     this.pos += 1;
@@ -97,7 +92,6 @@ class BufWrite {
   append(buf: Buffer) {
     this.buffer = Buffer.concat([this.buffer, buf], this.buffer.length + buf.length);
   }
-
 }
 
 /**
@@ -192,6 +186,29 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
   }
 
   /**
+   * emit scrcpyServer output as Error
+   * @param duplex 
+   * @returns 
+   */
+  async throwsErrors(duplex: PromiseDuplex<Duplex>) {
+    try {
+      for (; ;) {
+        await Utils.waitforReadable(duplex);
+        const data = await duplex.read();
+        if (data) {
+          const msg = data.toString();
+          console.error('error', Error(msg));
+          // this.emit('error', Error(msg))
+        }
+      }
+    } catch (e) {
+      // End
+      return;
+    }
+  }
+
+
+  /**
    * Read a message from the contoler Duplex
    * 
    * @param duplex only supoport clipboard
@@ -270,6 +287,7 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
       this.scrcpyServer = new PromiseDuplex(duplex);
       // debug only
       // this.dumpReadable(this.scrcpyServer, 'scrcpyServer');
+      this.throwsErrors(this.scrcpyServer);
     } catch (e) {
       debug('Impossible to run server:', e);
       throw e;

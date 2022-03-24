@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v3.1.4 (2022-03-24)
+
+* fix scrcpy-server jar location
+* refactor dist folder
+* foward scrcpyServer error to emit('error')
+
 ## v3.1.3 (2022-03-24)
 
 * fix scrcpy-server ControlMessages
