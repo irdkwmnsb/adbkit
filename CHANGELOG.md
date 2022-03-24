@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v3.1.3 (2022-03-24)
+
+* fix scrcpy-server ControlMessages
+* Improve ProcStat typing (add events)
+* add parameter to reboot command
+
 ## v3.1.2 (2022-03-07)
 
 * upgrade scrcpy-server to V 1.20
