@@ -35,6 +35,71 @@ interface ScrcpyEventEmitter {
   once(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
 }
 
+
+class BufWrite {
+  public buffer: Buffer;
+  public pos = 0;
+
+  constructor(len: number) {
+    this.buffer = Buffer.alloc(len);
+  }
+
+  writeBigUint64BE(val: bigint) {
+    this.buffer.writeBigUint64BE(val, this.pos);
+    this.pos += 8;
+  }
+  // writeBigInt64BE(val: bigint) {
+  //   this.buffer.writeBigInt64BE(val, this.pos);
+  //   this.pos += 8;
+  // }
+
+  writeUint32BE(val: number) {
+    this.buffer.writeUint32BE(val, this.pos);
+    this.pos += 4;
+  }
+  writeInt32BE(val: number) {
+    this.buffer.writeInt32BE(val, this.pos);
+    this.pos += 4;
+  }
+
+  writeUint16BE(val: number) {
+    this.buffer.writeUint16BE(val, this.pos);
+    this.pos += 2;
+  }
+
+  writeInt16BE(val: number) {
+    this.buffer.writeInt16BE(val, this.pos);
+    this.pos += 2;
+  }
+
+  writeUint8(val: number) {
+    this.buffer.writeUint8(val, this.pos);
+    this.pos += 1;
+  }
+
+  writeString(text: string) {
+    const textData = Buffer.from(text, 'utf8');
+    this.writeUint32BE(textData.length);
+    this.append(textData);
+    this.pos += textData.length;
+  }
+
+  // writeUInt8(val: number) {
+  //   this.buffer.writeUInt8(val, this.pos);
+  //   this.pos += 1;
+  // }
+
+  writeInt8(val: number) {
+    this.buffer.writeInt8(val, this.pos);
+    this.pos += 1;
+  }
+
+  append(buf: Buffer) {
+    this.buffer = Buffer.concat([this.buffer, buf], this.buffer.length + buf.length);
+  }
+
+}
+
 /**
  * How scrcpy works?
  * 
@@ -54,6 +119,8 @@ interface ScrcpyEventEmitter {
  *  <-------------> <-----> <-----------------------------...
  *        PTS         size      raw packet (of size len)
  * 
+ * WARNING:
+ * Need USB Debug checked in developper option for MIUI
  */
 export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {  
   private config: ScrcpyOptions;
@@ -63,9 +130,13 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
    * used to recive Process Error
    */
   private scrcpyServer: PromiseDuplex<Duplex>;
-  private _name = '';
-  private _width = 0;
-  private _height = 0;
+  private _name: Promise<string>;
+  private _width: Promise<number>;
+  private _height: Promise<number>;
+
+  private setName: (name: string) => void;
+  private setWidth: (width: number) => void;
+  private setHeight: (height: number) => void;
 
   constructor(private client: DeviceClient, config: Partial<ScrcpyOptions>) {
     super();
@@ -89,11 +160,14 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
       powerOffScreenOnClose: false,
       ...config
     };
+    this._name = new Promise<string>((resolve) => this.setName = resolve);
+    this._width = new Promise<number>((resolve) => this.setWidth = resolve);
+    this._height = new Promise<number>((resolve) => this.setHeight = resolve);
   }
 
-  get name(): string { return this._name; }
-  get width(): number { return this._width; }
-  get height(): number { return this._height; }
+  get name(): Promise<string> { return this._name; }
+  get width(): Promise<number> { return this._width; }
+  get height(): Promise<number> { return this._height; }
 
   /**
    * Debugging only
@@ -267,8 +341,8 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
     //await this.rotateDevice();
     //await Util.delay(1500);
     //await this.rotateDevice();
-    await Util.delay(1500);
-    await this.rotateDevice();
+    // await Util.delay(1500);
+    // await this.rotateDevice();
     //await Util.delay(1500);
     //await this.injectKeycodeEvent(MotionEvent.ACTION_DOWN, KeyCodes.KEYCODE_D, 1, 0);
     //await this.injectKeycodeEvent(MotionEvent.ACTION_UP, KeyCodes.KEYCODE_D, 1, 0);
@@ -279,7 +353,13 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
   public stop() {
     if (this.videoSocket) {
       this.videoSocket.destroy();
+      this.videoSocket = undefined;
     }
+    if (this.controlSocket) {
+      this.controlSocket.destroy();
+      this.controlSocket = undefined;
+    }
+    this.scrcpyServer.destroy();
   }
 
   private startStreamRaw() {
@@ -291,9 +371,9 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
     //if (scrcpyServerVersion > 8) {
     await Utils.waitforReadable(this.videoSocket);
     const chunk = this.videoSocket.stream.read(68) as Buffer;
-    this._name = chunk.toString('utf8', 0, 64).trim();
-    this._width = chunk.readUint16BE(64);
-    this._height = chunk.readUint16BE(66);
+    this.setName(chunk.toString('utf8', 0, 64).trim());
+    this.setWidth(chunk.readUint16BE(64));
+    this.setHeight(chunk.readUint16BE(66));
     //}
 
     let pts = BigInt(0);// Buffer.alloc(0);
@@ -340,28 +420,25 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
    * https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/view/KeyEvent.java
    * @param action 
    * @param keyCode 
-   * @param repeat 
+   * @param repeatCount 
    * @param metaState  combinaison of KeyEventMeta
    */
   async injectKeycodeEvent(action: MotionEvent, keyCode: KeyCodes, repeatCount: number, metaState: number): Promise<void> {
-    const chunk = Buffer.alloc(14);
-    chunk.writeUInt8(ControlMessage.TYPE_INJECT_KEYCODE, 0);
-    chunk.writeUInt8(action, 1);
-
-    chunk.writeUInt32BE(keyCode, 2);
-    chunk.writeUint32BE(repeatCount, 6);
-    chunk.writeUint32BE(metaState, 10);
-    await this.controlSocket.write(chunk);
+    const chunk = new BufWrite(14);
+    chunk.writeUint8(ControlMessage.TYPE_INJECT_KEYCODE);
+    chunk.writeUint8(action);
+    chunk.writeUint32BE(keyCode);
+    chunk.writeUint32BE(repeatCount);
+    chunk.writeUint32BE(metaState);
+    await this.controlSocket.write(chunk.buffer);
   }
 
   // TYPE_INJECT_TEXT
   async injectText(text: string): Promise<void> {
-    const textData = Buffer.from(text, 'utf8');
-    const prefix = Buffer.alloc(5);
-    prefix.writeUInt8(ControlMessage.TYPE_INJECT_TEXT, 0);
-    prefix.writeUInt32BE(textData.length, 1);
-    const chunk = Buffer.concat([prefix, textData], prefix.length + textData.length);
-    await this.controlSocket.write(chunk);
+    const chunk = new BufWrite(5);
+    chunk.writeUint8(ControlMessage.TYPE_INJECT_TEXT);
+    chunk.writeString(text)
+    await this.controlSocket.write(chunk.buffer);
   }
 
   /**
@@ -373,42 +450,50 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
    * @param screenSize 
    * @param pressure 
    */
-  async injectTouchEvent(action: MotionEvent, pointerId: bigint, position: Point, screenSize: Point, pressure = 0xffff): Promise<void> {
-    const chunk = Buffer.alloc(28);
-    chunk.writeUInt8(ControlMessage.TYPE_INJECT_TOUCH_EVENT);
-    chunk.writeUInt8(action);
+  // usb.data_len == 28
+  async injectTouchEvent(action: MotionEvent, pointerId: bigint, position: Point, screenSize: Point, pressure?: number): Promise<void> {
+    const chunk = new BufWrite(28);
+    chunk.writeUint8(ControlMessage.TYPE_INJECT_TOUCH_EVENT);
+    chunk.writeUint8(action);
+    if (pressure === undefined) {
+      if (action == MotionEvent.ACTION_UP)
+        pressure = 0x0
+      else if (action == MotionEvent.ACTION_DOWN)
+        pressure = 0xffff
+    }
     // Writes a long to the underlying output stream as eight bytes, high byte first.
     chunk.writeBigUint64BE(pointerId);
-    chunk.writeUint32BE(position.x);
-    chunk.writeUint32BE(position.y);
-    chunk.writeUint16BE(screenSize.x);
-    chunk.writeUint16BE(screenSize.y);
+    chunk.writeUint32BE(position.x | 0);
+    chunk.writeUint32BE(position.y | 0);
+    chunk.writeUint16BE(screenSize.x | 0);
+    chunk.writeUint16BE(screenSize.y | 0);
     chunk.writeUint16BE(pressure);
-    chunk.writeInt32BE(MotionEvent.BUTTON_PRIMARY);
-    await this.controlSocket.write(chunk);
+    chunk.writeUint32BE(MotionEvent.BUTTON_PRIMARY);
+    await this.controlSocket.write(chunk.buffer);
+    // console.log(chunk.buffer.toString('hex'))
   }
 
   async injectScrollEvent(position: Point, screenSize: Point, HScroll: number, VScroll: number): Promise<void> {
-    const chunk = Buffer.alloc(20);
-    chunk.writeUInt8(ControlMessage.TYPE_INJECT_SCROLL_EVENT);
+    const chunk =new BufWrite(20);
+    chunk.writeUint8(ControlMessage.TYPE_INJECT_SCROLL_EVENT);
     // Writes a long to the underlying output stream as eight bytes, high byte first.
-    chunk.writeUint32BE(position.x);
-    chunk.writeUint32BE(position.y);
-    chunk.writeUint16BE(screenSize.x);
-    chunk.writeUint16BE(screenSize.y);
+    chunk.writeUint32BE(position.x | 0);
+    chunk.writeUint32BE(position.y | 0);
+    chunk.writeUint16BE(screenSize.x | 0);
+    chunk.writeUint16BE(screenSize.y | 0);
     chunk.writeUint16BE(HScroll);
     chunk.writeInt32BE(VScroll);
     chunk.writeInt32BE(MotionEvent.BUTTON_PRIMARY);
-    await this.controlSocket.write(chunk);
+    await this.controlSocket.write(chunk.buffer);
   }
 
 
   // TYPE_BACK_OR_SCREEN_ON
   async injectBackOrScreenOn(): Promise<void> {
-    const chunk = Buffer.alloc(2);
-    chunk.writeUInt8(ControlMessage.TYPE_BACK_OR_SCREEN_ON);
-    chunk.writeUInt8(MotionEvent.ACTION_UP);
-    await this.controlSocket.write(chunk);
+    const chunk = new BufWrite(2);
+    chunk.writeUint8(ControlMessage.TYPE_BACK_OR_SCREEN_ON);
+    chunk.writeUint8(MotionEvent.ACTION_UP);
+    await this.controlSocket.write(chunk.buffer);
   }
 
   // TYPE_EXPAND_NOTIFICATION_PANEL
@@ -435,13 +520,11 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
 
   // TYPE_SET_CLIPBOARD
   async setClipboard(text: string): Promise<void> {
-    const textData = Buffer.from(text, 'utf8');
-    const prefix = Buffer.alloc(6);
-    prefix.writeUInt8(ControlMessage.TYPE_SET_CLIPBOARD);
-    prefix.writeUInt8(1, 1);
-    prefix.writeUInt8(2, textData.length);
-    const chunk = Buffer.concat([prefix, textData], prefix.length + textData.length);
-    await this.controlSocket.write(chunk);
+    const chunk = new BufWrite(6);
+    chunk.writeUint8(ControlMessage.TYPE_SET_CLIPBOARD);
+    chunk.writeUint8(1); // past
+    chunk.writeString(text)
+    await this.controlSocket.write(chunk.buffer);
   }
 
   // TYPE_SET_SCREEN_POWER_MODE

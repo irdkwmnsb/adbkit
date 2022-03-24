@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DeviceClient } from '../src';
+import { DeviceClient, KeyCodes, Utils } from '../src';
 import adb from '../src/adb';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
+import { MotionEvent } from '../src/adb/ScrcpyConst';
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -42,6 +43,57 @@ const testScrcpy = async (deviceClient: DeviceClient) => {
   try {
     await scrcpy.start();
     console.log(`Started`);
+  } catch(e) {
+    console.error('Impossible to start', e);
+  }
+}
+
+const testScrcpyTextInput = async (deviceClient: DeviceClient) => {
+  const scrcpy = deviceClient.scrcpy({port: 8099});
+  try {
+    await scrcpy.start();
+    console.log(`Started`);
+    await Utils.delay(100);
+    console.log(`delay ok`);
+    await Utils.delay(100);
+    await scrcpy.injectText('foo bar')
+    await Utils.delay(100);
+    await scrcpy.injectKeycodeEvent(MotionEvent.ACTION_DOWN, KeyCodes.KEYCODE_D, 1, 0);
+    await scrcpy.injectKeycodeEvent(MotionEvent.ACTION_UP, KeyCodes.KEYCODE_D, 1, 0);
+    await scrcpy.injectKeycodeEvent(MotionEvent.ACTION_DOWN, KeyCodes.KEYCODE_D, 1, 0);
+    await scrcpy.injectKeycodeEvent(MotionEvent.ACTION_UP, KeyCodes.KEYCODE_D, 1, 0);
+    await Utils.delay(1000);
+    console.log(`stop`);
+    scrcpy.stop();
+    console.log(`done`);
+  } catch(e) {
+    console.error('Impossible to start', e);
+  }
+}
+
+const testScrcpyswap = async (deviceClient: DeviceClient) => {
+  const scrcpy = deviceClient.scrcpy({port: 8099});
+  try {
+    const pointerId = BigInt('0xFFFFFFFFFFFFFFFF');
+    await scrcpy.start();
+    console.log(`Started`);
+    await Utils.delay(100);
+    const width = await scrcpy.width;
+    const height = await scrcpy.height;
+    const position = { x: width/2, y: height * 0.2 };
+    const bottom = height * 0.8;
+    await scrcpy.injectTouchEvent(MotionEvent.ACTION_DOWN, pointerId, position, {x:width, y: height}, 0xFFFF);
+    console.log('start position', position);
+    while (position.y < bottom) {
+      await Utils.delay(2);
+      await scrcpy.injectTouchEvent(MotionEvent.ACTION_MOVE, pointerId, position, {x:width, y: height}, 0xFFFF);
+      position.y += 5;
+    }
+    console.log('end position', position);
+    await scrcpy.injectTouchEvent(MotionEvent.ACTION_UP, pointerId, position, {x:width, y: height}, 0x0000);
+    await Utils.delay(1000);
+    scrcpy.stop();
+    console.log(`done`);
   } catch(e) {
     console.error('Impossible to start', e);
   }
@@ -98,10 +150,8 @@ const main = async () => {
   const deviceClient = devices[0].getClient();
   // testScrcpy(deviceClient);
   // testUiautomator(deviceClient);
+  // testScrcpyTextInput(deviceClient);
+  testScrcpyswap(deviceClient);
 }
-
-
-
-
 
 main();
