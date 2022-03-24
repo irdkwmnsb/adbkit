@@ -30,5 +30,5 @@ export { default as Utils } from './adb/util';
 
 export { PsEntry } from './adb/command/host-transport/ps';
 
-export { default as Scrcpy} from './adb/Scrcpy';
+export { default as Scrcpy } from './adb/Scrcpy';
 export * from './adb/ScrcpyModel';
