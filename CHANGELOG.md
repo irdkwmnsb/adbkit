@@ -1,7 +1,8 @@
 # CHANGELOG
 
-## v3.1.5
+## v3.1.5 
 
+* add build-in minicap, relaing on @devicefarmer/minicap-prebuilt depencency.
 * export Scrcpy const enums
 
 ## v3.1.4 (2022-03-24)

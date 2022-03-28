@@ -1,6 +1,7 @@
 lockfileVersion: 5.3
 
 specifiers:
+  '@devicefarmer/minicap-prebuilt': ^2.7.1
   '@types/debug': ^4.1.7
   '@types/mocha': ^9.1.0
   '@types/node': ^17.0.21
@@ -40,6 +41,9 @@ dependencies:
   promise-socket: 7.0.0
   split: 1.0.1
 
+optionalDependencies:
+  '@devicefarmer/minicap-prebuilt': 2.7.1
+
 devDependencies:
   '@types/debug': 4.1.7
   '@types/mocha': 9.1.0
@@ -73,6 +77,12 @@ packages:
     dependencies:
       '@cspotcode/source-map-consumer': 0.8.0
     dev: true
+
+  /@devicefarmer/minicap-prebuilt/2.7.1:
+    resolution: {integrity: sha512-XM+mPIA9hgwSF4eOq0RnKSXycj2rLNm3Xsl7MM0kG3CtTpX3/J0AA8P+v8zWiGNCMxyhl2VwY52nmQE/QwN3zg==}
+    requiresBuild: true
+    dev: false
+    optional: true
 
   /@eslint/eslintrc/1.2.0:
     resolution: {integrity: sha512-igm9SjJHNEJRiUnecP/1R5T3wKLEJ7pL6e2P+GUSfCd0dGjPYYZve08uzw8L2J8foVHFz+NGu12JxRcU2gGo6w==}

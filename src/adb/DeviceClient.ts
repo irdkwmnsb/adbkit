@@ -34,9 +34,11 @@ import JdwpTracker from './jdwptracker';
 import DeviceWithPath from '../DeviceWithPath';
 import Client from './client';
 import Util from './util';
-import Scrcpy from './Scrcpy';
-import type { ScrcpyOptions } from './ScrcpyModel';
+import Scrcpy from './thirdparty/Scrcpy';
+import type { ScrcpyOptions } from './thirdparty/ScrcpyModel';
 import { RebootType } from './command/host-transport/reboot';
+import Minicap, { MinicapOptions } from './thirdparty/Minicap';
+// import STFService from './thirdparty/STFService';
 
 const debug = d('adb:client');
 
@@ -710,10 +712,24 @@ export default class DeviceClient {
 
   /**
    * prepare a Scrcpy server
+   * this server must be started with the start() method
    */
-  public scrcpy(options: Partial<ScrcpyOptions>): Scrcpy {
+  public scrcpy(options?: Partial<ScrcpyOptions>): Scrcpy {
     const scrcpy = new Scrcpy(this, options);
     return scrcpy;
   }
 
+  /**
+   * prepare a minicap server
+   * this server must be started with the start() method
+   */
+  public minicap(options?: Partial<MinicapOptions>): Minicap {
+    const minicap = new Minicap(this, options);
+    return minicap;
+  }
+ 
+  // public STFService(): STFService {
+  //   const service = new STFService(this);
+  //   return service;
+  // }
 }

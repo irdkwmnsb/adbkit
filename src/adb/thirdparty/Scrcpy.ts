@@ -5,13 +5,14 @@ import PromiseSocket from 'promise-socket';
 import PromiseDuplex from 'promise-duplex';
 
 import Debug from 'debug';
-import DeviceClient from './DeviceClient';
-import Util from './util';
+import DeviceClient from '../DeviceClient';
+import Util from '../util';
 import { Duplex } from 'stream';
 
 import { MotionEvent, Orientation, ControlMessage } from './ScrcpyConst';
-import { KeyCodes, Utils } from '..';
+import { KeyCodes, Utils } from '../..';
 import { Point, ScrcpyOptions } from './ScrcpyModel';
+import { BufWrite } from './BufWrite';
 
 const debug = Debug('scrcpy');
 /**
@@ -38,60 +39,6 @@ interface ScrcpyEventEmitter {
   once(event: 'error', listener: (error: Error) => void): this;
   // emit(event: 'data', pts: BigInt, data: Buffer): boolean;
   // emit(event: 'error', error: Error): boolean;
-}
-
-class BufWrite {
-  public buffer: Buffer;
-  public pos = 0;
-
-  constructor(len: number) {
-    this.buffer = Buffer.alloc(len);
-  }
-
-  writeBigUint64BE(val: bigint) {
-    this.buffer.writeBigUint64BE(val, this.pos);
-    this.pos += 8;
-  }
-
-  writeUint32BE(val: number) {
-    this.buffer.writeUint32BE(val, this.pos);
-    this.pos += 4;
-  }
-  writeInt32BE(val: number) {
-    this.buffer.writeInt32BE(val, this.pos);
-    this.pos += 4;
-  }
-
-  writeUint16BE(val: number) {
-    this.buffer.writeUint16BE(val, this.pos);
-    this.pos += 2;
-  }
-
-  writeInt16BE(val: number) {
-    this.buffer.writeInt16BE(val, this.pos);
-    this.pos += 2;
-  }
-
-  writeUint8(val: number) {
-    this.buffer.writeUint8(val, this.pos);
-    this.pos += 1;
-  }
-
-  writeString(text: string) {
-    const textData = Buffer.from(text, 'utf8');
-    this.writeUint32BE(textData.length);
-    this.append(textData);
-    this.pos += textData.length;
-  }
-
-  writeInt8(val: number) {
-    this.buffer.writeInt8(val, this.pos);
-    this.pos += 1;
-  }
-
-  append(buf: Buffer) {
-    this.buffer = Buffer.concat([this.buffer, buf], this.buffer.length + buf.length);
-  }
 }
 
 /**
@@ -132,7 +79,7 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
   private setWidth: (width: number) => void;
   private setHeight: (height: number) => void;
 
-  constructor(private client: DeviceClient, config: Partial<ScrcpyOptions>) {
+  constructor(private client: DeviceClient, config = {} as Partial<ScrcpyOptions>) {
     super();
     this.config = {
       port: 8099,
@@ -162,28 +109,6 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
   get name(): Promise<string> { return this._name; }
   get width(): Promise<number> { return this._width; }
   get height(): Promise<number> { return this._height; }
-
-  /**
-   * Debugging only
-   * @param duplex 
-   * @param name 
-   * @returns 
-   */
-  async dumpReadable(duplex: PromiseDuplex<Duplex>, name: string) {
-    try {
-      for (; ;) {
-        await Utils.waitforReadable(duplex);
-        const data = await duplex.read();
-        if (data) {
-          const msg = data.toString();
-          console.log(name, ':', msg);
-        }
-      }
-    } catch (e) {
-      // End
-      return;
-    }
-  }
 
   /**
    * emit scrcpyServer output as Error
@@ -244,7 +169,8 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
     const jarDest = '/data/local/tmp/scrcpy-server.jar';
     // Transfer server...
     try {
-      const transfer = await this.client.push(path.join(__dirname, '..', '..', 'bin', `scrcpy-server-v1.${scrcpyServerVersion}.jar`), jarDest);
+      const jar = path.join(__dirname, '..', '..', '..', 'bin', `scrcpy-server-v1.${scrcpyServerVersion}.jar`);
+      const transfer = await this.client.push(jar, jarDest);
       await transfer.waitForEnd();
     } catch (e) {
       debug('Impossible to transfer server file:', e);
@@ -286,7 +212,7 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
       const duplex = await this.client.shell(args.map(a => a.toString()).join(' '));
       this.scrcpyServer = new PromiseDuplex(duplex);
       // debug only
-      // this.dumpReadable(this.scrcpyServer, 'scrcpyServer');
+      // extraUtils.dumpReadable(this.scrcpyServer, 'scrcpyServer');
       this.throwsErrors(this.scrcpyServer);
     } catch (e) {
       debug('Impossible to run server:', e);
@@ -348,24 +274,10 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
     }
 
     if (this.config.sendFrameMeta) {
-      void this.startStreamWithMeta();
+      void this.startStreamWithMeta().catch(() => this.stop());
     } else {
       void this.startStreamRaw();
     }
-    // await Util.delay(1500);
-    // const text = await this.getClipboard();
-    // console.log(text);
-    // await Util.delay(1500);
-    //await this.rotateDevice();
-    //await Util.delay(1500);
-    //await this.rotateDevice();
-    // await Util.delay(1500);
-    // await this.rotateDevice();
-    //await Util.delay(1500);
-    //await this.injectKeycodeEvent(MotionEvent.ACTION_DOWN, KeyCodes.KEYCODE_D, 1, 0);
-    //await this.injectKeycodeEvent(MotionEvent.ACTION_UP, KeyCodes.KEYCODE_D, 1, 0);
-    //await this.injectKeycodeEvent(MotionEvent.ACTION_DOWN, KeyCodes.KEYCODE_D, 1, 0);
-    //await this.injectKeycodeEvent(MotionEvent.ACTION_UP, KeyCodes.KEYCODE_D, 1, 0);
   }
 
   public stop() {
@@ -505,7 +417,6 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
     await this.controlSocket.write(chunk.buffer);
   }
 
-
   // TYPE_BACK_OR_SCREEN_ON
   async injectBackOrScreenOn(): Promise<void> {
     const chunk = new BufWrite(2);
@@ -516,21 +427,21 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
 
   // TYPE_EXPAND_NOTIFICATION_PANEL
   async expandNotificationPanel(): Promise<void> {
-    const chunk = Buffer.alloc(1);
+    const chunk = Buffer.allocUnsafe(1);
     chunk.writeUInt8(ControlMessage.TYPE_EXPAND_NOTIFICATION_PANEL);
     await this.controlSocket.write(chunk);
   }
 
   // TYPE_COLLAPSE_PANELS
   async collapsePannels(): Promise<void> {
-    const chunk = Buffer.alloc(1);
+    const chunk = Buffer.allocUnsafe(1);
     chunk.writeUInt8(ControlMessage.TYPE_EXPAND_SETTINGS_PANEL);
     await this.controlSocket.write(chunk);
   }
 
   // TYPE_GET_CLIPBOARD
   async getClipboard(): Promise<string> {
-    const chunk = Buffer.alloc(1);
+    const chunk = Buffer.allocUnsafe(1);
     chunk.writeUInt8(ControlMessage.TYPE_GET_CLIPBOARD);
     await this.controlSocket.write(chunk);
     return this.readOneMessage(this.controlSocket);
@@ -547,14 +458,14 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
 
   // TYPE_SET_SCREEN_POWER_MODE
   async setScreenPowerMode(): Promise<void> {
-    const chunk = Buffer.alloc(1);
+    const chunk = Buffer.allocUnsafe(1);
     chunk.writeUInt8(ControlMessage.TYPE_SET_SCREEN_POWER_MODE);
     await this.controlSocket.write(chunk);
   }
 
   // TYPE_ROTATE_DEVICE
   async rotateDevice(): Promise<void> {
-    const chunk = Buffer.alloc(1);
+    const chunk = Buffer.allocUnsafe(1);
     chunk.writeUInt8(ControlMessage.TYPE_ROTATE_DEVICE);
     await this.controlSocket.write(chunk);
   }

@@ -28,10 +28,10 @@ export default class Util {
       }
     });
     if (timeout) {
-      let redable = true;
-      const timeOut = Util.delay(timeout).then(() => redable = false);
+      let readable = true;
+      const timeOut = Util.delay(timeout).then(() => readable = false);
       await Promise.race([waitRead, timeOut]);
-      return redable;
+      return readable;
     }
     await waitRead;
     return true;

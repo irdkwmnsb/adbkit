@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DeviceClient, KeyCodes, Utils } from '../src';
-import adb from '../src/adb';
+import adb, { DeviceClient, KeyCodes, Utils, MotionEvent } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
-import { MotionEvent } from '../src/adb/ScrcpyConst';
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -102,6 +100,40 @@ const testScrcpyswap = async (deviceClient: DeviceClient) => {
   }
 }
 
+const testMinicap = async (deviceClient: DeviceClient) => {
+  // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
+  const minicap = deviceClient.minicap({});
+  try {
+    await minicap.start();
+    minicap.on('data', (buf: Buffer) => {
+      console.log('rcv Buffer ', buf.length);
+    })
+    await Utils.delay(100000)
+    console.log(`done`);
+  } catch(e) {
+    console.error('scrcpy failed', e);
+  } finally {
+    minicap.stop();
+  }
+}
+
+//const testSTFService = async (deviceClient: DeviceClient) => {
+//  // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
+//  const STFService = deviceClient.STFService();
+//  try {
+//    await STFService.start();
+//    // STFService.on('data', (buf: Buffer) => {
+//    //  console.log('rcv Buffer ', buf.length);
+//    //})
+//    await Utils.delay(100000)
+//    console.log(`done`);
+//  } catch(e) {
+//    console.error('scrcpy failed', e);
+//  } finally {
+//    //minicap.stop();
+//  }
+//}
+
 const testRouting = async (deviceClient: DeviceClient) => {
   deviceClient.sudo = true;
   const rules = await deviceClient.ipRule('list');
@@ -154,7 +186,9 @@ const main = async () => {
   // testScrcpy(deviceClient);
   // testUiautomator(deviceClient);
   // testScrcpyTextInput(deviceClient);
-  testScrcpyswap(deviceClient);
+  // testScrcpyswap(deviceClient);
+  // testMinicap(deviceClient);
+  // testSTFService(deviceClient);
 }
 
 main();
