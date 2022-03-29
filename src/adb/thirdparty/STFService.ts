@@ -11,9 +11,123 @@ import PromiseSocket from "promise-socket";
 
 const version = '2.4.9';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export enum MessageType {
+  DO_IDENTIFY = 1,
+  DO_KEYEVENT = 2,
+  DO_TYPE = 3,
+  DO_WAKE = 4,
+  DO_ADD_ACCOUNT_MENU = 24,
+  DO_REMOVE_ACCOUNT = 20,
+  GET_ACCOUNTS = 26,
+  GET_BROWSERS = 5,
+  GET_CLIPBOARD = 6,
+  GET_DISPLAY = 19,
+  GET_PROPERTIES = 7,
+  GET_RINGER_MODE = 27,
+  GET_SD_STATUS = 25,
+  GET_VERSION = 8,
+  GET_WIFI_STATUS = 23,
+  GET_BLUETOOTH_STATUS = 29,
+  GET_ROOT_STATUS = 31,
+  SET_CLIPBOARD = 9,
+  SET_KEYGUARD_STATE = 10,
+  SET_RINGER_MODE = 21,
+  SET_ROTATION = 12,
+  SET_WAKE_LOCK = 11,
+  SET_WIFI_ENABLED = 22,
+  SET_BLUETOOTH_ENABLED = 30,
+  SET_MASTER_MUTE = 28,
+  EVENT_AIRPLANE_MODE = 13,
+  EVENT_BATTERY = 14,
+  EVENT_CONNECTIVITY = 15,
+  EVENT_PHONE_STATE = 16,
+  EVENT_ROTATION = 17,
+  EVENT_BROWSER_PACKAGE = 18
+}
+
+export interface STFAirplaneModeEvent {
+  enabled: boolean;
+}
+
+export interface STFBatteryEvent {
+  status: string;
+  health: string;
+  source: string;
+  level: number;
+  scale: number;
+  temp: number;
+  voltage: number;
+}
+
+export interface STFBrowserApp {
+  name: string;
+  component: string;
+  selected: boolean;
+  system: boolean;
+}
+
+export interface STFBrowserApp {
+  name: string;
+  component: string;
+  selected: boolean;
+  system: boolean;
+}
+
+export interface STFBrowserPackageEvent {
+  selected: boolean;
+  apps: STFBrowserApp;
+}
+
+export interface STFConnectivityEvent {
+  connected: boolean;
+  type?: string;
+  subtype?: string;
+  failover?: boolean;
+  roaming?: boolean;
+}
+
+export interface STFPhoneStateEvent {
+  state: string;
+  manual: boolean;
+  operator?: string;
+}
+
+export interface STFRotationEvent {
+  rotation: number;
+}
+
 export interface STFServiceEventEmitter {
-  //
+  on(event: 'airplaneMode', listener: (data: STFAirplaneModeEvent) => void): this; // EVENT_AIRPLANE_MODE
+  on(event: 'battery', listener: (data: STFBatteryEvent) => void): this; // EVENT_BATTERY
+  on(event: 'connectivity', listener: (data: STFConnectivityEvent) => void): this; // EVENT_CONNECTIVITY
+  on(event: 'phoneState', listener: (data: STFPhoneStateEvent) => void): this; // EVENT_PHONE_STATE
+  on(event: 'rotation', listener: (data: STFRotationEvent) => void): this; // EVENT_ROTATION
+  on(event: 'browerPackage', listener: (data: STFBrowserPackageEvent) => void): this; // BROWSER_PACKAGE
+  on(event: 'error', listener: (error: Error) => void): this;
+
+  off(event: 'airplaneMode', listener: (data: STFAirplaneModeEvent) => void): this;
+  off(event: 'battery', listener: (data: STFBatteryEvent) => void): this;
+  off(event: 'connectivity', listener: (data: STFConnectivityEvent) => void): this;
+  off(event: 'phoneState', listener: (data: STFPhoneStateEvent) => void): this;
+  off(event: 'rotation', listener: (data: STFRotationEvent) => void): this;
+  off(event: 'browerPackage', listener: (data: STFBrowserPackageEvent) => void): this;
+  off(event: 'error', listener: (error: Error) => void): this;
+
+  once(event: 'airplaneMode', listener: (data: STFAirplaneModeEvent) => void): this;
+  once(event: 'battery', listener: (data: STFBatteryEvent) => void): this;
+  once(event: 'connectivity', listener: (data: STFConnectivityEvent) => void): this;
+  once(event: 'phoneState', listener: (data: STFPhoneStateEvent) => void): this;
+  once(event: 'rotation', listener: (data: STFRotationEvent) => void): this;
+  once(event: 'browerPackage', listener: (data: STFBrowserPackageEvent) => void): this;
+  once(event: 'error', listener: (error: Error) => void): this;
+
+  emit(event: 'airplaneMode', data: STFAirplaneModeEvent): boolean; // EVENT_AIRPLANE_MODE
+  emit(event: 'battery', data: STFBatteryEvent): boolean; // EVENT_BATTERY
+  emit(event: 'connectivity', data: STFConnectivityEvent): boolean; // EVENT_CONNECTIVITY
+  emit(event: 'phoneState', data: STFPhoneStateEvent): boolean; // EVENT_PHONE_STATE
+  emit(event: 'rotation', data: STFRotationEvent): boolean; // EVENT_ROTATION
+  emit(event: 'browerPackage', data: STFBrowserPackageEvent): boolean; // BROWSER_PACKAGE
+  emit(event: 'error', error: Error): boolean;
 }
 
 export interface STFServiceOptions {
@@ -131,22 +245,68 @@ export default class STFService extends EventEmitter implements STFServiceEventE
 
   private async startServiceStream() {
     const root = await wireP;
-    const type = root.lookupType('Envelope');
+    const typeEnvelope = root.lookupType('Envelope');
+
+    const typeAirplaneModeEvent = root.lookupType('AirplaneModeEvent');
+    const typeRotationEvent = root.lookupType('RotationEvent');
+    const typeBatteryEvent = root.lookupType('BatteryEvent');
+    const typeConnEvent = root.lookupType('ConnectivityEvent');
+    const typePhoneEvent = root.lookupType('PhoneStateEvent');
+    const typeBrowerPackage = root.lookupType('BrowserPackageEvent');
+
+    let chunk: Buffer | null = null;
     for (; ;) {
       await Utils.waitforReadable(this.servicesSocket);
-      const chunk = await this.servicesSocket.read() as Buffer;
+      const next = await this.servicesSocket.read() as Buffer;
+      if (!next)
+        continue;
       if (chunk) {
-        console.log('servicesSocket RCV: ', chunk.length);
+        chunk = Buffer.concat([chunk, next]);
+      } else {
+        chunk = next;
+      }
+      if (chunk) {
+        if (chunk.length == 1)
+          continue;
+        // console.log('servicesSocket RCV: ', chunk.length);
         try {
-          const obj = type.decodeDelimited(chunk);
-          console.log(obj.toJSON())
-          // console.log(obj)
+          const eventObj = typeEnvelope.decodeDelimited(chunk) as unknown as {type: MessageType, message: Buffer};
+          //const eventObj = obj.toJSON() as { type: STFEventTypes, message: string }
+          const enmitter = this as STFServiceEventEmitter;
+          switch (eventObj.type) {
+            case MessageType.EVENT_AIRPLANE_MODE:
+              const airEvent = typeAirplaneModeEvent.decode(eventObj.message) as unknown as STFAirplaneModeEvent;
+              enmitter.emit("airplaneMode", airEvent);
+              break;
+            case MessageType.EVENT_BATTERY:
+              const batEvent = typeBatteryEvent.decode(eventObj.message) as unknown as STFBatteryEvent;
+              enmitter.emit("battery", batEvent);
+              break;
+            case MessageType.EVENT_CONNECTIVITY:
+              const conEvent = typeConnEvent.decode(eventObj.message) as unknown as STFConnectivityEvent;
+              enmitter.emit("connectivity", conEvent);
+              break;
+            case MessageType.EVENT_ROTATION:
+              const rotEvent = typeRotationEvent.decode(eventObj.message) as unknown as STFRotationEvent;
+              enmitter.emit("rotation", rotEvent);
+              break;
+            case MessageType.EVENT_PHONE_STATE:
+              const phoneEvent = typePhoneEvent.decode(eventObj.message) as unknown as STFPhoneStateEvent;
+              enmitter.emit("phoneState", phoneEvent);
+              break;
+            case MessageType.EVENT_BROWSER_PACKAGE:
+              const BrEvent = typeBrowerPackage.decode(eventObj.message) as unknown as STFBrowserPackageEvent;
+              enmitter.emit("browerPackage", BrEvent);
+              break;
+            default:
+              console.error('missing event Type:', eventObj.type);
+          }
+          chunk = null;
         } catch (e) {
           console.error(chunk.toString('hex'));
           console.error(e);
         }
       }
-      // root.
       await Utils.delay(0);
     }
   }
@@ -160,7 +320,6 @@ export default class STFService extends EventEmitter implements STFServiceEventE
         console.log('agentSocket RCV: ', chunk.length);
         console.log(chunk.toString('hex'))
       }
-      // root.
       await Utils.delay(0);
     }
   }
