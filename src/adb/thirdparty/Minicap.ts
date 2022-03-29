@@ -144,8 +144,7 @@ export default class Minicap extends EventEmitter implements MinicapEventEmitter
     {
       args.push('-P')
       if (!this.config.dimention) {
-        const duplex = new PromiseDuplex(await (this.client.shell('wm size')));
-        const str: string = await (duplex.setEncoding('utf8').readAll() as Promise<string>);
+        const str = await this.client.execOut('wm size', 'utf8');
         const m = str.match(/(\d+)x(\d+)/);
         if (!m) throw Error('can not gewt device size info');
         const dim = m[0];
@@ -154,11 +153,8 @@ export default class Minicap extends EventEmitter implements MinicapEventEmitter
         args.push(this.config.dimention)
       }
     }
-    const duplex = await this.client.shell(args.map(a => a.toString()).join(' '));
-    this.minicapServer = new PromiseDuplex(duplex);
-
+    this.minicapServer = new PromiseDuplex(await this.client.shell(args.map(a => a.toString()).join(' ')));
     ExtraUtils.dumpReadable(this.minicapServer, 'minicap');
-
     try {
       await this.client.forward(`tcp:${this.config.port}`, 'localabstract:minicap');
     } catch (e) {

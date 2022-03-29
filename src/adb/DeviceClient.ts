@@ -38,7 +38,8 @@ import Scrcpy from './thirdparty/Scrcpy';
 import type { ScrcpyOptions } from './thirdparty/ScrcpyModel';
 import { RebootType } from './command/host-transport/reboot';
 import Minicap, { MinicapOptions } from './thirdparty/Minicap';
-// import STFService from './thirdparty/STFService';
+import STFService from './thirdparty/STFService';
+import PromiseDuplex from 'promise-duplex';
 
 const debug = d('adb:client');
 
@@ -278,6 +279,21 @@ export default class DeviceClient {
   public async shell(command: string | ArrayLike<WithToString>): Promise<Duplex> {
     const transport = await this.transport();
     return new hostCmd.ShellCommand(transport).execute(command);
+  }
+
+  public async exec(command: string | ArrayLike<WithToString>): Promise<Duplex> {
+    const transport = await this.transport();
+    return new hostCmd.ExecCommand(transport).execute(command);
+  }
+
+  public async execOut(command: string | ArrayLike<WithToString>): Promise<Buffer>;
+  public async execOut(command: string | ArrayLike<WithToString>, encoding: BufferEncoding): Promise<string>;
+  public async execOut(command: string | ArrayLike<WithToString>, encoding?: BufferEncoding): Promise<string | Buffer> {
+    const duplex = new PromiseDuplex(await (this.exec(command)));
+    if (encoding) {
+      duplex.setEncoding(encoding);
+    }
+    return duplex.readAll()
   }
 
   /**
@@ -728,8 +744,8 @@ export default class DeviceClient {
     return minicap;
   }
  
-  // public STFService(): STFService {
-  //   const service = new STFService(this);
-  //   return service;
-  // }
+  public STFService(): STFService {
+    const service = new STFService(this);
+    return service;
+  }
 }

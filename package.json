@@ -57,6 +57,7 @@
         "node-forge": "^1.2.1",
         "promise-duplex": "^6.0.0",
         "promise-socket": "^7.0.0",
+        "protobufjs": "^6.11.2",
         "split": "~1.0.1"
     },
     "devDependencies": {

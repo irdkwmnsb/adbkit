@@ -2,6 +2,8 @@
 
 ## v3.1.5 
 
+* add DeviceClient.exec()
+* add DeviceClient.execOut()
 * add build-in minicap, relaing on @devicefarmer/minicap-prebuilt depencency.
 * export Scrcpy const enums
 

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import PromiseDuplex from 'promise-duplex';
 import adb, { DeviceClient, KeyCodes, Utils, MotionEvent } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
@@ -117,22 +118,22 @@ const testMinicap = async (deviceClient: DeviceClient) => {
   }
 }
 
-//const testSTFService = async (deviceClient: DeviceClient) => {
-//  // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
-//  const STFService = deviceClient.STFService();
-//  try {
-//    await STFService.start();
-//    // STFService.on('data', (buf: Buffer) => {
-//    //  console.log('rcv Buffer ', buf.length);
-//    //})
-//    await Utils.delay(100000)
-//    console.log(`done`);
-//  } catch(e) {
-//    console.error('scrcpy failed', e);
-//  } finally {
-//    //minicap.stop();
-//  }
-//}
+const testSTFService = async (deviceClient: DeviceClient) => {
+  // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
+  const STFService = deviceClient.STFService();
+  try {
+    await STFService.start();
+    // STFService.on('data', (buf: Buffer) => {
+    //  console.log('rcv Buffer ', buf.length);
+    //})
+    await Utils.delay(100000)
+    console.log(`done`);
+  } catch(e) {
+    console.error('scrcpy failed', e);
+  } finally {
+    //minicap.stop();
+  }
+}
 
 const testRouting = async (deviceClient: DeviceClient) => {
   deviceClient.sudo = true;
@@ -188,7 +189,10 @@ const main = async () => {
   // testScrcpyTextInput(deviceClient);
   // testScrcpyswap(deviceClient);
   // testMinicap(deviceClient);
-  // testSTFService(deviceClient);
+  testSTFService(deviceClient);
+  // const bug = await deviceClient.execOut('ls', 'utf8');
+  // const bug = await deviceClient.execOut('wm size', 'utf8');
+  // const duplex = new PromiseDuplex(await deviceClient.exec('ls'));
 }
 
 main();

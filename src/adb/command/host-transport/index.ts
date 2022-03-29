@@ -16,6 +16,7 @@ export { default as ReverseCommand } from './reverse';
 export { default as RootCommand } from './root';
 export { default as ScreencapCommand } from './screencap';
 export { default as ShellCommand } from './shell';
+export { default as ExecCommand } from './exec';
 export { default as StartActivityCommand } from './startactivity';
 export { default as StartServiceCommand } from './startservice';
 export { default as SyncCommand } from './sync';
