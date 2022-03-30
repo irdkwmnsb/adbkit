@@ -13,38 +13,14 @@ import { MessageType, STFAirplaneModeEvent, STFBatteryEvent, STFBrowserPackageEv
 
 const version = '2.4.9';
 
-export interface STFServiceEventEmitter {
-  on(event: 'airplaneMode', listener: (data: STFAirplaneModeEvent) => void): this; // EVENT_AIRPLANE_MODE
-  on(event: 'battery', listener: (data: STFBatteryEvent) => void): this; // EVENT_BATTERY
-  on(event: 'connectivity', listener: (data: STFConnectivityEvent) => void): this; // EVENT_CONNECTIVITY
-  on(event: 'phoneState', listener: (data: STFPhoneStateEvent) => void): this; // EVENT_PHONE_STATE
-  on(event: 'rotation', listener: (data: STFRotationEvent) => void): this; // EVENT_ROTATION
-  on(event: 'browerPackage', listener: (data: STFBrowserPackageEvent) => void): this; // BROWSER_PACKAGE
-  on(event: 'error', listener: (error: Error) => void): this;
-
-  off(event: 'airplaneMode', listener: (data: STFAirplaneModeEvent) => void): this;
-  off(event: 'battery', listener: (data: STFBatteryEvent) => void): this;
-  off(event: 'connectivity', listener: (data: STFConnectivityEvent) => void): this;
-  off(event: 'phoneState', listener: (data: STFPhoneStateEvent) => void): this;
-  off(event: 'rotation', listener: (data: STFRotationEvent) => void): this;
-  off(event: 'browerPackage', listener: (data: STFBrowserPackageEvent) => void): this;
-  off(event: 'error', listener: (error: Error) => void): this;
-
-  once(event: 'airplaneMode', listener: (data: STFAirplaneModeEvent) => void): this;
-  once(event: 'battery', listener: (data: STFBatteryEvent) => void): this;
-  once(event: 'connectivity', listener: (data: STFConnectivityEvent) => void): this;
-  once(event: 'phoneState', listener: (data: STFPhoneStateEvent) => void): this;
-  once(event: 'rotation', listener: (data: STFRotationEvent) => void): this;
-  once(event: 'browerPackage', listener: (data: STFBrowserPackageEvent) => void): this;
-  once(event: 'error', listener: (error: Error) => void): this;
-
-  emit(event: 'airplaneMode', data: STFAirplaneModeEvent): boolean; // EVENT_AIRPLANE_MODE
-  emit(event: 'battery', data: STFBatteryEvent): boolean; // EVENT_BATTERY
-  emit(event: 'connectivity', data: STFConnectivityEvent): boolean; // EVENT_CONNECTIVITY
-  emit(event: 'phoneState', data: STFPhoneStateEvent): boolean; // EVENT_PHONE_STATE
-  emit(event: 'rotation', data: STFRotationEvent): boolean; // EVENT_ROTATION
-  emit(event: 'browerPackage', data: STFBrowserPackageEvent): boolean; // BROWSER_PACKAGE
-  emit(event: 'error', error: Error): boolean;
+interface IEmissions {
+  airplaneMode: (data: STFAirplaneModeEvent) => void
+  battery: (data: STFBatteryEvent) => void
+  connectivity: (data: STFConnectivityEvent) => void
+  phoneState: (data: STFPhoneStateEvent) => void
+  rotation: (data: STFRotationEvent) => void
+  browerPackage: (data: STFBrowserPackageEvent) => void
+  error: (data: Error) => void
 }
 
 export interface STFServiceOptions {
@@ -63,7 +39,7 @@ const PKG = 'jp.co.cyberagent.stf';
 
 let wireP: Promise<ProtoBuf.Root> | null;
 
-export default class STFService extends EventEmitter implements STFServiceEventEmitter {
+export default class STFService extends EventEmitter {
   private config: STFServiceOptions;
   private servicesSocket: PromiseSocket<net.Socket> | undefined;
   private agentSocket: PromiseSocket<net.Socket> | undefined;
@@ -76,6 +52,11 @@ export default class STFService extends EventEmitter implements STFServiceEventE
       ...config,
     }
   }
+
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => this.emit(event, ...args)
 
   private async getPath(): Promise<string> {
 
@@ -193,31 +174,31 @@ export default class STFService extends EventEmitter implements STFServiceEventE
         // console.log('servicesSocket RCV: ', chunk.length);
         try {
           const eventObj = typeEnvelope.decodeDelimited(chunk) as unknown as {type: MessageType, message: Buffer};
-          const enmitter = this as STFServiceEventEmitter;
+          // const enmitter = this as STFServiceEventEmitter;
           switch (eventObj.type) {
             case MessageType.EVENT_AIRPLANE_MODE:
               const airEvent = typeAirplaneModeEvent.decode(eventObj.message) as unknown as STFAirplaneModeEvent;
-              enmitter.emit("airplaneMode", airEvent);
+              this.emit("airplaneMode", airEvent);
               break;
             case MessageType.EVENT_BATTERY:
               const batEvent = typeBatteryEvent.decode(eventObj.message) as unknown as STFBatteryEvent;
-              enmitter.emit("battery", batEvent);
+              this.emit("battery", batEvent);
               break;
             case MessageType.EVENT_CONNECTIVITY:
               const conEvent = typeConnEvent.decode(eventObj.message) as unknown as STFConnectivityEvent;
-              enmitter.emit("connectivity", conEvent);
+              this.emit("connectivity", conEvent);
               break;
             case MessageType.EVENT_ROTATION:
               const rotEvent = typeRotationEvent.decode(eventObj.message) as unknown as STFRotationEvent;
-              enmitter.emit("rotation", rotEvent);
+              this.emit("rotation", rotEvent);
               break;
             case MessageType.EVENT_PHONE_STATE:
               const phoneEvent = typePhoneEvent.decode(eventObj.message) as unknown as STFPhoneStateEvent;
-              enmitter.emit("phoneState", phoneEvent);
+              this.emit("phoneState", phoneEvent);
               break;
             case MessageType.EVENT_BROWSER_PACKAGE:
               const BrEvent = typeBrowerPackage.decode(eventObj.message) as unknown as STFBrowserPackageEvent;
-              enmitter.emit("browerPackage", BrEvent);
+              this.emit("browerPackage", BrEvent);
               break;
             default:
               console.error('missing event Type:', eventObj.type);

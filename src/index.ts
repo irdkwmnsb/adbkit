@@ -37,4 +37,4 @@ export { MotionEvent, DeviceMessageType, SurfaceControl, Orientation, KeyEventMe
 
 export { default as Minicap, MinicapOptions } from './adb/thirdparty/minicap/Minicap';
 
-export { default as STFService, STFServiceEventEmitter} from './adb/thirdparty/STFService/STFService';
+export { default as STFService } from './adb/thirdparty/STFService/STFService';

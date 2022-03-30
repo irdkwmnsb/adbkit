@@ -30,15 +30,13 @@ const debug = Debug('scrcpy');
 // eslint-disable-next-line prefer-const
 let scrcpyServerVersion = 20;
 
-interface ScrcpyEventEmitter {
-  on(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
-  on(event: 'error', listener: (error: Error) => void): this;
-  off(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
-  off(event: 'error', listener: (error: Error) => void): this;
-  once(event: 'data', listener: (pts: BigInt, data: Buffer) => void): this;
-  once(event: 'error', listener: (error: Error) => void): this;
-  // emit(event: 'data', pts: BigInt, data: Buffer): boolean;
-  // emit(event: 'error', error: Error): boolean;
+/**
+ * enforce EventEmitter typing
+ */
+interface IEmissions {
+  data: (pts: BigInt, data: Buffer) => void
+  raw: (data: Buffer) => void
+  error: (error: Error) => void
 }
 
 /**
@@ -63,7 +61,7 @@ interface ScrcpyEventEmitter {
  * WARNING:
  * Need USB Debug checked in developper option for MIUI
  */
-export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {  
+export default class Scrcpy extends EventEmitter {  
   private config: ScrcpyOptions;
   private videoSocket: PromiseSocket<net.Socket> | undefined;
   private controlSocket: PromiseSocket<net.Socket> | undefined;
@@ -105,6 +103,11 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
     this._width = new Promise<number>((resolve) => this.setWidth = resolve);
     this._height = new Promise<number>((resolve) => this.setHeight = resolve);
   }
+
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => this.emit(event, ...args)
 
   get name(): Promise<string> { return this._name; }
   get width(): Promise<number> { return this._width; }
@@ -293,7 +296,7 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
   }
 
   private startStreamRaw() {
-    this.videoSocket.stream.on('data', d => this.emit('data', d));
+    this.videoSocket.stream.on('data', d => this.emit('raw', d));
   }
 
   private async startStreamWithMeta() {

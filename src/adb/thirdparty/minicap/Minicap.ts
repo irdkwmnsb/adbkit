@@ -10,16 +10,6 @@ import { Utils } from "../../..";
 import Util from "../../util";
 import PromiseSocket from "promise-socket";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface MinicapEventEmitter {
-  on(event: 'data', listener: (data: Buffer) => void): this;
-  on(event: 'error', listener: (error: Error) => void): this;
-  off(event: 'data', listener: (data: Buffer) => void): this;
-  off(event: 'error', listener: (error: Error) => void): this;
-  once(event: 'data', listener: (data: Buffer) => void): this;
-  once(event: 'error', listener: (error: Error) => void): this;
-}
-
 export interface MinicapOptions {
   /**
    * local port use for minicap
@@ -36,7 +26,15 @@ export interface MinicapOptions {
 
 const debug = Debug('minicap');
 
-export default class Minicap extends EventEmitter implements MinicapEventEmitter {
+/**
+ * enforce EventEmitter typing
+ */
+interface IEmissions {
+  data: (data: Buffer) => void
+  error: (error: Error) => void
+}
+
+export default class Minicap extends EventEmitter {
   private config: MinicapOptions;
   private videoSocket: PromiseSocket<net.Socket> | undefined;
   private minicapServer: PromiseDuplex<Duplex>;
@@ -77,6 +75,11 @@ export default class Minicap extends EventEmitter implements MinicapEventEmitter
     this._orientation = new Promise<number>((resolve) => this.setOrientation = resolve);
     this._bitflags = new Promise<number>((resolve) => this.setBitflags = resolve);
   }
+
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => this.emit(event, ...args)
 
   get version(): Promise<number> { return this._version; }
   get pid(): Promise<number> { return this._pid; }
