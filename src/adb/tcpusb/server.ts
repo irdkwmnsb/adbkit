@@ -4,7 +4,15 @@ import EventEmitter from 'node:events';
 import Client from '../client';
 import SocketOptions from '../../SocketOptions';
 
-type NetServer = Net.Server;
+/**
+ * enforce EventEmitter typing
+ */
+ interface IEmissions {
+  listening: () => void
+  close: () => void
+  connection: (socket: Socket) => void
+  error: (data: Error) => void
+}
 
 export default class Server extends EventEmitter {
   private readonly server: Net.Server;
@@ -37,7 +45,12 @@ export default class Server extends EventEmitter {
     });
   }
 
-  public listen(...args: Parameters<NetServer['listen']>): Server {
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => this.emit(event, ...args)
+
+  public listen(...args: Parameters<Net.Server['listen']>): Server {
     this.server.listen(...args);
     return this;
   }

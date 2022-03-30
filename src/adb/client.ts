@@ -18,6 +18,13 @@ import Tracker from './tracker';
 import DeviceWithPath from '../DeviceWithPath';
 import DeviceClient from './DeviceClient';
 
+/**
+ * enforce EventEmitter typing
+ */
+ interface IEmissions {
+  error: (data: Error) => void
+}
+
 export default class Client extends EventEmitter {
   public readonly options: ClientOptions;
   public readonly host: string;
@@ -31,6 +38,11 @@ export default class Client extends EventEmitter {
     this.bin = bin;
     this.options = { port, bin };
   }
+
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => this.emit(event, ...args)
 
   public createTcpUsbBridge(serial: string, options: SocketOptions): TcpUsbServer {
     return new TcpUsbServer(this, serial, options);
