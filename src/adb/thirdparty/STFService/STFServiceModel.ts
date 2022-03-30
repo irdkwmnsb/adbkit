@@ -32,11 +32,11 @@ export enum MessageType {
     EVENT_BROWSER_PACKAGE = 18
 }
 
-export interface STFAirplaneModeEvent {
+export interface AirplaneModeEvent {
     enabled: boolean;
 }
 
-export interface STFBatteryEvent {
+export interface BatteryEvent {
     status: string;
     health: string;
     source: string;
@@ -46,26 +46,26 @@ export interface STFBatteryEvent {
     voltage: number;
 }
 
-export interface STFBrowserApp {
+export interface BrowserApp {
     name: string;
     component: string;
     selected: boolean;
     system: boolean;
 }
 
-export interface STFBrowserApp {
+export interface BrowserApp {
     name: string;
     component: string;
     selected: boolean;
     system: boolean;
 }
 
-export interface STFBrowserPackageEvent {
+export interface BrowserPackageEvent {
     selected: boolean;
-    apps: STFBrowserApp;
+    apps: BrowserApp;
 }
 
-export interface STFConnectivityEvent {
+export interface ConnectivityEvent {
     connected: boolean;
     type?: string;
     subtype?: string;
@@ -73,20 +73,189 @@ export interface STFConnectivityEvent {
     roaming?: boolean;
 }
 
-export interface STFPhoneStateEvent {
+export interface PhoneStateEvent {
     state: string;
     manual: boolean;
     operator?: string;
 }
 
-export interface STFRotationEvent {
+export interface RotationEvent {
     rotation: number;
 }
 
+export interface Envelope {
+    id?: number;
+    type: MessageType;
+    message: Uint8Array;
+}
+
+export interface GetAccountsRequest {
+    type?: string;
+}
+
+export interface GetAccountsResponse {
+   success: boolean;
+   accounts: string;
+}
+
+export interface GetBrowsersResponse {
+    success: boolean;
+    selected: boolean;
+    apps: BrowserApp[];
+}
+
+export interface GetClipboardResponse {
+    success: boolean;
+    type?: ClipboardType;
+    text?: string;
+}
+
+export interface GetDisplayResponse {
+    success: boolean;
+    width?: number;
+    height?: number;
+    xdpi?: number;
+    ydpi?: number;
+    fps?: number;
+    density?: number;
+    rotation?: number;
+    secure?: boolean;
+}
+
+export interface Property {
+    name: string;
+    value: string;
+}
+
+export interface GetPropertiesResponse {
+    success: boolean;
+    properties: Property[];
+}
+
+export enum RingerMode {
+    SILENT = 0,
+    VIBRATE = 1,
+    NORMAL = 2,
+}
+
+export interface GetRingerModeResponse {
+    success: boolean;
+    mode: RingerMode;
+}
+
+export interface SetRingerModeRequest {
+    mode: RingerMode;
+}
+
+export interface SetRingerModeResponse {
+    success: boolean;
+}
 
 
-// export {
-//     id?: number;
-//     type: MessageType;
-//     message: Uint8Array;
+export enum ClipboardType {
+    TEXT = 1,
+}
+
+export interface GetClipboardRequest {
+    type: ClipboardType
+}
+
+export interface GetDisplayRequest {
+    id: number;
+}
+
+export interface GetPropertiesRequest {
+    properties: string[];
+}
+
+// export interface GetWifiStatusRequest {
 // }
+
+export interface GetWifiStatusResponse {
+    success: boolean;
+    status: boolean;
+}
+
+// export interface GetRootStatusRequest {
+// }
+
+export interface GetRootStatusResponse {
+    success: boolean;
+    status: boolean;
+}
+
+export interface SetBluetoothEnabledRequest {
+    enabled: boolean;
+}
+
+export interface SetBluetoothEnabledResponse {
+    success: boolean;
+}
+
+// export interface GetBluetoothStatusRequest {
+// }
+
+export interface GetBluetoothStatusResponse {
+    success: boolean;
+    status: boolean;
+}
+
+// export interface GetSdStatusRequest {
+// }
+
+export interface GetSdStatusResponse {
+    success: boolean;
+    mounted: boolean;
+}
+
+export interface SetMasterMuteRequest {
+    enabled: boolean;
+}
+
+export interface SetMasterMuteResponse {
+    success: boolean;
+}
+
+export interface GetVersionResponse {
+    success: boolean;
+    version?: string;
+}
+
+
+export interface SetClipboardRequest {
+    type: ClipboardType ;
+    text?: string;
+}
+
+export interface SetClipboardResponse {
+    success: boolean;
+}
+
+export interface  SetKeyguardStateRequest {
+    enabled: boolean;
+}
+
+export interface  SetKeyguardStateResponse {
+    success: boolean;
+}
+
+export interface  SetWakeLockRequest {
+    enabled: boolean;
+}
+
+export interface SetWakeLockResponse {
+    success: boolean;
+}
+
+export interface SetRotationRequest {
+    rotation: number;
+    lock: boolean;
+}
+
+export interface SetWifiEnabledRequest {
+    enabled: boolean;
+}
+
+export interface SetWifiEnabledResponse {
+    success: boolean;
+}

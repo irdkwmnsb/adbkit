@@ -6,20 +6,20 @@ import DeviceClient from "../../DeviceClient";
 import { Utils } from "../../..";
 import PromiseDuplex from "promise-duplex";
 import { EventEmitter } from "node:stream";
-import * as ProtoBuf from 'protobufjs';
 import PromiseSocket from "promise-socket";
 import ThirdUtils from "../ThirdUtils";
-import { MessageType, STFAirplaneModeEvent, STFBatteryEvent, STFBrowserPackageEvent, STFConnectivityEvent, STFPhoneStateEvent, STFRotationEvent } from "./STFServiceModel";
+import * as STF from "./STFServiceModel";
+import STFProtoBuf from "./STFProtoBuf";
 
 const version = '2.4.9';
 
 interface IEmissions {
-  airplaneMode: (data: STFAirplaneModeEvent) => void
-  battery: (data: STFBatteryEvent) => void
-  connectivity: (data: STFConnectivityEvent) => void
-  phoneState: (data: STFPhoneStateEvent) => void
-  rotation: (data: STFRotationEvent) => void
-  browerPackage: (data: STFBrowserPackageEvent) => void
+  airplaneMode: (data: STF.AirplaneModeEvent) => void
+  battery: (data: STF.BatteryEvent) => void
+  connectivity: (data: STF.ConnectivityEvent) => void
+  phoneState: (data: STF.PhoneStateEvent) => void
+  rotation: (data: STF.RotationEvent) => void
+  browerPackage: (data: STF.BrowserPackageEvent) => void
   error: (data: Error) => void
 }
 
@@ -37,12 +37,11 @@ export interface STFServiceOptions {
 const debug = Debug('STFService');
 const PKG = 'jp.co.cyberagent.stf';
 
-let wireP: Promise<ProtoBuf.Root> | null;
-
 export default class STFService extends EventEmitter {
   private config: STFServiceOptions;
   private servicesSocket: PromiseSocket<net.Socket> | undefined;
   private agentSocket: PromiseSocket<net.Socket> | undefined;
+  private proto!: STFProtoBuf;
 
   constructor(private client: DeviceClient, config = {} as Partial<STFServiceOptions>) {
     super();
@@ -78,12 +77,7 @@ export default class STFService extends EventEmitter {
   }
 
   async start(): Promise<void> {
-
-    if (!wireP) {
-      const proto = ThirdUtils.getResource('wireService.proto');
-      wireP = ProtoBuf.load(proto);
-    }
-    await wireP;
+    this.proto = await STFProtoBuf.get();
 
     let setupPath = await this.getPath();
     if (!setupPath) {
@@ -98,7 +92,7 @@ export default class STFService extends EventEmitter {
       setupPath = await this.getPath();
     }
     // console.log('current version is: ', currentVersion.trim());
-    
+
     const props = await this.client.getProperties();
     const sdkLevel = parseInt(props['ro.build.version.sdk']);
     const action = `${PKG}.ACTION_START`;
@@ -147,16 +141,15 @@ export default class STFService extends EventEmitter {
     void this.startAgentStream().catch((e) => { console.log('Agent failed', e); this.stop() });
   }
 
-  private async startServiceStream() {
-    const root = await wireP;
-    const typeEnvelope = root.lookupType('Envelope');
-    const typeAirplaneModeEvent = root.lookupType('AirplaneModeEvent');
-    const typeRotationEvent = root.lookupType('RotationEvent');
-    const typeBatteryEvent = root.lookupType('BatteryEvent');
-    const typeConnEvent = root.lookupType('ConnectivityEvent');
-    const typePhoneEvent = root.lookupType('PhoneStateEvent');
-    const typeBrowerPackage = root.lookupType('BrowserPackageEvent');
+  private handleResponse(id: number, result: any) {
+    const resolv = this.responseHook[id];
+    if (resolv) {
+      delete this.responseHook[id];
+      resolv(result);
+    }
+  }
 
+  private async startServiceStream() {
     let chunk: Buffer | null = null;
     for (; ;) {
       await Utils.waitforReadable(this.servicesSocket);
@@ -173,35 +166,50 @@ export default class STFService extends EventEmitter {
           continue;
         // console.log('servicesSocket RCV: ', chunk.length);
         try {
-          const eventObj = typeEnvelope.decodeDelimited(chunk) as unknown as {type: MessageType, message: Buffer};
+          const eventObj = this.proto.readEnvelope(chunk);
+          const message = eventObj.message;
           // const enmitter = this as STFServiceEventEmitter;
           switch (eventObj.type) {
-            case MessageType.EVENT_AIRPLANE_MODE:
-              const airEvent = typeAirplaneModeEvent.decode(eventObj.message) as unknown as STFAirplaneModeEvent;
-              this.emit("airplaneMode", airEvent);
+            case STF.MessageType.EVENT_AIRPLANE_MODE:
+              this.emit("airplaneMode", this.proto.read.AirplaneModeEvent(message));
               break;
-            case MessageType.EVENT_BATTERY:
-              const batEvent = typeBatteryEvent.decode(eventObj.message) as unknown as STFBatteryEvent;
-              this.emit("battery", batEvent);
+            case STF.MessageType.EVENT_BATTERY:
+              this.emit("battery", this.proto.read.BatteryEvent(message));
               break;
-            case MessageType.EVENT_CONNECTIVITY:
-              const conEvent = typeConnEvent.decode(eventObj.message) as unknown as STFConnectivityEvent;
-              this.emit("connectivity", conEvent);
+            case STF.MessageType.EVENT_CONNECTIVITY:
+              this.emit("connectivity", this.proto.read.ConnectivityEvent(message));
               break;
-            case MessageType.EVENT_ROTATION:
-              const rotEvent = typeRotationEvent.decode(eventObj.message) as unknown as STFRotationEvent;
-              this.emit("rotation", rotEvent);
+            case STF.MessageType.EVENT_ROTATION:
+              this.emit("rotation", this.proto.read.RotationEvent(message));
               break;
-            case MessageType.EVENT_PHONE_STATE:
-              const phoneEvent = typePhoneEvent.decode(eventObj.message) as unknown as STFPhoneStateEvent;
-              this.emit("phoneState", phoneEvent);
+            case STF.MessageType.EVENT_PHONE_STATE:
+              this.emit("phoneState", this.proto.read.PhoneStateEvent(message));
               break;
-            case MessageType.EVENT_BROWSER_PACKAGE:
-              const BrEvent = typeBrowerPackage.decode(eventObj.message) as unknown as STFBrowserPackageEvent;
-              this.emit("browerPackage", BrEvent);
+            case STF.MessageType.EVENT_BROWSER_PACKAGE:
+              this.emit("browerPackage", this.proto.read.BrowserPackageEvent(message));
               break;
+            case STF.MessageType.GET_ACCOUNTS:
+              this.handleResponse(eventObj.id, this.proto.read.GetAccountsResponse(message));
+              break;
+            case STF.MessageType.GET_BLUETOOTH_STATUS:
+              this.handleResponse(eventObj.id, this.proto.read.GetBluetoothStatusResponse(message));
+              break;
+
+            case STF.MessageType.GET_BROWSERS:
+              this.handleResponse(eventObj.id, this.proto.read.GetBrowsersResponse(message));
+              break;
+            case STF.MessageType.GET_CLIPBOARD:
+              this.handleResponse(eventObj.id, this.proto.read.GetBluetoothStatusResponse(message));
+              break;
+            case STF.MessageType.GET_DISPLAY:
+              this.handleResponse(eventObj.id, this.proto.read.GetBluetoothStatusResponse(message));
+              break;
+            case STF.MessageType.GET_PROPERTIES:
+              this.handleResponse(eventObj.id, this.proto.read.GetBluetoothStatusResponse(message));
+              break;
+
             default:
-              console.error('missing event Type:', eventObj.type);
+              console.error('STFService not implemented Type:', eventObj.type);
           }
           chunk = null;
         } catch (e) {
@@ -212,23 +220,127 @@ export default class STFService extends EventEmitter {
       await Utils.delay(0);
     }
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private responseHook: { [key: number]: (response: any) => void } = {}
+  private reqCnt = 1;
 
-  public async getAccounts(type?: string): Promise<void> {
-    const root = await wireP;
-    type = 'AAAAAAAAAAAAAAAAAAAAAAA'
-    const typePhoneEvent = root.lookupType('GetAccountsRequest');
-    const typeEnvelope = root.lookupType('Envelope');
-
-    const req = typePhoneEvent.create({type});
-    const id = Math.floor(Math.random() * 0xFFFFFF)
-    const env = typeEnvelope.create({id, type: MessageType.GET_ACCOUNTS, message: typePhoneEvent.encode(req).finish()})
-    const buf = Buffer.from(typeEnvelope.encodeDelimited(env).finish());
-    console.log(buf.toString('hex'))
-    console.log(env.toJSON())
+  private pushEnvelop<T>(envelope: STF.Envelope): Promise<T> {
+    // const id = Math.floor(Math.random() * 0xFFFFFF)
+    const id = (this.reqCnt + 1) | 0xFFFFFF;
+    this.reqCnt = id;
+    envelope.id = this.reqCnt;
+    let pReject: (error: Error) => void;
+    const promise = new Promise<T>((resolve, reject) => {
+      pReject = reject;
+      this.responseHook[id] = resolve;
+    });
+    const buf = this.proto.write.Envelope(envelope)
     this.servicesSocket.write(buf);
-    // this.agentSocket.write(buf);
+
+    const timeout = Utils.delay(15000).then(() => {
+      if (this.responseHook[id]) {
+        delete this.responseHook[id];
+        pReject(Error('timeout'));
+      }
+    });
+    Promise.race([promise, timeout]);
+    return promise;
   }
 
+  public async getAccounts(type?: string): Promise<STF.GetAccountsResponse> {
+    const message = this.proto.write.GetAccountsRequest({ type });
+    return this.pushEnvelop<STF.GetAccountsResponse>({ type: STF.MessageType.GET_ACCOUNTS, message })
+  }
+
+  public async GetBrowsers(): Promise<STF.GetBrowsersResponse> {
+    const message = this.proto.write.GetBrowsersRequest();
+    return this.pushEnvelop<STF.GetBrowsersResponse>({ type: STF.MessageType.GET_BROWSERS, message })
+  }
+
+  public async GetClipboard(type: STF.ClipboardType): Promise<STF.GetClipboardResponse> {
+    const message = this.proto.write.GetClipboardRequest({ type });
+    return this.pushEnvelop<STF.GetClipboardResponse>({ type: STF.MessageType.GET_CLIPBOARD, message })
+  }
+
+  public async GetDisplay(id: number): Promise<STF.GetDisplayResponse> {
+    const message = this.proto.write.GetDisplayRequest({ id });
+    return this.pushEnvelop<STF.GetDisplayResponse>({ type: STF.MessageType.GET_DISPLAY, message })
+  }
+
+  public async GetProperties(properties: string[]): Promise<STF.GetPropertiesResponse> {
+    const message = this.proto.write.GetPropertiesRequest({ properties });
+    return this.pushEnvelop<STF.GetPropertiesResponse>({ type: STF.MessageType.GET_PROPERTIES, message })
+  }
+
+  public async GetRingerMode(): Promise<STF.GetRingerModeResponse> {
+    const message = this.proto.write.GetRingerModeRequest();
+    return this.pushEnvelop<STF.GetRingerModeResponse>({ type: STF.MessageType.GET_RINGER_MODE, message })
+  }
+
+  public async GetSdStatus(): Promise<STF.GetSdStatusResponse> {
+    const message = this.proto.write.GetSdStatusRequest();
+    return this.pushEnvelop<STF.GetSdStatusResponse>({ type: STF.MessageType.GET_SD_STATUS, message })
+  }
+
+  public async GetVersion(): Promise<STF.GetVersionResponse> {
+    const message = this.proto.write.GetVersionRequest();
+    return this.pushEnvelop<STF.GetVersionResponse>({ type: STF.MessageType.GET_VERSION, message })
+  }
+
+  public async GetWifiStatus(): Promise<STF.GetWifiStatusResponse> {
+    const message = this.proto.write.GetWifiStatusRequest();
+    return this.pushEnvelop<STF.GetWifiStatusResponse>({ type: STF.MessageType.GET_WIFI_STATUS, message })
+  }
+
+  public async GetBluetoothStatus(): Promise<STF.GetBluetoothStatusResponse> {
+    const message = this.proto.write.GetBluetoothStatusRequest();
+    return this.pushEnvelop<STF.GetBluetoothStatusResponse>({ type: STF.MessageType.GET_BLUETOOTH_STATUS, message })
+  }
+
+  public async GetRootStatus(): Promise<STF.GetRootStatusResponse> {
+    const message = this.proto.write.GetRootStatusRequest();
+    return this.pushEnvelop<STF.GetRootStatusResponse>({ type: STF.MessageType.GET_ROOT_STATUS, message })
+  }
+
+  public async SetClipboard(req: STF.SetClipboardRequest): Promise<STF.SetClipboardResponse> {
+    const message = this.proto.write.SetClipboardRequest(req);
+    return this.pushEnvelop<STF.SetClipboardResponse>({ type: STF.MessageType.SET_CLIPBOARD, message })
+  }
+
+  public async SetKeyguardState(req: STF.SetKeyguardStateRequest): Promise<STF.SetKeyguardStateResponse> {
+    const message = this.proto.write.SetKeyguardStateRequest(req);
+    return this.pushEnvelop<STF.SetKeyguardStateResponse>({ type: STF.MessageType.SET_KEYGUARD_STATE, message })
+  }
+
+  public async SetRingerMode(req: STF.SetRingerModeRequest): Promise<STF.SetRingerModeResponse> {
+    const message = this.proto.write.SetRingerModeRequest(req);
+    return this.pushEnvelop<STF.SetRingerModeResponse>({ type: STF.MessageType.SET_RINGER_MODE, message })
+  }
+
+  public async SetRotationRequest(req: STF.SetRotationRequest): Promise<any> {
+    const message = this.proto.write.SetRotationRequest(req);
+    return this.pushEnvelop<any>({ type: STF.MessageType.SET_ROTATION, message })
+  }
+
+  public async SetWakeLock(req: STF.SetWakeLockRequest): Promise<STF.GetWifiStatusResponse> {
+    const message = this.proto.write.SetWakeLockRequest(req);
+    return this.pushEnvelop<STF.GetWifiStatusResponse>({ type: STF.MessageType.SET_WAKE_LOCK, message })
+  }
+
+  public async SetWifiEnabledRequest(req: STF.SetWifiEnabledRequest): Promise<STF.SetWifiEnabledResponse> {
+    const message = this.proto.write.SetWifiEnabledRequest(req);
+    return this.pushEnvelop<STF.GetWifiStatusResponse>({ type: STF.MessageType.SET_WIFI_ENABLED, message })
+  }
+
+  public async SetBluetoothEnabledRequest(req: STF.SetBluetoothEnabledRequest): Promise<STF.SetBluetoothEnabledResponse> {
+    const message = this.proto.write.SetBluetoothEnabledRequest(req);
+    return this.pushEnvelop<STF.SetBluetoothEnabledResponse>({ type: STF.MessageType.SET_BLUETOOTH_ENABLED, message })
+  }
+
+  public async SetMasterMute(req: STF.SetMasterMuteRequest): Promise<STF.SetMasterMuteResponse> {
+    const message = this.proto.write.SetMasterMuteRequest(req);
+    return this.pushEnvelop<STF.SetMasterMuteResponse>({ type: STF.MessageType.SET_MASTER_MUTE, message })
+  }
 
   private async startAgentStream() {
     // const root = await wireP;

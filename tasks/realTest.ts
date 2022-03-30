@@ -3,8 +3,6 @@
 import adb, { DeviceClient, KeyCodes, Utils, MotionEvent } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
-import * as ProtoBuf from 'protobufjs';
-import { STFServiceEventEmitter } from '../src/adb/thirdparty/STFService/STFService';
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -124,29 +122,51 @@ const testSTFService = async (deviceClient: DeviceClient) => {
   // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
   const STFService = deviceClient.STFService();
   try {
-    const evs = STFService as STFServiceEventEmitter;
-    evs.on("airplaneMode", (data) => {
+    STFService.on("airplaneMode", (data) => {
       console.log('airplaneMode', data);
     });
-    evs.on("battery", (data) => {
+    STFService.on("battery", (data) => {
       console.log('battery', data);
     });
-    evs.on("browerPackage", (data) => {
+    STFService.on("browerPackage", (data) => {
       console.log('browerPackage', data)
     });
-    evs.on("connectivity", (data) => {
+    STFService.on("connectivity", (data) => {
       console.log('connectivity', data)
     });
-    evs.on("phoneState", (data) => {
+    STFService.on("phoneState", (data) => {
       console.log('phoneState', data)
     });
-    evs.on("rotation", (data) => {
+    STFService.on("rotation", (data) => {
       console.log('rotation', data)
     });
     await STFService.start();
 
-    const acc = await STFService.getAccounts();
+    {
+      const acc = await STFService.getAccounts();
+      console.log(acc);
+    }
 
+    {
+      const acc = await STFService.GetBluetoothStatus();
+      console.log(acc);
+    }
+    // {
+    //   const acc = await STFService.GetBrowsers()
+    //   console.log(acc);
+    // }
+    // {
+    //   const acc = await STFService.GetClipboard(1)
+    //   console.log(acc);
+    // }
+    // {
+    //   const acc = await STFService.GetDisplay(0)
+    //   console.log(acc);
+    // }
+    // {
+    //   const acc = await STFService.GetProperties([]);
+    //   console.log(acc);
+    // }
     // STFService.on('data', (buf: Buffer) => {
     //  console.log('rcv Buffer ', buf.length);
     //})
@@ -219,28 +239,5 @@ const main = async () => {
   // const duplex = new PromiseDuplex(await deviceClient.exec('ls'));
   // await protoTest();
 }
-
-// const protoTest = async() => {
-//   const wireP = ProtoBuf.load(path.join(__dirname, '..', 'bin', 'wireService.proto'));
-//   const root = await wireP;
-//   const type = root.lookupType('Envelope');
-//   const typeRotationEvent = root.lookupType('RotationEvent');
-// 
-// 
-//   const tert = {type: 'EVENT_ROTATION', message: 'CAA='};
-//   const data: ProtoBuf.BufferWriter = type.encodeDelimited(tert);
-//   const buf = Buffer.from(data.finish());
-// 
-//   console.log(buf.toString('hex'));
-// 
-//   const envelop = type.decodeDelimited(buf) as unknown as { type: number, message: Buffer};
-//   console.log(envelop);
-// 
-//   console.log(envelop.message);
-//   const data2 = typeRotationEvent.decode(envelop.message)
-//   console.log(data2);
-//   console.log(data2.toJSON());
-// }
-
 
 main();
