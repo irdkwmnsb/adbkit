@@ -32,8 +32,8 @@ export { default as Utils } from './adb/util';
 export { PsEntry } from './adb/command/host-transport/ps';
 
 export { default as Scrcpy } from './adb/thirdparty/scrcpy/Scrcpy';
-export * from './adb/thirdparty/ScrcpyModel';
-export { MotionEvent, DeviceMessageType, SurfaceControl, Orientation, KeyEventMeta } from './adb/thirdparty/ScrcpyConst';
+export * from './adb/thirdparty/scrcpy/ScrcpyModel';
+export { MotionEvent, DeviceMessageType, SurfaceControl, Orientation, KeyEventMeta } from './adb/thirdparty/scrcpy/ScrcpyConst';
 
 export { default as Minicap, MinicapOptions } from './adb/thirdparty/minicap/Minicap';
 
