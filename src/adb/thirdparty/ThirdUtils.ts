@@ -44,5 +44,4 @@ export default class ThirdUtils {
     const fullPath = path.join(ThirdUtils.resourceDir, fileName);
     return fullPath;
   }
-
 }

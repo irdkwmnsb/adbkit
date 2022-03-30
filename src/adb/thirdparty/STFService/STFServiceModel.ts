@@ -24,7 +24,6 @@ export enum MessageType {
     SET_WIFI_ENABLED = 22,
     SET_BLUETOOTH_ENABLED = 30,
     SET_MASTER_MUTE = 28,
-    
     EVENT_AIRPLANE_MODE = 13,
     EVENT_BATTERY = 14,
     EVENT_CONNECTIVITY = 15,
@@ -32,6 +31,59 @@ export enum MessageType {
     EVENT_ROTATION = 17,
     EVENT_BROWSER_PACKAGE = 18
 }
+
+export interface STFAirplaneModeEvent {
+    enabled: boolean;
+}
+
+export interface STFBatteryEvent {
+    status: string;
+    health: string;
+    source: string;
+    level: number;
+    scale: number;
+    temp: number;
+    voltage: number;
+}
+
+export interface STFBrowserApp {
+    name: string;
+    component: string;
+    selected: boolean;
+    system: boolean;
+}
+
+export interface STFBrowserApp {
+    name: string;
+    component: string;
+    selected: boolean;
+    system: boolean;
+}
+
+export interface STFBrowserPackageEvent {
+    selected: boolean;
+    apps: STFBrowserApp;
+}
+
+export interface STFConnectivityEvent {
+    connected: boolean;
+    type?: string;
+    subtype?: string;
+    failover?: boolean;
+    roaming?: boolean;
+}
+
+export interface STFPhoneStateEvent {
+    state: string;
+    manual: boolean;
+    operator?: string;
+}
+
+export interface STFRotationEvent {
+    rotation: number;
+}
+
+
 
 // export {
 //     id?: number;
