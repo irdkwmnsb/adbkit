@@ -98,7 +98,7 @@ describe('Sync', () => {
         });
         dt('should be able to push >65536 byte chunks without error', async () => {
             await forEachSyncDevice((sync) => {
-                return new Promise(async (resolve, reject) => {
+                return new Promise<void>(async (resolve, reject) => {
                     const stream = new Stream.PassThrough();
                     const content = Buffer.alloc(1000000);
                     const transfer = await sync.pushStream(stream, SURELY_WRITABLE_FILE);

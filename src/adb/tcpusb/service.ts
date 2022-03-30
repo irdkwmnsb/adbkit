@@ -28,6 +28,14 @@ class LateTransportError extends Error {
   }
 }
 
+/**
+ * enforce EventEmitter typing
+ */
+ interface IEmissions {
+  end: () => void
+  error: (data: Error) => void
+}
+
 export default class Service extends EventEmitter {
   public static PrematurePacketError = PrematurePacketError;
   public static LateTransportError = LateTransportError;
@@ -47,7 +55,12 @@ export default class Service extends EventEmitter {
     super();
   }
 
-  public end(): Service {
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
+
+  public end(): this {
     if (this.transport) {
       this.transport.end();
     }
@@ -70,27 +83,33 @@ export default class Service extends EventEmitter {
     return this;
   }
 
-  public async handle(packet: Packet): Promise<Service | boolean | undefined> {
+  public async handle(packet: Packet): Promise<boolean> {
     try {
       switch (packet.command) {
         case Packet.A_OPEN:
-          return this._handleOpenPacket(packet);
+          this._handleOpenPacket(packet);
+          break;
         case Packet.A_OKAY:
-          return this._handleOkayPacket(packet);
+          this._handleOkayPacket(packet);
+          break;
         case Packet.A_WRTE:
-          return this._handleWritePacket(packet);
+          this._handleWritePacket(packet);
+          break;
         case Packet.A_CLSE:
-          return this._handleClosePacket(packet);
+          this._handleClosePacket(packet);
+          break;
         default:
           throw new Error(`Unexpected packet ${packet.command}`);
       }
+      return true;
     } catch (err) {
       this.emit('error', err as Error);
-      return this.end();
+      this.end();
+      return false;
     }
   }
 
-  private async _handleOpenPacket(packet: Packet): Promise<boolean> {
+  private async _handleOpenPacket(packet: Packet): Promise<void> {
     debug('I:A_OPEN', packet);
     try {
       const transport = await this.client.getDevice(this.serial).transport()
@@ -115,7 +134,7 @@ export default class Service extends EventEmitter {
           this.transport.parser.unexpected(reply, 'OKAY or FAIL');
           break;
       }
-      return new Promise<boolean>((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         if (!this.transport) {
           return reject('transport is closed')
         }
@@ -123,17 +142,17 @@ export default class Service extends EventEmitter {
           .on('readable', () => this._tryPush())
           .on('end', resolve)
           .on('error', reject);
-        return this._tryPush();
+        this._tryPush();
       });
     } finally {
       this.end();
     }
   }
 
-  private _handleOkayPacket(packet: Packet): boolean | undefined {
+  private _handleOkayPacket(packet: Packet): boolean {
     debug('I:A_OKAY', packet);
     if (this.ended) {
-      return;
+      return false;
     }
     if (!this.transport) {
       throw new Service.PrematurePacketError(packet);
@@ -142,10 +161,10 @@ export default class Service extends EventEmitter {
     return this._tryPush();
   }
 
-  private _handleWritePacket(packet: Packet): boolean | undefined {
+  private _handleWritePacket(packet: Packet): boolean  {
     debug('I:A_WRTE', packet);
     if (this.ended) {
-      return;
+      return false;
     }
     if (!this.transport) {
       throw new Service.PrematurePacketError(packet);
@@ -157,20 +176,21 @@ export default class Service extends EventEmitter {
     return this.socket.write(Packet.assemble(Packet.A_OKAY, this.localId, this.remoteId));
   }
 
-  private _handleClosePacket(packet: Packet): Service | undefined {
+  private _handleClosePacket(packet: Packet): boolean {
     debug('I:A_CLSE', packet);
     if (this.ended) {
-      return;
+      return false;
     }
     if (!this.transport) {
       throw new Service.PrematurePacketError(packet);
     }
-    return this.end();
+    this.end();
+    return true;
   }
 
-  private _tryPush(): boolean | undefined {
+  private _tryPush(): boolean {
     if (this.needAck || this.ended || !this.transport) {
-      return;
+      return false;
     }
     const chunk = this._readChunk(this.transport.socket);
     if (chunk) {

@@ -105,9 +105,9 @@ export default class Scrcpy extends EventEmitter {
   }
 
   public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
-  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.off(event, listener)
-  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.once(event, listener)
-  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => this.emit(event, ...args)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   get name(): Promise<string> { return this._name; }
   get width(): Promise<number> { return this._width; }

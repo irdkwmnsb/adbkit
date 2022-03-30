@@ -38,6 +38,15 @@ class UnauthorizedError extends Error {
   }
 }
 
+/**
+ * enforce EventEmitter typing
+ */
+ interface IEmissions {
+  end: (serv: boolean) => void
+  userActivity: (packet: Packet) => void
+  error: (data: Error) => void
+}
+
 export default class Socket extends EventEmitter {
   public static AuthError = AuthError;
   public static UnauthorizedError = UnauthorizedError;
@@ -71,11 +80,16 @@ export default class Socket extends EventEmitter {
         debug(`PacketReader error: ${err.message}`);
         return this.end();
       })
-      .on('end', this.end.bind(this));
+      .on('end', ()=> this.end());
     this.remoteAddress = this.socket.remoteAddress;
     this.token = undefined;
     this.signature = undefined;
   }
+
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   public end(): Socket {
     if (this.ended) {
@@ -85,7 +99,7 @@ export default class Socket extends EventEmitter {
     this.services.end();
     this.socket.end();
     this.ended = true;
-    this.emit('end');
+    this.emit('end', true);
     return this;
   }
 
@@ -202,7 +216,7 @@ export default class Socket extends EventEmitter {
     }
   }
 
-  private _handleOpenPacket(packet: Packet): Promise<boolean | Service> {
+  private _handleOpenPacket(packet: Packet): Promise<boolean> {
     if (!this.authorized) {
       throw new Socket.UnauthorizedError();
     }
@@ -214,9 +228,9 @@ export default class Socket extends EventEmitter {
     const name = this._skipNull(packet.data);
     debug(`Calling ${name}`);
     const service = new Service(this.client, this.serial, localId, remoteId, this);
-    return new Promise<boolean | Service>((resolve, reject) => {
+    return new Promise<boolean>((resolve, reject) => {
       service.on('error', reject);
-      service.on('end', resolve);
+      service.on('end', () => resolve(false));
       this.services.insert(localId, service);
       debug(`Handling ${this.services.count} services simultaneously`);
       return service.handle(packet);

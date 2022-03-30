@@ -22,6 +22,15 @@ class MagicError extends Error {
   }
 }
 
+/**
+ * enforce EventEmitter typing
+ */
+ interface IEmissions {
+  end: () => void
+  error: (data: Error) => void
+  packet: (packet: Packet) => void
+}
+
 export default class PacketReader extends EventEmitter {
   public static ChecksumError = ChecksumError;
   public static MagicError = MagicError;
@@ -37,6 +46,11 @@ export default class PacketReader extends EventEmitter {
     this.stream.on('end', () => { this.emit('end'); });
     setImmediate(this._tryRead.bind(this));
   }
+
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   private _tryRead(): void {
     while (this._appendChunk()) {

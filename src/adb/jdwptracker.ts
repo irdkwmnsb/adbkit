@@ -14,6 +14,17 @@ interface JdwpTrackerChangeSet {
   added: string[];
 }
 
+/**
+ * enforce EventEmitter typing
+ */
+ interface IEmissions {
+  end: () => void
+  remove: (pid: string) => void
+  add: (pid: string) => void
+  changeSet: (changeSet: JdwpTrackerChangeSet, newList: string[]) => void
+  error: (err: Error) => void
+}
+
 export default class JdwpTracker extends EventEmitter {
   private pids: string[] = [];
   private pidMap = Object.create(null);
@@ -35,32 +46,10 @@ export default class JdwpTracker extends EventEmitter {
     });
   }
 
-  on(event: 'end', listener: () => void): this;
-  on(event: 'error', listener: (err: Error) => void): this;
-  on(event: 'remove', listener: (pid: string) => void): this;
-  on(event: 'add', listener: (pid: string) => void): this;
-  on(event: 'changeSet', listener: (changeSet: JdwpTrackerChangeSet, newList: string[]) => void): this;
-  on(event: string | symbol, listener: (...args: any[]) => void): this {
-    return super.on(event, listener);
-  }
-
-  once(event: 'end', listener: () => void): this;
-  once(event: 'error', listener: (err: Error) => void): this;
-  once(event: 'remove', listener: (pid: string) => void): this;
-  once(event: 'add', listener: (pid: string) => void): this;
-  once(event: 'changeSet', listener: (changeSet: JdwpTrackerChangeSet, newList: string[]) => void): this;
-  once(event: string | symbol, listener: (...args: any[]) => void): this {
-    return super.once(event, listener);
-  }
-
-  emit(event: 'end'): boolean;
-  emit(event: 'error', err: Error): boolean;
-  emit(event: 'remove', pid: string): boolean;
-  emit(event: 'add', pid: string): boolean;
-  emit(event: 'changeSet', changeSet: JdwpTrackerChangeSet, newList: string[]): boolean;
-  emit(event: string | symbol, ...args: any[]): boolean {
-    return super.emit(event, ...args);
-  }
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   async read(): Promise<JdwpTracker> {
     const list = await this.command.parser.readValue();

@@ -22,6 +22,13 @@ export interface ENOENT extends Error {
   path: string;
 }
 
+/**
+ * enforce EventEmitter typing
+ */
+ interface IEmissions {
+  error: (data: Error) => void
+}
+
 export default class Sync extends EventEmitter {
   private parser: Parser;
 
@@ -33,6 +40,11 @@ export default class Sync extends EventEmitter {
     super();
     this.parser = this.connection.parser as Parser;
   }
+
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   public async stat(path: string): Promise<Stats> {
     await this.sendCommandWithArg(Protocol.STAT, path);

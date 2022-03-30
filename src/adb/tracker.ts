@@ -5,6 +5,18 @@ import HostDevicesCommand from './command/host/devices';
 import HostDevicesWithPathsCommand from './command/host/deviceswithpaths';
 import TrackerChangeSet from '../TrackerChangeSet';
 
+/**
+ * enforce EventEmitter typing
+ */
+interface IEmissions {
+  end: () => void
+  add: (device: Device) => void
+  remove: (device: Device) => void
+  change: (newDevice: Device, oldDevice: Device) => void
+  changeSet: (changeSet: TrackerChangeSet) => void
+  error: (data: Error) => void
+}
+
 export default class Tracker extends EventEmitter {
   private deviceList: Device[] = [];
   private deviceMap: Record<string, Device> = {};
@@ -23,6 +35,11 @@ export default class Tracker extends EventEmitter {
         this.emit('end');
       });
   }
+
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   public async read(): Promise<Device[]> {
     const list = await this.command._readDevices();
