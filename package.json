@@ -85,8 +85,7 @@
     },
     "files": [
         "dist",
-        "bin/adbkit",
-        "bin/scrcpy-server-v1.20.jar"
+        "bin"
     ],
     "optionalDependencies": {
         "@devicefarmer/minicap-prebuilt": "^2.7.1"
