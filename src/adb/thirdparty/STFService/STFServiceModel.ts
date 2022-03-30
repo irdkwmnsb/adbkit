@@ -1,36 +1,45 @@
+// generarted by genProto.ts
 export enum MessageType {
-    DO_IDENTIFY = 1,
-    DO_KEYEVENT = 2,
-    DO_TYPE = 3,
-    DO_WAKE = 4,
-    DO_ADD_ACCOUNT_MENU = 24,
-    DO_REMOVE_ACCOUNT = 20,
-    GET_ACCOUNTS = 26,
-    GET_BROWSERS = 5,
-    GET_CLIPBOARD = 6,
-    GET_DISPLAY = 19,
-    GET_PROPERTIES = 7,
-    GET_RINGER_MODE = 27,
-    GET_SD_STATUS = 25,
-    GET_VERSION = 8,
-    GET_WIFI_STATUS = 23,
-    GET_BLUETOOTH_STATUS = 29,
-    GET_ROOT_STATUS = 31,
-    SET_CLIPBOARD = 9,
-    SET_KEYGUARD_STATE = 10,
-    SET_RINGER_MODE = 21,
-    SET_ROTATION = 12,
-    SET_WAKE_LOCK = 11,
-    SET_WIFI_ENABLED = 22,
-    SET_BLUETOOTH_ENABLED = 30,
-    SET_MASTER_MUTE = 28,
-    EVENT_AIRPLANE_MODE = 13,
-    EVENT_BATTERY = 14,
-    EVENT_CONNECTIVITY = 15,
-    EVENT_PHONE_STATE = 16,
-    EVENT_ROTATION = 17,
-    EVENT_BROWSER_PACKAGE = 18
+  DO_IDENTIFY = 1,
+  DO_KEYEVENT = 2,
+  DO_TYPE = 3,
+  DO_WAKE = 4,
+  DO_ADD_ACCOUNT_MENU = 24,
+  DO_REMOVE_ACCOUNT = 20,
+  GET_ACCOUNTS = 26,
+  GET_BROWSERS = 5,
+  GET_CLIPBOARD = 6,
+  GET_DISPLAY = 19,
+  GET_PROPERTIES = 7,
+  GET_RINGER_MODE = 27,
+  GET_SD_STATUS = 25,
+  GET_VERSION = 8,
+  GET_WIFI_STATUS = 23,
+  GET_BLUETOOTH_STATUS = 29,
+  GET_ROOT_STATUS = 31,
+  SET_CLIPBOARD = 9,
+  SET_KEYGUARD_STATE = 10,
+  SET_RINGER_MODE = 21,
+  SET_ROTATION = 12,
+  SET_WAKE_LOCK = 11,
+  SET_WIFI_ENABLED = 22,
+  SET_BLUETOOTH_ENABLED = 30,
+  SET_MASTER_MUTE = 28,
+  EVENT_AIRPLANE_MODE = 13,
+  EVENT_BATTERY = 14,
+  EVENT_CONNECTIVITY = 15,
+  EVENT_PHONE_STATE = 16,
+  EVENT_ROTATION = 17,
+  EVENT_BROWSER_PACKAGE = 18,
 }
+
+export interface Envelope {
+    id?: number;
+    type: MessageType;
+    message: Uint8Array;
+}
+
+// Events
 
 export interface AirplaneModeEvent {
     enabled: boolean;
@@ -53,16 +62,9 @@ export interface BrowserApp {
     system: boolean;
 }
 
-export interface BrowserApp {
-    name: string;
-    component: string;
-    selected: boolean;
-    system: boolean;
-}
-
 export interface BrowserPackageEvent {
     selected: boolean;
-    apps: BrowserApp;
+    apps: BrowserApp[];
 }
 
 export interface ConnectivityEvent {
@@ -83,20 +85,57 @@ export interface RotationEvent {
     rotation: number;
 }
 
-export interface Envelope {
-    id?: number;
-    type: MessageType;
-    message: Uint8Array;
+// Service
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GetVersionRequest {}
+
+export interface GetVersionResponse {
+    success: boolean;
+    version?: string;
 }
 
-export interface GetAccountsRequest {
-    type?: string;
+export interface SetKeyguardStateRequest {
+    enabled: boolean;
 }
 
-export interface GetAccountsResponse {
-   success: boolean;
-   accounts: string;
+export interface SetKeyguardStateResponse {
+    success: boolean;
 }
+
+export interface SetWakeLockRequest {
+    enabled: boolean;
+}
+
+export interface SetWakeLockResponse {
+    success: boolean;
+}
+
+export enum ClipboardType {
+  TEXT = 1,
+}
+
+export interface SetClipboardRequest {
+    type: ClipboardType;
+    text?: string;
+}
+
+export interface SetClipboardResponse {
+    success: boolean;
+}
+
+export interface GetClipboardRequest {
+    type: ClipboardType;
+}
+
+export interface GetClipboardResponse {
+    success: boolean;
+    type?: ClipboardType;
+    text?: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GetBrowsersRequest {}
 
 export interface GetBrowsersResponse {
     success: boolean;
@@ -104,10 +143,8 @@ export interface GetBrowsersResponse {
     apps: BrowserApp[];
 }
 
-export interface GetClipboardResponse {
-    success: boolean;
-    type?: ClipboardType;
-    text?: string;
+export interface GetDisplayRequest {
+    id: number;
 }
 
 export interface GetDisplayResponse {
@@ -127,20 +164,52 @@ export interface Property {
     value: string;
 }
 
+export interface GetPropertiesRequest {
+    properties: string[];
+}
+
 export interface GetPropertiesResponse {
     success: boolean;
     properties: Property[];
 }
 
-export enum RingerMode {
-    SILENT = 0,
-    VIBRATE = 1,
-    NORMAL = 2,
+export interface DoIdentifyRequest {
+    serial: string;
 }
 
-export interface GetRingerModeResponse {
+export interface DoIdentifyResponse {
     success: boolean;
-    mode: RingerMode;
+}
+
+export interface GetAccountsRequest {
+    type?: string;
+}
+
+export interface GetAccountsResponse {
+    success: boolean;
+    accounts: string[];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface DoAddAccountMenuRequest {}
+
+export interface DoAddAccountMenuResponse {
+    success: boolean;
+}
+
+export interface DoRemoveAccountRequest {
+    type: string;
+    account?: string;
+}
+
+export interface DoRemoveAccountResponse {
+    success: boolean;
+}
+
+export enum RingerMode {
+  SILENT = 0,
+  VIBRATE = 1,
+  NORMAL = 2,
 }
 
 export interface SetRingerModeRequest {
@@ -151,33 +220,32 @@ export interface SetRingerModeResponse {
     success: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GetRingerModeRequest {}
 
-export enum ClipboardType {
-    TEXT = 1,
+export interface GetRingerModeResponse {
+    success: boolean;
+    mode: RingerMode;
 }
 
-export interface GetClipboardRequest {
-    type: ClipboardType
+export interface SetWifiEnabledRequest {
+    enabled: boolean;
 }
 
-export interface GetDisplayRequest {
-    id: number;
+export interface SetWifiEnabledResponse {
+    success: boolean;
 }
 
-export interface GetPropertiesRequest {
-    properties: string[];
-}
-
-// export interface GetWifiStatusRequest {
-// }
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GetWifiStatusRequest {}
 
 export interface GetWifiStatusResponse {
     success: boolean;
     status: boolean;
 }
 
-// export interface GetRootStatusRequest {
-// }
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GetRootStatusRequest {}
 
 export interface GetRootStatusResponse {
     success: boolean;
@@ -192,16 +260,16 @@ export interface SetBluetoothEnabledResponse {
     success: boolean;
 }
 
-// export interface GetBluetoothStatusRequest {
-// }
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GetBluetoothStatusRequest {}
 
 export interface GetBluetoothStatusResponse {
     success: boolean;
     status: boolean;
 }
 
-// export interface GetSdStatusRequest {
-// }
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GetSdStatusRequest {}
 
 export interface GetSdStatusResponse {
     success: boolean;
@@ -216,35 +284,30 @@ export interface SetMasterMuteResponse {
     success: boolean;
 }
 
-export interface GetVersionResponse {
-    success: boolean;
-    version?: string;
+// Agent
+
+export enum KeyEvent {
+  DOWN = 0,
+  UP = 1,
+  PRESS = 2,
 }
 
-
-export interface SetClipboardRequest {
-    type: ClipboardType ;
-    text?: string;
+export interface KeyEventRequest {
+    event: KeyEvent;
+    keyCode: number;
+    shiftKey?: boolean;
+    ctrlKey?: boolean;
+    altKey?: boolean;
+    metaKey?: boolean;
+    symKey?: boolean;
+    functionKey?: boolean;
+    capsLockKey?: boolean;
+    scrollLockKey?: boolean;
+    numLockKey?: boolean;
 }
 
-export interface SetClipboardResponse {
-    success: boolean;
-}
-
-export interface  SetKeyguardStateRequest {
-    enabled: boolean;
-}
-
-export interface  SetKeyguardStateResponse {
-    success: boolean;
-}
-
-export interface  SetWakeLockRequest {
-    enabled: boolean;
-}
-
-export interface SetWakeLockResponse {
-    success: boolean;
+export interface DoTypeRequest {
+    text: string;
 }
 
 export interface SetRotationRequest {
@@ -252,10 +315,5 @@ export interface SetRotationRequest {
     lock: boolean;
 }
 
-export interface SetWifiEnabledRequest {
-    enabled: boolean;
-}
-
-export interface SetWifiEnabledResponse {
-    success: boolean;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface DoWakeRequest {}

@@ -43,12 +43,12 @@ export default class STFProtoBuf {
       const type = root.lookupType('GetAccountsRequest');
       return Buffer.from(type.encode(req).finish());
     },
-    GetBrowsersRequest(): Buffer {
+    GetBrowsersRequest(req: STF.GetBrowsersRequest = {}): Buffer {
       const type = root.lookupType('GetBrowsersResponse');
-      return Buffer.from(type.encode({}).finish());
+      return Buffer.from(type.encode(req).finish());
     },
     GetClipboardRequest(req: STF.GetClipboardRequest): Buffer {
-      const type = root.lookupType('GetClipboardResponse');
+      const type = root.lookupType('GetClipboardRequest');
       return Buffer.from(type.encode(req).finish());
     },
     GetPropertiesRequest(req: STF.GetPropertiesRequest): Buffer {
@@ -59,37 +59,29 @@ export default class STFProtoBuf {
       const type = root.lookupType('GetDisplayRequest');
       return Buffer.from(type.encode(req).finish());
     },
-    GetRingerModeRequest(): Buffer {
+    GetRingerModeRequest(req: STF.GetRingerModeRequest = {}): Buffer {
       const type = root.lookupType('GetRingerModeRequest');
-      return Buffer.from(type.encode({}).finish());
+      return Buffer.from(type.encode(req).finish());
     },
-    GetSdStatusRequest(): Buffer {
+    GetSdStatusRequest(req: STF.GetSdStatusRequest = {}): Buffer {
       const type = root.lookupType('GetSdStatusRequest');
-      return Buffer.from(type.encode({}).finish());
+      return Buffer.from(type.encode(req).finish());
     },
-    GetVersionResponse(): Buffer {
-      const type = root.lookupType('GetVersionResponse');
-      return Buffer.from(type.encode({}).finish());
-    },
-    GetWifiStatus(): Buffer {
-      const type = root.lookupType('GetWifiStatus');
-      return Buffer.from(type.encode({}).finish());
-    },
-    GetVersionRequest(): Buffer {
+    GetVersionRequest(req: STF.GetVersionRequest = {}): Buffer {
       const type = root.lookupType('GetVersionRequest');
-      return Buffer.from(type.encode({}).finish());
+      return Buffer.from(type.encode(req).finish());
     },
-    GetWifiStatusRequest(): Buffer {
+    GetWifiStatusRequest(req: STF.GetWifiStatusRequest = {}): Buffer {
       const type = root.lookupType('GetWifiStatusRequest');
-      return Buffer.from(type.encode({}).finish());
+      return Buffer.from(type.encode(req).finish());
     },
-    GetBluetoothStatusRequest(): Buffer {
+    GetBluetoothStatusRequest(req: STF.GetBluetoothStatusRequest = {}): Buffer {
       const type = root.lookupType('GetBluetoothStatusRequest');
-      return Buffer.from(type.encode({}).finish());
+      return Buffer.from(type.encode(req).finish());
     },
-    GetRootStatusRequest(): Buffer {
+    GetRootStatusRequest(req: STF.GetRootStatusRequest = {}): Buffer {
       const type = root.lookupType('GetRootStatusRequest');
-      return Buffer.from(type.encode({}).finish());
+      return Buffer.from(type.encode(req).finish());
     },
     SetClipboardRequest(req: STF.SetClipboardRequest): Buffer {
       const type = root.lookupType('SetClipboardRequest');
