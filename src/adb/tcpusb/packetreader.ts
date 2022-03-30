@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import EventEmitter from 'node:events';
 import Packet from './packet';
 import ReadableStream = NodeJS.ReadableStream;
 

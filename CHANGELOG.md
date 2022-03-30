@@ -1,10 +1,11 @@
 # CHANGELOG
 
-## v3.1.5 
+## v3.1.5 (2022-03-29)
 
 * add DeviceClient.exec()
 * add DeviceClient.execOut()
-* add build-in minicap, relaing on @devicefarmer/minicap-prebuilt depencency.
+* add build-in minicap, relating on @devicefarmer/minicap-prebuilt depencency, see DeviceClient.minicap()
+* add build-in STFService see DeviceClient.STFService()
 * export Scrcpy const enums
 
 ## v3.1.4 (2022-03-24)
@@ -22,7 +23,7 @@
 ## v3.1.2 (2022-03-07)
 
 * upgrade scrcpy-server to V 1.20
-* add scrcpy controller commandes
+* add scrcpy controller commandes, see DeviceClient.scrcpy()
 
 ## v3.1.1 (2022-03-07)
 

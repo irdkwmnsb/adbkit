@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import EventEmitter from 'node:events';
 import Parser from '../parser';
 import Sync from '../sync';
 import { CpuStats, Loads } from '../../CpuStats';

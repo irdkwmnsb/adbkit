@@ -1,6 +1,6 @@
-import * as Fs from 'fs';
+import fs from 'node:fs';
 
-export default class Stats extends Fs.Stats {
+export default class Stats extends fs.Stats {
   // The following constant were extracted from `man 2 stat` on Ubuntu 12.10.
   public static S_IFMT = 0o170000; // bit mask for the file type bit fields
 

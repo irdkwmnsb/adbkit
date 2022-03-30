@@ -1,6 +1,6 @@
-import * as Fs from 'fs';
-import * as Path from 'path';
-import { EventEmitter } from 'events';
+import fs from 'node:fs';
+import Path from 'node:path';
+import EventEmitter from 'node:events';
 import d from 'debug';
 import Parser from './parser';
 import Protocol from './protocol';
@@ -9,7 +9,7 @@ import Entry from './sync/entry';
 import PushTransfer from './sync/pushtransfer';
 import PullTransfer from './sync/pulltransfer';
 import Connection from './connection';
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 
 const TEMP_PATH = '/data/local/tmp';
 const DEFAULT_CHMOD = 0o644;
@@ -95,7 +95,7 @@ export default class Sync extends EventEmitter {
 
   public async pushFile(file: string, path: string, mode = DEFAULT_CHMOD): Promise<PushTransfer> {
     mode || (mode = DEFAULT_CHMOD);
-    return this.pushStream(Fs.createReadStream(file), path, mode);
+    return this.pushStream(fs.createReadStream(file), path, mode);
   }
 
   public async pushStream(stream: Readable, path: string, mode = DEFAULT_CHMOD): Promise<PushTransfer> {

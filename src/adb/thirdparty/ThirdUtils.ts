@@ -3,10 +3,11 @@
  */
 
 import PromiseDuplex from "promise-duplex";
-import { Duplex } from "stream";
+import { Duplex } from 'node:stream';
 import { Utils } from "../..";
+import path from "node:path";
 
-export default class ExtraUtils {
+export default class ThirdUtils {
   /**
    * use to debug external apk output
    * @param duplex process IO
@@ -28,6 +29,20 @@ export default class ExtraUtils {
       // End
       return;
     }
+  }
+
+  static get resourceDir() {
+    return path.join(__dirname, '..', '..', '..', 'bin');
+  }
+
+  static get nodeModulesDir() {
+    return path.join(__dirname, '..', '..', '..', 'node_modules');
+  }
+
+  // const prebuildRoot = path.resolve(__dirname, '..', '..', '..', '..', 'node_modules', '@devicefarmer', 'minicap-prebuilt', 'prebuilt');
+  static getResource(fileName: string) : string {
+    const fullPath = path.join(ThirdUtils.resourceDir, fileName);
+    return fullPath;
   }
 
 }

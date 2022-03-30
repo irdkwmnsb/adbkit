@@ -1,18 +1,18 @@
-import EventEmitter from 'events';
-import path from 'path';
-import net from 'net';
+import EventEmitter from 'node:events';
+import net from 'node:net';
 import PromiseSocket from 'promise-socket';
 import PromiseDuplex from 'promise-duplex';
 
 import Debug from 'debug';
-import DeviceClient from '../DeviceClient';
-import Util from '../util';
-import { Duplex } from 'stream';
+import DeviceClient from '../../DeviceClient';
+import Util from '../../util';
+import { Duplex } from 'node:stream';
 
 import { MotionEvent, Orientation, ControlMessage } from './ScrcpyConst';
-import { KeyCodes, Utils } from '../..';
+import { KeyCodes, Utils } from '../../..';
 import { Point, ScrcpyOptions } from './ScrcpyModel';
-import { BufWrite } from './BufWrite';
+import { BufWrite } from '../minicap/BufWrite';
+import ThirdUtils from '../ThirdUtils';
 
 const debug = Debug('scrcpy');
 /**
@@ -169,7 +169,7 @@ export default class Scrcpy extends EventEmitter implements ScrcpyEventEmitter {
     const jarDest = '/data/local/tmp/scrcpy-server.jar';
     // Transfer server...
     try {
-      const jar = path.join(__dirname, '..', '..', '..', 'bin', `scrcpy-server-v1.${scrcpyServerVersion}.jar`);
+      const jar = ThirdUtils.getResource(`scrcpy-server-v1.${scrcpyServerVersion}.jar`);
       const transfer = await this.client.push(jar, jarDest);
       await transfer.waitForEnd();
     } catch (e) {

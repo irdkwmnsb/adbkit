@@ -1,5 +1,5 @@
-import Fs from 'fs';
-import Stream from 'stream';
+import Fs from 'node:fs';
+import Stream from 'node:stream';
 import Sinon from 'sinon';
 import Chai, { expect, assert } from 'chai';
 import simonChai from 'sinon-chai';

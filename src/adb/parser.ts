@@ -1,5 +1,5 @@
 import Protocol from './protocol';
-import { Duplex } from 'stream';
+import { Duplex } from 'node:stream';
 
 export class FailError extends Error {
   constructor(message: string) {

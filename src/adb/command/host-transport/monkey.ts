@@ -1,6 +1,6 @@
 import Connection from '../../connection';
 import Command from '../../command';
-import { Duplex } from 'stream';
+import { Duplex } from 'node:stream';
 import Utils from '../../../adb/util';
 
 export default class MonkeyCommand extends Command<Duplex> {

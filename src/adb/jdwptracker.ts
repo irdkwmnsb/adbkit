@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventEmitter } from 'events';
+import EventEmitter from 'node:events';
 import Parser from './parser';
 import Command from './command';
 

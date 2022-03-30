@@ -1,13 +1,12 @@
-import * as Net from 'net';
-import { EventEmitter } from 'events';
-import { execFile, ExecFileOptions } from 'child_process';
+import EventEmitter from 'node:events';
+import { execFile, ExecFileOptions } from 'node:child_process';
 import Parser from './parser';
 import dump from './dump';
 import d from 'debug';
-import { Socket } from 'net';
-import { promisify } from 'util';
+import { Socket, connect } from 'node:net';
+import { promisify } from 'node:util';
 import { ClientOptions } from '../ClientOptions';
-import { ObjectEncodingOptions } from 'fs';
+import { ObjectEncodingOptions } from 'node:fs';
 import { Client } from '..';
 
 const debug = d('adb:connection');
@@ -30,7 +29,7 @@ export default class Connection extends EventEmitter {
   }
 
   public async connect(): Promise<Connection> {
-    this.socket = Net.connect(this.options);
+    this.socket = connect(this.options);
     this.socket.setNoDelay(true);
     this.parser = new Parser(this.socket);
     this.socket.on('connect', () => this.emit('connect'));

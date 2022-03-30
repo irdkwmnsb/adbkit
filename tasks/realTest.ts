@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import PromiseDuplex from 'promise-duplex';
+// import path from 'node:path';
 import adb, { DeviceClient, KeyCodes, Utils, MotionEvent } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
+import * as ProtoBuf from 'protobufjs';
+import { STFServiceEventEmitter } from '../src/adb/thirdparty/STFService/STFService';
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -122,11 +124,33 @@ const testSTFService = async (deviceClient: DeviceClient) => {
   // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
   const STFService = deviceClient.STFService();
   try {
+    const evs = STFService as STFServiceEventEmitter;
+    evs.on("airplaneMode", (data) => {
+      console.log('airplaneMode', data);
+    });
+    evs.on("battery", (data) => {
+      console.log('battery', data);
+    });
+    evs.on("browerPackage", (data) => {
+      console.log('browerPackage', data)
+    });
+    evs.on("connectivity", (data) => {
+      console.log('connectivity', data)
+    });
+    evs.on("phoneState", (data) => {
+      console.log('phoneState', data)
+    });
+    evs.on("rotation", (data) => {
+      console.log('rotation', data)
+    });
     await STFService.start();
+
+    const acc = await STFService.getAccounts();
+
     // STFService.on('data', (buf: Buffer) => {
     //  console.log('rcv Buffer ', buf.length);
     //})
-    await Utils.delay(100000)
+    // await Utils.delay(100000)
     console.log(`done`);
   } catch(e) {
     console.error('scrcpy failed', e);
@@ -193,6 +217,30 @@ const main = async () => {
   // const bug = await deviceClient.execOut('ls', 'utf8');
   // const bug = await deviceClient.execOut('wm size', 'utf8');
   // const duplex = new PromiseDuplex(await deviceClient.exec('ls'));
+  // await protoTest();
 }
+
+// const protoTest = async() => {
+//   const wireP = ProtoBuf.load(path.join(__dirname, '..', 'bin', 'wireService.proto'));
+//   const root = await wireP;
+//   const type = root.lookupType('Envelope');
+//   const typeRotationEvent = root.lookupType('RotationEvent');
+// 
+// 
+//   const tert = {type: 'EVENT_ROTATION', message: 'CAA='};
+//   const data: ProtoBuf.BufferWriter = type.encodeDelimited(tert);
+//   const buf = Buffer.from(data.finish());
+// 
+//   console.log(buf.toString('hex'));
+// 
+//   const envelop = type.decodeDelimited(buf) as unknown as { type: number, message: Buffer};
+//   console.log(envelop);
+// 
+//   console.log(envelop.message);
+//   const data2 = typeRotationEvent.decode(envelop.message)
+//   console.log(data2);
+//   console.log(data2.toJSON());
+// }
+
 
 main();

@@ -1,13 +1,13 @@
-import { EventEmitter } from 'events';
-import * as crypto from 'crypto';
+import EventEmitter from 'node:events';
+import crypto from 'node:crypto';
 import d from 'debug';
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 import PacketReader from './packetreader';
 import RollingCounter from './rollingcounter';
 import Packet from './packet';
 import Auth from '../auth';
 import Client from '../client';
-import * as Net from 'net';
+import Net from 'node:net';
 import ServiceMap from './servicemap';
 import Service from './service';
 import SocketOptions from '../../SocketOptions';

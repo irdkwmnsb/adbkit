@@ -3,7 +3,7 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-import { spawn } from 'child_process';
+import { spawn } from 'node:child_process';
 import Adb from '../../src/adb';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Bench = require('bench');

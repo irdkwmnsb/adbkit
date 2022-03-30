@@ -20,11 +20,11 @@ import Forward from '../Forward';
 import Reverse from '../Reverse';
 import StartActivityOptions from '../StartActivityOptions';
 import StartServiceOptions from '../StartServiceOptions';
-import { Duplex } from 'stream';
+import { Duplex } from 'node:stream';
 import Stats from './sync/stats';
 import Entry from './sync/entry';
 import PushTransfer from './sync/pushtransfer';
-import { ReadStream } from 'fs';
+import { ReadStream } from 'node:fs';
 import PullTransfer from './sync/pulltransfer';
 import { Properties } from '../Properties';
 import { Features } from '../Features';
@@ -34,11 +34,11 @@ import JdwpTracker from './jdwptracker';
 import DeviceWithPath from '../DeviceWithPath';
 import Client from './client';
 import Util from './util';
-import Scrcpy from './thirdparty/Scrcpy';
-import type { ScrcpyOptions } from './thirdparty/ScrcpyModel';
+import Scrcpy from './thirdparty/scrcpy/Scrcpy';
+import type { ScrcpyOptions } from './thirdparty/scrcpy/ScrcpyModel';
 import { RebootType } from './command/host-transport/reboot';
-import Minicap, { MinicapOptions } from './thirdparty/Minicap';
-import STFService from './thirdparty/STFService';
+import Minicap, { MinicapOptions } from './thirdparty/minicap/Minicap';
+import STFService from './thirdparty/STFService/STFService';
 import PromiseDuplex from 'promise-duplex';
 
 const debug = d('adb:client');
@@ -516,23 +516,26 @@ export default class DeviceClient {
    */
   public async install(apk: string | ReadStream): Promise<boolean> {
     const temp = Sync.temp(typeof apk === 'string' ? apk : '_stream.apk');
-    const transfer = await this.push(apk, temp);
-    let endListener!: () => void;
-    let errorListener!: (err: Error) => void;
-    try {
-      return await new Promise<boolean>((resolve, reject) => {
-        errorListener = (err_1: Error) => reject(err_1);
-        endListener = async () => {
-          const value = await this.installRemote(temp);
-          resolve(value);
-        };
-        transfer.on('error', errorListener);
-        transfer.on('end', endListener);
-      });
-    } finally {
-      transfer.removeListener('error', errorListener);
-      transfer.removeListener('end', endListener);
-    }
+    // const transfer = 
+    await this.push(apk, temp);
+    const value = await this.installRemote(temp);
+    return value
+    // let endListener!: () => void;
+    // let errorListener!: (err: Error) => void;
+    // try {
+    //   return await new Promise<boolean>((resolve, reject) => {
+    //     errorListener = (err_1: Error) => reject(err_1);
+    //     endListener = async () => {
+    //       const value = await this.installRemote(temp);
+    //       resolve(value);
+    //     };
+    //     transfer.on('error', errorListener);
+    //     transfer.on('end', endListener);
+    //   });
+    // } finally {
+    //   transfer.removeListener('error', errorListener);
+    //   transfer.removeListener('end', endListener);
+    // }
   }
 
   /**
@@ -744,6 +747,10 @@ export default class DeviceClient {
     return minicap;
   }
  
+  /**
+   * prepare a STFService and STFagent 
+   * this server must be started with the start() method
+   */
   public STFService(): STFService {
     const service = new STFService(this);
     return service;

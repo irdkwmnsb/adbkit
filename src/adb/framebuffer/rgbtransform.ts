@@ -1,5 +1,5 @@
 import Assert from 'assert';
-import { Stream, TransformCallback, TransformOptions } from 'stream';
+import { Stream, TransformCallback, TransformOptions } from 'node:stream';
 import FramebufferMeta from '../../FramebufferMeta';
 
 export default class RgbTransform extends Stream.Transform {

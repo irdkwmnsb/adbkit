@@ -1,3 +1,4 @@
+
 export { default } from './adb';
 export { default as Adb } from './adb';
 export { ClientOptions } from './ClientOptions';
@@ -30,9 +31,10 @@ export { default as Utils } from './adb/util';
 
 export { PsEntry } from './adb/command/host-transport/ps';
 
-export { default as Scrcpy } from './adb/thirdparty/Scrcpy';
+export { default as Scrcpy } from './adb/thirdparty/scrcpy/Scrcpy';
 export * from './adb/thirdparty/ScrcpyModel';
 export { MotionEvent, DeviceMessageType, SurfaceControl, Orientation, KeyEventMeta } from './adb/thirdparty/ScrcpyConst';
 
-export { default as Minicap, MinicapOptions } from './adb/thirdparty/Minicap';
+export { default as Minicap, MinicapOptions } from './adb/thirdparty/minicap/Minicap';
 
+export { default as STFService, STFServiceEventEmitter} from './adb/thirdparty/STFService/STFService';

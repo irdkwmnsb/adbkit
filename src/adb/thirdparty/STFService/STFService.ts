@@ -1,13 +1,14 @@
-import path from "node:path";
+// import path from "node:path";
 import fs from "node:fs";
 import net from 'node:net';
 import Debug from 'debug';
-import DeviceClient from "../DeviceClient";
-import { Utils } from "../..";
+import DeviceClient from "../../DeviceClient";
+import { Utils } from "../../..";
 import PromiseDuplex from "promise-duplex";
 import { EventEmitter } from "node:stream";
 import * as ProtoBuf from 'protobufjs';
 import PromiseSocket from "promise-socket";
+import ThirdUtils from "../ThirdUtils";
 
 const version = '2.4.9';
 
@@ -142,9 +143,9 @@ export interface STFServiceOptions {
 }
 
 const debug = Debug('STFService');
+const PKG = 'jp.co.cyberagent.stf';
 
 let wireP: Promise<ProtoBuf.Root> | null;
-// .build()
 
 export default class STFService extends EventEmitter implements STFServiceEventEmitter {
   private config: STFServiceOptions;
@@ -161,50 +162,58 @@ export default class STFService extends EventEmitter implements STFServiceEventE
   }
 
   private async getPath(): Promise<string> {
-    const duplex = new PromiseDuplex(await this.client.shell('pm path jp.co.cyberagent.stf'));
-    await Utils.waitforReadable(duplex);
-    let resp = await (duplex.setEncoding('utf8').readAll() as Promise<string>);
+
+    let resp = await this.client.execOut(`pm path ${PKG}`, 'utf8');
     resp = resp.trim();
     if (resp.startsWith('package:'))
       return resp.substring(8);
     return '';
   }
 
-  async start(): Promise<void> {
-    const apk = path.resolve(__dirname, '..', '..', '..', 'bin', `STFService_${version}.apk`);
-    if (!wireP)
-      wireP = ProtoBuf.load(path.join(__dirname, '..', '..', '..', 'bin', 'wireService.proto'));
-    await wireP;
+  private async installApk(): Promise<void> {
+    const apk = ThirdUtils.getResource(`STFService_${version}.apk`);
     try {
       await fs.promises.stat(apk);
     } catch (e) {
       throw Error(`can not find APK bin/STFService_${version}.apk`);
     }
+    await this.client.install(apk);
+  }
+
+  async start(): Promise<void> {
+
+    if (!wireP) {
+      const proto = ThirdUtils.getResource('wireService.proto');
+      wireP = ProtoBuf.load(proto);
+    }
+    await wireP;
 
     let setupPath = await this.getPath();
     if (!setupPath) {
-      await this.client.install(apk);
+      await this.installApk();
       setupPath = await this.getPath();
     }
 
-    let duplex = new PromiseDuplex(await this.client.shell(`export CLASSPATH='${setupPath}';exec app_process /system/bin 'jp.co.cyberagent.stf.Agent' --version 2>/dev/null`));
-    await Utils.waitforReadable(duplex);
-    const currentVersion = await (duplex.setEncoding('utf8').readAll() as Promise<string>);
-    console.log('current version is: ', currentVersion);
-
-
+    const currentVersion = await this.client.execOut(`export CLASSPATH='${setupPath}';exec app_process /system/bin '${PKG}.Agent' --version 2>/dev/null`, 'utf8');
+    if (currentVersion.trim() !== version) {
+      await this.client.uninstall(PKG);
+      await this.installApk();
+      setupPath = await this.getPath();
+    }
+    // console.log('current version is: ', currentVersion.trim());
+    
     const props = await this.client.getProperties();
     const sdkLevel = parseInt(props['ro.build.version.sdk']);
-    const action = 'jp.co.cyberagent.stf.ACTION_START';
-    const component = 'jp.co.cyberagent.stf/.Service';
+    const action = `${PKG}.ACTION_START`;
+    const component = `${PKG}/.Service`;
     const startServiceCmd = (sdkLevel < 26) ? 'startservice' : 'start-foreground-service'
-    duplex = new PromiseDuplex(await this.client.shell(`am ${startServiceCmd} --user 0 -a '${action}' -n '${component}'`));
+    const duplex = new PromiseDuplex(await this.client.shell(`am ${startServiceCmd} --user 0 -a '${action}' -n '${component}'`));
     await Utils.waitforReadable(duplex);
     const msg = await (duplex.setEncoding('utf8').readAll() as Promise<string>);
     if (msg.includes('Error')) {
       throw Error(msg.trim())
     }
-    console.log(msg.trim());
+    // console.log(msg.trim());
 
     try {
       await this.client.forward(`tcp:${this.config.servicePort}`, 'localabstract:stfservice');
@@ -239,14 +248,11 @@ export default class STFService extends EventEmitter implements STFServiceEventE
 
     void this.startServiceStream().catch((e) => { console.log('Service failed', e); this.stop() });
     void this.startAgentStream().catch((e) => { console.log('Agent failed', e); this.stop() });
-    // return devutil.waitForLocalSocket(adb, options.serial, service.sock)
   }
-
 
   private async startServiceStream() {
     const root = await wireP;
     const typeEnvelope = root.lookupType('Envelope');
-
     const typeAirplaneModeEvent = root.lookupType('AirplaneModeEvent');
     const typeRotationEvent = root.lookupType('RotationEvent');
     const typeBatteryEvent = root.lookupType('BatteryEvent');
@@ -271,7 +277,6 @@ export default class STFService extends EventEmitter implements STFServiceEventE
         // console.log('servicesSocket RCV: ', chunk.length);
         try {
           const eventObj = typeEnvelope.decodeDelimited(chunk) as unknown as {type: MessageType, message: Buffer};
-          //const eventObj = obj.toJSON() as { type: STFEventTypes, message: string }
           const enmitter = this as STFServiceEventEmitter;
           switch (eventObj.type) {
             case MessageType.EVENT_AIRPLANE_MODE:
@@ -310,6 +315,23 @@ export default class STFService extends EventEmitter implements STFServiceEventE
       await Utils.delay(0);
     }
   }
+
+  public async getAccounts(type?: string): Promise<void> {
+    const root = await wireP;
+    type = 'AAAAAAAAAAAAAAAAAAAAAAA'
+    const typePhoneEvent = root.lookupType('GetAccountsRequest');
+    const typeEnvelope = root.lookupType('Envelope');
+
+    const req = typePhoneEvent.create({type});
+    const id = Math.floor(Math.random() * 0xFFFFFF)
+    const env = typeEnvelope.create({id, type: MessageType.GET_ACCOUNTS, message: typePhoneEvent.encode(req).finish()})
+    const buf = Buffer.from(typeEnvelope.encodeDelimited(env).finish());
+    console.log(buf.toString('hex'))
+    console.log(env.toJSON())
+    this.servicesSocket.write(buf);
+    // this.agentSocket.write(buf);
+  }
+
 
   private async startAgentStream() {
     // const root = await wireP;

@@ -1,5 +1,5 @@
 import Command from '../../command';
-import { Duplex } from 'stream';
+import { Duplex } from 'node:stream';
 
 export default class TcpCommand extends Command<Duplex> {
   async execute(port: number, host?: string): Promise<Duplex> {

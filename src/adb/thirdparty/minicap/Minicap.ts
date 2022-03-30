@@ -1,13 +1,13 @@
-import { Duplex, EventEmitter } from "stream";
-import DeviceClient from "../DeviceClient";
+import { Duplex, EventEmitter } from 'node:stream';
+import DeviceClient from '../../DeviceClient';
 import PromiseDuplex from 'promise-duplex';
 import Debug from 'debug';
 import fs from 'node:fs';
 import path from 'node:path';
 import net from 'node:net';
-import ExtraUtils from "./ExtraUtils";
-import { Utils } from "../..";
-import Util from "../util";
+import ThirdUtils from "../ThirdUtils";
+import { Utils } from "../../..";
+import Util from "../../util";
 import PromiseSocket from "promise-socket";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -116,7 +116,7 @@ export default class Minicap extends EventEmitter implements MinicapEventEmitter
     const abi = props['ro.product.cpu.abi'];
     const sdkLevel = parseInt(props['ro.build.version.sdk']);
     const minicapName = (sdkLevel >= 16) ? 'minicap' : 'minicap-nopie';
-    const prebuildRoot = path.resolve(__dirname, '..', '..', '..', 'node_modules', '@devicefarmer', 'minicap-prebuilt', 'prebuilt');
+    const prebuildRoot = path.resolve(ThirdUtils.nodeModulesDir, '@devicefarmer', 'minicap-prebuilt', 'prebuilt');
     
     try {
       await fs.promises.stat(prebuildRoot);
@@ -154,7 +154,7 @@ export default class Minicap extends EventEmitter implements MinicapEventEmitter
       }
     }
     this.minicapServer = new PromiseDuplex(await this.client.shell(args.map(a => a.toString()).join(' ')));
-    ExtraUtils.dumpReadable(this.minicapServer, 'minicap');
+    ThirdUtils.dumpReadable(this.minicapServer, 'minicap');
     try {
       await this.client.forward(`tcp:${this.config.port}`, 'localabstract:minicap');
     } catch (e) {
