@@ -11,6 +11,18 @@ import { Client } from '..';
 
 const debug = d('adb:connection');
 
+/**
+ * enforce EventEmitter typing
+ */
+interface IEmissions {
+  connect: () => void
+  end: () => void
+  drain: () => void
+  timeout: () => void
+  close: (hadError: boolean) => void
+  error: (error: Error) => void
+}
+
 export default class Connection extends EventEmitter {
   public socket!: Socket;
   public parser!: Parser;
@@ -23,6 +35,11 @@ export default class Connection extends EventEmitter {
     this.options = _parent.options || { port: 0 };
     this.triedStarting = false;
   }
+
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   public get parent(): Client {
     return this._parent;

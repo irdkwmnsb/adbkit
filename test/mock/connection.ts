@@ -29,6 +29,7 @@ export default class MockConnection extends Connection {
         })
     }
 
+    // @ts-ignore
     public on(): this {
         return this;
     }

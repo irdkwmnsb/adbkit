@@ -16,24 +16,15 @@ interface LoadsWithLine {
 
 type Stats = { cpus: LoadsWithLine };
 
-export interface ProcStatEmitter {
-  on(event: 'load', listener: (arg: Loads) => void): this;
-  on(event: 'error', listener: (arg: Error) => void): this;
-  once(event: 'load', listener: (arg: Loads) => void): this;
-  once(event: 'error', listener: (arg: Error) => void): this;
-  addListener(event: 'load', listener: (arg: Loads) => void): this;
-  addListener(event: 'error', listener: (arg: Error) => void): this;
-  removeListener(event: 'load', listener: (arg: Loads) => void): this;
-  removeListener(event: 'error', listener: (arg: Error) => void): this;
-  prependListener(event: 'load', listener: (arg: Loads) => void): this;
-  prependListener(event: 'error', listener: (arg: Error) => void): this;
-  prependOnceListener(event: 'load', listener: (arg: Loads) => void): this;
-  prependOnceListener(event: 'error', listener: (arg: Error) => void): this;
-  emit(name: 'load', arg: Loads): boolean;
-  emit(name: 'error', arg: Error): boolean;
+/**
+ * enforce EventEmitter typing
+ */
+ interface IEmissions {
+  load: (arg: Loads) => void
+  error: (data: Error) => void
 }
 
-export default class ProcStat extends EventEmitter implements ProcStatEmitter {
+export default class ProcStat extends EventEmitter {
   public interval = 1000;
   public stats: Stats;
   private readonly _ignore: {[key: string]: string};
@@ -49,6 +40,11 @@ export default class ProcStat extends EventEmitter implements ProcStatEmitter {
     }, this.interval);
     this.update();
   }
+
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.off(event, listener)
+  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => this.once(event, listener)
+  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => this.emit(event, ...args)
 
   public end(): void {
     clearInterval(this._timer);
