@@ -178,17 +178,20 @@ export default class STFService extends EventEmitter {
           break;
         let chunk: Buffer;
         if (bufLen === buffer.length) {
-          chunk = buffer;
+          chunk = buffer.subarray(reader.pos);
           buffer = null;
         } else {
-          chunk = buffer.subarray(0, bufLen);
+          chunk = buffer.subarray(reader.pos, bufLen);
           buffer = buffer.subarray(bufLen);
         }
         try {
           const eventObj = this.proto.readEnvelope(chunk);
           const message = eventObj.message;
-          // const enmitter = this as STFServiceEventEmitter;
+          // if (eventObj.id) {
+          //   console.log('___id: ', eventObj.id, 'type:', eventObj.type);
+          // }
           switch (eventObj.type) {
+
             case STF.MessageType.EVENT_AIRPLANE_MODE:
               this.emit("airplaneMode", this.proto.read.AirplaneModeEvent(message));
               break;
@@ -214,18 +217,17 @@ export default class STFService extends EventEmitter {
             case STF.MessageType.GET_BLUETOOTH_STATUS:
               this.handleResponse(eventObj.id, this.proto.read.GetBluetoothStatusResponse(message));
               break;
-
             case STF.MessageType.GET_BROWSERS:
               this.handleResponse(eventObj.id, this.proto.read.GetBrowsersResponse(message));
               break;
             case STF.MessageType.GET_CLIPBOARD:
-              this.handleResponse(eventObj.id, this.proto.read.GetBluetoothStatusResponse(message));
+              this.handleResponse(eventObj.id, this.proto.read.GetClipboardResponse(message));
               break;
             case STF.MessageType.GET_DISPLAY:
-              this.handleResponse(eventObj.id, this.proto.read.GetBluetoothStatusResponse(message));
+              this.handleResponse(eventObj.id, this.proto.read.GetDisplayResponse(message));
               break;
             case STF.MessageType.GET_PROPERTIES:
-              this.handleResponse(eventObj.id, this.proto.read.GetBluetoothStatusResponse(message));
+              this.handleResponse(eventObj.id, this.proto.read.GetPropertiesResponse(message));
               break;
             case STF.MessageType.GET_RINGER_MODE:
               this.handleResponse(eventObj.id, this.proto.read.GetRingerModeResponse(message));
@@ -242,16 +244,19 @@ export default class STFService extends EventEmitter {
             case STF.MessageType.GET_WIFI_STATUS:
               this.handleResponse(eventObj.id, this.proto.read.GetWifiStatusResponse(message));
               break;
+            case STF.MessageType.SET_WIFI_ENABLED:
+              this.handleResponse(eventObj.id, this.proto.read.SetWifiEnabledResponse(message));
+              break;
+  
+              
 
-
-
-            
             default:
               console.error(`STFService Response Type (${eventObj.type}) is not implemented`);
           }
           // buffer = null;
         } catch (e) {
-          console.error(buffer.toString('hex'));
+          if (chunk)
+            console.error(chunk.toString('hex'));
           console.error(e);
         }
       }
@@ -294,12 +299,12 @@ export default class STFService extends EventEmitter {
     return this.pushEnvelop<STF.GetBrowsersResponse>({ type: STF.MessageType.GET_BROWSERS, message })
   }
 
-  public async getClipboard(type: STF.ClipboardType): Promise<STF.GetClipboardResponse> {
+  public async getClipboard(type = STF.ClipboardType.TEXT): Promise<STF.GetClipboardResponse> {
     const message = this.proto.write.GetClipboardRequest({ type });
     return this.pushEnvelop<STF.GetClipboardResponse>({ type: STF.MessageType.GET_CLIPBOARD, message })
   }
 
-  public async getDisplay(id: number): Promise<STF.GetDisplayResponse> {
+  public async getDisplay(id = 0): Promise<STF.GetDisplayResponse> {
     const message = this.proto.write.GetDisplayRequest({ id });
     return this.pushEnvelop<STF.GetDisplayResponse>({ type: STF.MessageType.GET_DISPLAY, message })
   }
@@ -319,10 +324,11 @@ export default class STFService extends EventEmitter {
     return this.pushEnvelop<STF.GetSdStatusResponse>({ type: STF.MessageType.GET_SD_STATUS, message })
   }
 
-  public async getVersion(): Promise<STF.GetVersionResponse> {
-    const message = this.proto.write.GetVersionRequest();
-    return this.pushEnvelop<STF.GetVersionResponse>({ type: STF.MessageType.GET_VERSION, message })
-  }
+  // invalid response send by the service
+  // public async getVersion(): Promise<STF.GetVersionResponse> {
+  //   const message = this.proto.write.GetVersionRequest();
+  //   return this.pushEnvelop<STF.GetVersionResponse>({ type: STF.MessageType.GET_VERSION, message })
+  // }
 
   public async getWifiStatus(): Promise<STF.GetWifiStatusResponse> {
     const message = this.proto.write.GetWifiStatusRequest();
