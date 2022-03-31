@@ -38,7 +38,7 @@ import Scrcpy from './thirdparty/scrcpy/Scrcpy';
 import type { ScrcpyOptions } from './thirdparty/scrcpy/ScrcpyModel';
 import { RebootType } from './command/host-transport/reboot';
 import Minicap, { MinicapOptions } from './thirdparty/minicap/Minicap';
-import STFService from './thirdparty/STFService/STFService';
+import STFService, { STFServiceOptions } from './thirdparty/STFService/STFService';
 import PromiseDuplex from 'promise-duplex';
 
 const debug = d('adb:client');
@@ -751,8 +751,8 @@ export default class DeviceClient {
    * prepare a STFService and STFagent 
    * this server must be started with the start() method
    */
-  public STFService(): STFService {
-    const service = new STFService(this);
+  public STFService(options?: Partial<STFServiceOptions>): STFService {
+    const service = new STFService(this, options);
     return service;
   }
 }

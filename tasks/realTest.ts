@@ -120,7 +120,7 @@ const testMinicap = async (deviceClient: DeviceClient) => {
 
 const testSTFService = async (deviceClient: DeviceClient) => {
   // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
-  const STFService = deviceClient.STFService();
+  const STFService = deviceClient.STFService({timeout: 20000000});
   try {
     STFService.on("airplaneMode", (data) => {
       console.log('airplaneMode', data);
@@ -142,15 +142,19 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     });
     await STFService.start();
 
-    {
-      const acc = await STFService.getAccounts();
-      console.log(acc);
-    }
+    console.log(await STFService.getAccounts());
+    console.log(await STFService.getBluetoothStatus());
+    console.log(await STFService.getBrowsers());
+    // console.log(await STFService.getClipboard());
+    console.log(await STFService.getDisplay(0));
+    // console.log(await STFService.getProperties());
+    console.log(await STFService.getRingerMode());
+    console.log(await STFService.getRootStatus());
+    // console.log(await STFService.getSdStatus());
+    // console.log(await STFService.getVersion());
+    console.log(await STFService.getWifiStatus());
 
-    {
-      const acc = await STFService.GetBluetoothStatus();
-      console.log(acc);
-    }
+    // console.log(await STFService.GetClipboard());
     // {
     //   const acc = await STFService.GetBrowsers()
     //   console.log(acc);

@@ -35,11 +35,6 @@ export default class ThirdUtils {
     return path.join(__dirname, '..', '..', '..', 'bin');
   }
 
-  static get nodeModulesDir() {
-    return path.join(__dirname, '..', '..', '..', 'node_modules');
-  }
-
-  // const prebuildRoot = path.resolve(__dirname, '..', '..', '..', '..', 'node_modules', '@devicefarmer', 'minicap-prebuilt', 'prebuilt');
   static getResource(fileName: string) : string {
     const fullPath = path.join(ThirdUtils.resourceDir, fileName);
     return fullPath;

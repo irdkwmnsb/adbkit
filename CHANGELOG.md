@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v3.1.6
+
+* fix STFService localisation code
+* fix STFService message parsing
+* expose STFService options
+
 ## v3.1.5 (2022-03-29)
 
 * add DeviceClient.exec()

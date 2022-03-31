@@ -2,8 +2,6 @@ import { Duplex, EventEmitter } from 'node:stream';
 import DeviceClient from '../../DeviceClient';
 import PromiseDuplex from 'promise-duplex';
 import Debug from 'debug';
-import fs from 'node:fs';
-import path from 'node:path';
 import net from 'node:net';
 import ThirdUtils from "../ThirdUtils";
 import { Utils } from "../../..";
@@ -119,15 +117,19 @@ export default class Minicap extends EventEmitter {
     const abi = props['ro.product.cpu.abi'];
     const sdkLevel = parseInt(props['ro.build.version.sdk']);
     const minicapName = (sdkLevel >= 16) ? 'minicap' : 'minicap-nopie';
-    const prebuildRoot = path.resolve(ThirdUtils.nodeModulesDir, '@devicefarmer', 'minicap-prebuilt', 'prebuilt');
-    
-    try {
-      await fs.promises.stat(prebuildRoot);
-    } catch (e) {
-      throw Error('please install @devicefarmer/minicap-prebuilt to use minicap');
-    }
-    const binFile = path.resolve(prebuildRoot, abi, 'bin', minicapName);
-    const soFile = path.resolve(prebuildRoot, abi, 'lib', `android-${sdkLevel}`, 'minicap.so');
+
+    const binFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/bin/${minicapName}`);
+    const soFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/lib/android-${sdkLevel}/minicap.so`);
+
+    // const prebuildRoot = require.resolve('@devicefarmer/minicap-prebuilt/prebuilt');
+    //const prebuildRoot = path.resolve(ThirdUtils.nodeModulesDir, '@devicefarmer', 'minicap-prebuilt', 'prebuilt');
+    // try {
+    //   await fs.promises.stat(prebuildRoot);
+    // } catch (e) {
+    //   throw Error(`minicap not found in ${prebuildRoot} please install @devicefarmer/minicap-prebuilt to use minicap`);
+    // }
+    // const binFile = path.resolve(prebuildRoot, 'prebuilt', abi, 'bin', minicapName);
+    // const soFile = path.resolve(prebuildRoot, 'prebuilt', abi, 'lib', `android-${sdkLevel}`, 'minicap.so');
     // const apkFile = path.resolve(prebuildRoot, 'noarch', 'minicap.apk');
 
     try {
@@ -244,6 +246,8 @@ export default class Minicap extends EventEmitter {
       this.videoSocket.destroy();
       this.videoSocket = undefined;
     }
-    this.minicapServer.destroy();
+    if (this.minicapServer) {
+      this.minicapServer.destroy();
+    }
   }
 }

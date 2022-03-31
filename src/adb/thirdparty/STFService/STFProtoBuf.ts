@@ -30,6 +30,7 @@ export default class STFProtoBuf {
 
   readEnvelope(data: Uint8Array): MyMessage<STF.Envelope> {
     const type = root.lookupType('Envelope');
+    // return type.decode(data) as MyMessage<STF.Envelope>;
     return type.decodeDelimited(data) as MyMessage<STF.Envelope>;
   }
 
@@ -154,5 +155,49 @@ export default class STFProtoBuf {
       const typeEnvelope = root.lookupType('GetBrowsersResponse');
       return typeEnvelope.decode(data) as MyMessage<STF.GetBrowsersResponse>;
     },
+    GetRingerModeResponse(data: Uint8Array): MyMessage<STF.GetRingerModeResponse> {
+      const typeEnvelope = root.lookupType('GetRingerModeResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.GetRingerModeResponse>;
+    },
+    SetRingerModeResponse(data: Uint8Array): MyMessage<STF.SetRingerModeResponse> {
+      const typeEnvelope = root.lookupType('SetRingerModeResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.SetRingerModeResponse>;
+    },
+    SetWifiEnabledResponse(data: Uint8Array): MyMessage<STF.SetWifiEnabledResponse> {
+      const typeEnvelope = root.lookupType('SetWifiEnabledResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.SetWifiEnabledResponse>;
+    },
+
+    GetRootStatusResponse(data: Uint8Array): MyMessage<STF.GetRootStatusResponse> {
+      const typeEnvelope = root.lookupType('GetRootStatusResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.GetRootStatusResponse>;
+    },
+    SetBluetoothEnabledResponse(data: Uint8Array): MyMessage<STF.SetBluetoothEnabledResponse> {
+      const typeEnvelope = root.lookupType('SetBluetoothEnabledResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.SetBluetoothEnabledResponse>;
+    },
+    GetSdStatusResponse(data: Uint8Array): MyMessage<STF.GetSdStatusResponse> {
+      const typeEnvelope = root.lookupType('GetSdStatusResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.GetSdStatusResponse>;
+    },
+    SetMasterMuteResponse(data: Uint8Array): MyMessage<STF.SetMasterMuteResponse> {
+      const typeEnvelope = root.lookupType('SetMasterMuteResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.SetMasterMuteResponse>;
+    },
+    DoRemoveAccountResponse(data: Uint8Array): MyMessage<STF.DoRemoveAccountResponse> {
+      const typeEnvelope = root.lookupType('DoRemoveAccountResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.DoRemoveAccountResponse>;
+    },
+    GetVersionResponse(data: Uint8Array): MyMessage<STF.GetVersionResponse> {
+      const typeEnvelope = root.lookupType('GetVersionResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.GetVersionResponse>;
+    },
+    GetWifiStatusResponse(data: Uint8Array): MyMessage<STF.GetWifiStatusResponse> {
+      const typeEnvelope = root.lookupType('GetWifiStatusResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.GetWifiStatusResponse>;
+    },
+
+
+
   }
 }
