@@ -30,7 +30,11 @@ export default class STFProtoBuf {
 
   readEnvelope(data: Uint8Array): MyMessage<STF.Envelope> {
     const type = root.lookupType('Envelope');
-    // return type.decode(data) as MyMessage<STF.Envelope>;
+    return type.decode(data) as MyMessage<STF.Envelope>;
+  }
+  
+  readEnvelopeDelimited(data: Uint8Array): MyMessage<STF.Envelope> {
+    const type = root.lookupType('Envelope');
     return type.decodeDelimited(data) as MyMessage<STF.Envelope>;
   }
 
@@ -167,7 +171,6 @@ export default class STFProtoBuf {
       const typeEnvelope = root.lookupType('SetWifiEnabledResponse');
       return typeEnvelope.decode(data) as MyMessage<STF.SetWifiEnabledResponse>;
     },
-
     GetRootStatusResponse(data: Uint8Array): MyMessage<STF.GetRootStatusResponse> {
       const typeEnvelope = root.lookupType('GetRootStatusResponse');
       return typeEnvelope.decode(data) as MyMessage<STF.GetRootStatusResponse>;
@@ -196,8 +199,22 @@ export default class STFProtoBuf {
       const typeEnvelope = root.lookupType('GetWifiStatusResponse');
       return typeEnvelope.decode(data) as MyMessage<STF.GetWifiStatusResponse>;
     },
-
-
+    GetClipboardResponse(data: Uint8Array): MyMessage<STF.GetClipboardResponse> {
+      const typeEnvelope = root.lookupType('GetClipboardResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.GetClipboardResponse>;
+    },
+    GetDisplayResponse(data: Uint8Array): MyMessage<STF.GetDisplayResponse> {
+      const typeEnvelope = root.lookupType('GetDisplayResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.GetDisplayResponse>;
+    },
+    GetPropertiesResponse(data: Uint8Array): MyMessage<STF.GetPropertiesResponse> {
+      const typeEnvelope = root.lookupType('GetPropertiesResponse');
+      return typeEnvelope.decode(data) as MyMessage<STF.GetPropertiesResponse>;
+    },
+    // SetWifiEnabledResponse(data: Uint8Array): MyMessage<STF.SetWifiEnabledResponse> {
+    //   const typeEnvelope = root.lookupType('SetWifiEnabledResponse');
+    //   return typeEnvelope.decode(data) as MyMessage<STF.SetWifiEnabledResponse>;
+    // },
 
   }
 }
