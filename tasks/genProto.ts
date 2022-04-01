@@ -81,16 +81,16 @@ export default class ${prefix}Buf {
   // if (!allReq.length)
   //   allReq = [...data.matchAll(/interface ([a-zA-Z]+) /g)].map(m => m[1]).filter(m => m !== 'Envelope');
 
-  let writers = `  public write = {${EOL}`;
-  writers += `    Envelope(env: STF.Envelope): Buffer {${EOL}`
-  writers += `      const type = root.lookupType('Envelope');${EOL}`
-  writers += `      return Buffer.from(type.encodeDelimited(env).finish());${EOL}`
-  writers += `    },${EOL}`
+  let writers = `  public write = {
+    Envelope(env: STF.Envelope): Buffer {
+      const type = root.lookupType('Envelope');
+      return Buffer.from(type.encodeDelimited(env).finish());
+    },${EOL}`
   for (const name of allReq) {
-    writers += `    ${name}(req: STF.${name}): Buffer {${EOL}`;
-    writers += `      const type = root.lookupType('${name}');${EOL}`;
-    writers += `      return Buffer.from(type.encode(req).finish());${EOL}`;
-    writers += `    },${EOL}`;
+    writers += `    ${name}(req: STF.${name}): Buffer {
+      const type = root.lookupType('${name}');
+      return Buffer.from(type.encode(req).finish());
+    },${EOL}`;
   }
   writers += `  }${EOL}`;
 
@@ -102,10 +102,10 @@ export default class ${prefix}Buf {
   // console.log(allResp);
   let readers = `  public read = {${EOL}`;
   for (const name of allResp) {
-    readers += `    ${name}(data: Uint8Array): MyMessage<STF.${name}> {${EOL}`;
-    readers += `      const type = root.lookupType('${name}');${EOL}`;
-    readers += `      return type.decode(data) as MyMessage<STF.${name}>;${EOL}`;
-    readers += `    },${EOL}`;
+    readers += `    ${name}(data: Uint8Array): MyMessage<STF.${name}> {
+      const type = root.lookupType('${name}');
+      return type.decode(data) as MyMessage<STF.${name}>;
+    },${EOL}`;
   }
   readers += `  }${EOL}`
 
