@@ -6,6 +6,7 @@ import PromiseDuplex from "promise-duplex";
 import { Duplex } from 'node:stream';
 import { Utils } from "../..";
 import path from "node:path";
+import DeviceClient from "../DeviceClient";
 
 export default class ThirdUtils {
   /**
@@ -38,5 +39,12 @@ export default class ThirdUtils {
   static getResource(fileName: string) : string {
     const fullPath = path.join(ThirdUtils.resourceDir, fileName);
     return fullPath;
+  }
+
+  static async getScreenSize(client: DeviceClient): Promise<{x: number, y: number}>{
+    const str = await client.execOut('wm size', 'utf8');
+    const m = str.match(/(\d+)x(\d+)/);
+    if (!m) throw Error('can not get device size info');
+    return {x: Number(m[1]), y: Number(m[2])}
   }
 }

@@ -8,6 +8,7 @@ import * as STF from "./STFServiceModel";
 // import * as STFAg from "./STFAgentModel";
 import { Reader } from "protobufjs";
 import STFServiceBuf from "./STFServiceBuf";
+import Util from "../../util";
 
 const version = '2.4.9';
 
@@ -41,18 +42,12 @@ const PKG = 'jp.co.cyberagent.stf';
 
 export default class STFService extends EventEmitter {
   private config: STFServiceOptions;
-  // private servicesSocket: PromiseSocket<net.Socket> | undefined;
-  // private agentSocket: PromiseSocket<net.Socket> | undefined;
   private servicesSocket: PromiseDuplex<Duplex> | undefined;
-  // private agentSocket: PromiseDuplex<Duplex> | undefined;
   private protoSrv!: STFServiceBuf;
-  // private protoAgent!: STFAgentBuf;
 
   constructor(private client: DeviceClient, config = {} as Partial<STFServiceOptions>) {
     super();
     this.config = {
-      // agentPort: 1090,
-      // servicePort: 1100,
       timeout: 15000,
       ...config,
     }
@@ -112,8 +107,9 @@ export default class STFService extends EventEmitter {
     }
 
     const startAgent = `export CLASSPATH='${setupPath}'; exec app_process /system/bin '${PKG}.Agent' 2>&1`
-    // console.log(startAgent);
     const agentProcess = new PromiseDuplex(await this.client.exec(startAgent));
+    await Util.waitforText(agentProcess, '@stfagent', 10000);
+
     ThirdUtils.dumpReadable(agentProcess, 'STFagent');
     // Starting service: Intent { act=jp.co.cyberagent.stf.ACTION_START cmp=jp.co.cyberagent.stf/.Service }
     // console.log(msg.trim());
@@ -125,20 +121,29 @@ export default class STFService extends EventEmitter {
     void this.startServiceStream().catch((e) => { console.log('Service failed', e); this.stop() });
   }
 
-  private _agentSocket: Promise<PromiseDuplex<Duplex>> | null = null;
-
-  async getAgentSocket(): Promise<PromiseDuplex<Duplex>> {
-    if (this._agentSocket) {
-      return this._agentSocket;
-    }
-    const socketP = this.client.openLocal2('localabstract:stfagent');
-    const socket = await socketP;
+  private _minitouchagent: Promise<PromiseDuplex<Duplex>> | null = null;
+  async getMinitouchSocket(): Promise<PromiseDuplex<Duplex>> {
+    if (this._minitouchagent) return this._minitouchagent;
+    this._minitouchagent = this.client.openLocal2('localabstract:minitouchagent');
+    const socket = await this._minitouchagent;
     void this.startAgentStream(socket);
     socket.once('close').then(() => {
       console.log('agentSocket just closed');
     });
-    this._agentSocket = socketP;
     return socket;
+  }
+
+  private _agentSocket: Promise<PromiseDuplex<Duplex>> | null = null;
+  getAgentSocket(): Promise<PromiseDuplex<Duplex>> {
+    if (this._agentSocket) return this._agentSocket;
+    this._agentSocket = this.client.openLocal2('localabstract:stfagent');
+    this._agentSocket.then(socket => {
+      void this.startAgentStream(socket);
+      socket.once('close').then(() => {
+        console.log('agentSocket just closed');
+      });
+    })
+    return this._agentSocket;
   }
 
   private async startServiceStream() {
@@ -369,30 +374,38 @@ export default class STFService extends EventEmitter {
     return this.pushAgent(STF.MessageType.SET_ROTATION, message);
   }
 
-  // public async GestureStartMessage(req: STFAg.GestureStartMessage): Promise<number> {
-  //   const message = this.protoAgent.write.GestureStartMessage(req);
-  //   return this.pushAgent(STFAg.MessageType.GestureStartMessage, message);
-  // }
-  // public async TouchDownMessage(req: STFAg.TouchDownMessage): Promise<number> {
-  //   const message = this.protoAgent.write.TouchDownMessage(req);
-  //   return this.pushAgent(STFAg.MessageType.TouchDownMessage, message);
-  // }
-  // public async TouchCommitMessage(req: STFAg.TouchCommitMessage): Promise<number> {
-  //   const message = this.protoAgent.write.TouchCommitMessage(req);
-  //   return this.pushAgent(STFAg.MessageType.TouchCommitMessage, message);
-  // }
-  // public async TouchMoveMessage(req: STFAg.TouchMoveMessage): Promise<number> {
-  //   const message = this.protoAgent.write.TouchMoveMessage(req);
-  //   return this.pushAgent(STFAg.MessageType.TouchMoveMessage, message);
-  // }
-  // public async TouchUpMessage(req: STFAg.TouchUpMessage): Promise<number> {
-  //   const message = this.protoAgent.write.TouchUpMessage(req);
-  //   return this.pushAgent(STFAg.MessageType.TouchUpMessage, message);
-  // }
-  // public async GestureStopMessage(req: STFAg.GestureStopMessage): Promise<number> {
-  //   const message = this.protoAgent.write.GestureStopMessage(req);
-  //   return this.pushAgent(STFAg.MessageType.GestureStopMessage, message);
-  // }
+  /**
+   * commit minitouch events
+   */
+  public async commit(): Promise<number> {
+    const cmd = `c\n`;
+    const s = await this.getMinitouchSocket();
+    return s.write(cmd, 'ascii');
+  }
+  
+  public async move(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
+    const cmd = `m ${contact | 0} ${x|0} ${y|0} ${pressure|0}\n`;
+    const s = await this.getMinitouchSocket();
+    return s.write(cmd, 'ascii');
+  }
+
+  public async down(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
+    const cmd = `d ${contact} ${x|0} ${y|0} ${pressure|0}\n`;
+    const s = await this.getMinitouchSocket();
+    return s.write(cmd, 'ascii');
+  }
+
+  public async up(contact = 0 as 0 | 1): Promise<number> {
+    const cmd = `u ${contact | 0}\n`;
+    const s = await this.getMinitouchSocket();
+    return s.write(cmd, 'ascii');
+  }
+
+  public async wait(time : number): Promise<number> {
+    const cmd = `w ${time}\n`;
+    const s = await this.getMinitouchSocket();
+    return s.write(cmd, 'ascii');
+  }
 
   public stop() {
     if (this.servicesSocket) {

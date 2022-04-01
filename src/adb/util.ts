@@ -36,4 +36,14 @@ export default class Util {
     await waitRead;
     return true;
   }
+
+  public static async waitforText(duplex: PromiseDuplex<Duplex>, expected: string, timeout = 0): Promise<void> {
+    for (;;) {
+      await this.waitforReadable(duplex, timeout);
+      const buf = await duplex.read();
+      const text = buf.toString();
+      if (text.includes(expected))
+        return;
+    }
+  }
 }

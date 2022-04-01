@@ -144,10 +144,8 @@ export default class Minicap extends EventEmitter {
     {
       args.push('-P')
       if (!this.config.dimention) {
-        const str = await this.client.execOut('wm size', 'utf8');
-        const m = str.match(/(\d+)x(\d+)/);
-        if (!m) throw Error('can not gewt device size info');
-        const dim = m[0];
+        const {x, y} = await ThirdUtils.getScreenSize(this.client);
+        const dim = `${x}x${y}`;
         args.push(`${dim}@${dim}/0`);
       } else {
         args.push(this.config.dimention)

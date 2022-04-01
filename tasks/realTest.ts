@@ -3,7 +3,8 @@
 import adb, { DeviceClient, KeyCodes, Utils, MotionEvent } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
-import { KeyEvent, RingerMode } from '../src/adb/thirdparty/STFService/STFServiceModel';
+import { KeyEvent } from '../src/adb/thirdparty/STFService/STFServiceModel';
+import ThirdUtils from '../src/adb/thirdparty/ThirdUtils';
 import Util from '../src/adb/util';
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
@@ -150,56 +151,32 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     // console.log(await STFService.setRingerMode({mode: RingerMode.VIBRATE}));
 
     // 42["input.touchCommit","lltyo9nLCZaZdViaqnTeSMafku8=",{"seq":28}]
-    await Util.delay(1000);
+    // await Util.delay(1000);
     await STFService.doWake({});
+    await STFService.doKeyEvent({event: KeyEvent.PRESS, keyCode: KeyCodes.KEYCODE_0});
     await STFService.doKeyEvent({event: KeyEvent.PRESS, keyCode: KeyCodes.KEYCODE_0});
     await STFService.doType({text: 'test'});
 
-    // let seq = 1;
+
+    const {x: w, y: h} = await ThirdUtils.getScreenSize(deviceClient);
+    // const dim = `${x}x${y}`;
+
+
     // const contact = 0;
     // const pressure = 0.5;
     // // not working
-    // let x = 0.4;
-    // const y = 0.4;
-    // await Util.delay(1000);
-    // console.log('sending GestureStartMessage');
-    // await STFService.GestureStartMessage({seq});
-    // seq++;
-    // await Util.delay(1000);
-    // await STFService.TouchDownMessage({seq, contact, x, y, pressure});
-    // seq++;
-    // await STFService.TouchCommitMessage({seq});
-    // for (let i=0; i< 20; i++) {
-    //   seq++;
-    //   x += 0.01
-    //   await STFService.TouchMoveMessage({seq, contact, x, y, pressure});
-    //   seq++;
-    //   await STFService.TouchCommitMessage({seq});
-    // }
-    // seq++;
-    // await STFService.TouchUpMessage({seq, contact});
-    // seq++;
-    // await STFService.TouchCommitMessage({seq});
-    // console.log(await STFService.GetClipboard());
-    // {
-    //   const acc = await STFService.GetBrowsers()
-    //   console.log(acc);
-    // }
-    // {
-    //   const acc = await STFService.GetClipboard(1)
-    //   console.log(acc);
-    // }
-    // {
-    //   const acc = await STFService.GetDisplay(0)
-    //   console.log(acc);
-    // }
-    // {
-    //   const acc = await STFService.GetProperties([]);
-    //   console.log(acc);
-    // }
-    // STFService.on('data', (buf: Buffer) => {
-    //  console.log('rcv Buffer ', buf.length);
-    //})
+    let x = 0.4;
+    const y = 0.4;
+    await Util.delay(1000);
+    await STFService.down(x * w, y * w);
+    await STFService.commit();
+    for (let i = 0; i< 20; i++) {
+      x += 0.01
+      await STFService.move(x * w, y * w);
+      await STFService.commit();
+    }
+    await STFService.up();
+    await STFService.commit();
 
     console.log(`done`);
     await Utils.delay(1000);
