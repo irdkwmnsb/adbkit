@@ -158,7 +158,7 @@ export default class STFService extends EventEmitter {
     for (; ;) {
       await Utils.waitforReadable(this.servicesSocket);
       const next = await this.servicesSocket.read() as Buffer;
-      if (next) continue;
+      if (!next) continue;
       if (buffer) {
         buffer = Buffer.concat([buffer, next]);
       } else {
