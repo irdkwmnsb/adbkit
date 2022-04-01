@@ -3,6 +3,7 @@
 import adb, { DeviceClient, KeyCodes, Utils, MotionEvent } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
+import { KeyEvent, RingerMode } from '../src/adb/thirdparty/STFService/STFServiceModel';
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -120,39 +121,46 @@ const testMinicap = async (deviceClient: DeviceClient) => {
 
 const testSTFService = async (deviceClient: DeviceClient) => {
   // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
-  const STFService = deviceClient.STFService({timeout: 20000000});
+  const STFService = deviceClient.STFService({timeout: 2000000});
   try {
-    STFService.on("airplaneMode", (data) => {
-      console.log('airplaneMode', data);
-    });
-    STFService.on("battery", (data) => {
-      console.log('battery', data);
-    });
-    STFService.on("browerPackage", (data) => {
-      console.log('browerPackage', data)
-    });
-    STFService.on("connectivity", (data) => {
-      console.log('connectivity', data)
-    });
-    STFService.on("phoneState", (data) => {
-      console.log('phoneState', data)
-    });
-    STFService.on("rotation", (data) => {
-      console.log('rotation', data)
-    });
+    // STFService.on("airplaneMode", (data) => console.log('airplaneMode', data));
+    // STFService.on("battery", (data) => console.log('battery', data));
+    // STFService.on("browerPackage", (data) => console.log('browerPackage', data));
+    // STFService.on("connectivity", (data) => console.log('connectivity', data));
+    // STFService.on("phoneState", (data) => console.log('phoneState', data));
+    // STFService.on("rotation", (data) => console.log('rotation', data));
     await STFService.start();
 
-    console.log(await STFService.getAccounts());
-    console.log(await STFService.getBluetoothStatus());
-    console.log(await STFService.getBrowsers());
-    // console.log(await STFService.getClipboard());
-    console.log(await STFService.getDisplay(0));
-    // console.log(await STFService.getProperties());
-    console.log(await STFService.getRingerMode());
-    console.log(await STFService.getRootStatus());
-    // console.log(await STFService.getSdStatus());
-    // console.log(await STFService.getVersion());
-    console.log(await STFService.getWifiStatus());
+    // console.log(await STFService.getAccounts()); // Ok
+    // console.log(await STFService.getBluetoothStatus()); // Ok
+    // console.log(await STFService.getBrowsers()); // Ok
+    // console.log(await STFService.getClipboard()); // Ok
+    // console.log(await STFService.getDisplay()); // Ok
+    // console.log(await STFService.getProperties([])); // Ok
+    // console.log(await STFService.getRootStatus()); // Ok
+    // console.log(await STFService.getSdStatus()); // Ok
+    // console.log(await STFService.getWifiStatus()); // Ok
+
+    // console.log(await STFService.setWifiEnabledRequest({enabled: false})); // no effect
+
+    // console.log(await STFService.getRingerMode()); // Ok
+    // console.log(await STFService.setRingerMode({mode: RingerMode.VIBRATE}));
+
+    // let seq = 1;
+    // console.log(await STFService.keyEvent({event: KeyEvent.DOWN, keyCode:})); // Ok
+    // seq++;
+    // console.log(await STFService.touchDownMessage({seq, contact: 1, x: 201, y: 200})); // Ok
+    // seq++;
+    // console.log(await STFService.touchDownMessage({seq, contact: 1, x: 202, y: 200})); // Ok
+    // seq++;
+    // console.log(await STFService.touchDownMessage({seq, contact: 1, x: 203, y: 200})); // Ok
+    // seq++;
+    // console.log(await STFService.touchDownMessage({seq, contact: 1, x: 204, y: 200})); // Ok
+
+
+    // not working
+    //console.log(await STFService.setRotationRequest({lock: false, rotation: 270}));
+    
 
     // console.log(await STFService.GetClipboard());
     // {
