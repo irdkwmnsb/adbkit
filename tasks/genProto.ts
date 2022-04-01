@@ -119,7 +119,7 @@ export default class ${prefix}Buf {
 
 function main() {
   genSet('wireService.proto', 'STFService')
-  genSet('wireAgent.proto', 'STFAgent')
+  // genSet('wireAgent.proto', 'STFAgent')
 }
 
 void main();

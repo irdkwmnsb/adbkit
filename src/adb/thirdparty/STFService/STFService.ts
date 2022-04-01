@@ -5,10 +5,9 @@ import PromiseDuplex from "promise-duplex";
 import { Duplex, EventEmitter } from "node:stream";
 import ThirdUtils from "../ThirdUtils";
 import * as STF from "./STFServiceModel";
-import * as STFAg from "./STFAgentModel";
+// import * as STFAg from "./STFAgentModel";
 import { Reader } from "protobufjs";
 import STFServiceBuf from "./STFServiceBuf";
-import STFAgentBuf from "./STFAgentBuf";
 
 const version = '2.4.9';
 
@@ -45,9 +44,9 @@ export default class STFService extends EventEmitter {
   // private servicesSocket: PromiseSocket<net.Socket> | undefined;
   // private agentSocket: PromiseSocket<net.Socket> | undefined;
   private servicesSocket: PromiseDuplex<Duplex> | undefined;
-  private agentSocket: PromiseDuplex<Duplex> | undefined;
+  // private agentSocket: PromiseDuplex<Duplex> | undefined;
   private protoSrv!: STFServiceBuf;
-  private protoAgent!: STFAgentBuf;
+  // private protoAgent!: STFAgentBuf;
 
   constructor(private client: DeviceClient, config = {} as Partial<STFServiceOptions>) {
     super();
@@ -65,9 +64,7 @@ export default class STFService extends EventEmitter {
   public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   private async getPath(): Promise<string> {
-
-    let resp = await this.client.execOut(`pm path ${PKG}`, 'utf8');
-    resp = resp.trim();
+    const resp = (await this.client.execOut(`pm path ${PKG}`, 'utf8')).trim();
     if (resp.startsWith('package:'))
       return resp.substring(8);
     return '';
@@ -85,17 +82,10 @@ export default class STFService extends EventEmitter {
 
   async start(): Promise<void> {
     this.protoSrv = await STFServiceBuf.get();
-    this.protoAgent = await STFAgentBuf.get();
+    // this.protoAgent = await STFAgentBuf.get();
 
     let setupPath = await this.getPath();
     if (!setupPath) {
-      await this.installApk();
-      setupPath = await this.getPath();
-    }
-
-    const currentVersion = await this.client.execOut(`export CLASSPATH='${setupPath}';exec app_process /system/bin '${PKG}.Agent' --version 2>/dev/null`, 'utf8');
-    if (currentVersion.trim() !== version) {
-      await this.client.uninstall(PKG);
       await this.installApk();
       setupPath = await this.getPath();
     }
@@ -112,17 +102,43 @@ export default class STFService extends EventEmitter {
     if (msg.includes('Error')) {
       throw Error(msg.trim())
     }
+
+    const getVersion = `export CLASSPATH='${setupPath}'; exec app_process /system/bin '${PKG}.Agent' --version 2>/dev/null`
+    const currentVersion = await this.client.execOut(getVersion, 'utf8');
+    if (currentVersion.trim() !== version) {
+      await this.client.uninstall(PKG);
+      await this.installApk();
+      setupPath = await this.getPath();
+    }
+
+    const startAgent = `export CLASSPATH='${setupPath}'; exec app_process /system/bin '${PKG}.Agent' 2>&1`
+    // console.log(startAgent);
+    const agentProcess = new PromiseDuplex(await this.client.exec(startAgent));
+    ThirdUtils.dumpReadable(agentProcess, 'STFagent');
     // Starting service: Intent { act=jp.co.cyberagent.stf.ACTION_START cmp=jp.co.cyberagent.stf/.Service }
     // console.log(msg.trim());
 
     this.servicesSocket = await this.client.openLocal2('localabstract:stfservice');
-    this.agentSocket = await this.client.openLocal2('localabstract:stfagent');
-
-    this.agentSocket.once('close').then(() => console.log('agentSocket just closed'));
+    
     this.servicesSocket.once('close').then(() => console.log('servicesSocket just closed'));
 
     void this.startServiceStream().catch((e) => { console.log('Service failed', e); this.stop() });
-    void this.startAgentStream().catch((e) => { console.log('Agent failed', e); this.stop() });
+  }
+
+  private _agentSocket: Promise<PromiseDuplex<Duplex>> | null = null;
+
+  async getAgentSocket(): Promise<PromiseDuplex<Duplex>> {
+    if (this._agentSocket) {
+      return this._agentSocket;
+    }
+    const socketP = this.client.openLocal2('localabstract:stfagent');
+    const socket = await socketP;
+    void this.startAgentStream(socket);
+    socket.once('close').then(() => {
+      console.log('agentSocket just closed');
+    });
+    this._agentSocket = socketP;
+    return socket;
   }
 
   private async startServiceStream() {
@@ -184,11 +200,11 @@ export default class STFService extends EventEmitter {
     }
   }
 
-  private async startAgentStream() {
+  private async startAgentStream(socket: PromiseDuplex<Duplex>) {
     // const root = await wireP;
     for (; ;) {
-      await Utils.waitforReadable(this.agentSocket);
-      const chunk = await this.agentSocket.read() as Buffer;
+      await Utils.waitforReadable(socket);
+      const chunk = await socket.read() as Buffer;
       if (chunk) {
         console.log('agentSocket RCV: ', chunk.length);
         console.log(chunk.toString('hex'))
@@ -230,10 +246,12 @@ export default class STFService extends EventEmitter {
   }
 
 
-  private pushAgent(type: STFAg.MessageType, message: Uint8Array): Promise<number> {
-    const envelope = { type, message, channel: '1234' };
-    const buf = this.protoAgent.write.Envelope(envelope)
-    return this.servicesSocket.write(buf);
+  private async pushAgent(type: STF.MessageType, message: Uint8Array): Promise<number> {
+    const envelope = { type, message };
+    // const buf = this.protoAgent.write.Envelope(envelope)
+    const buf = this.protoSrv.write.Envelope(envelope)
+    const socket = await this.getAgentSocket();
+    return socket.write(buf);
   }
 
 
@@ -333,50 +351,57 @@ export default class STFService extends EventEmitter {
     return this.pushService<STF.SetMasterMuteResponse>(STF.MessageType.SET_MASTER_MUTE, message, this.protoSrv.read.SetMasterMuteResponse)
   }
 
-
   // Agents
-  // STF.MessageType.DO_KEYEVENT
-  // STF.MessageType.DO_TYPE
-  // STF.MessageType.DO_WAKE
-  // STF.MessageType.SET_ROTATION
-  // public async keyEvent(req: STF.KeyEventRequest): Promise<any> {
-  //   const message = this.protoSrv.write.KeyEventRequest(req);
-  //   return this.pushAgent<any>(STF.MessageType.DO_KEYEVENT, message, null);
-  // }
+  public async doKeyEvent(req: STF.KeyEventRequest): Promise<number> {
+    const message = this.protoSrv.write.KeyEventRequest(req);
+    return this.pushAgent(STF.MessageType.DO_KEYEVENT, message);
+  }
+  public async doType(req: STF.DoTypeRequest): Promise<number> {
+    const message = this.protoSrv.write.DoTypeRequest(req);
+    return this.pushAgent(STF.MessageType.DO_TYPE, message);
+  }
+  public async doWake(req: STF.DoWakeRequest): Promise<number> {
+    const message = this.protoSrv.write.DoWakeRequest(req);
+    return this.pushAgent(STF.MessageType.DO_WAKE, message);
+  }
+  public async setRotation(req: STF.SetRotationRequest): Promise<number> {
+    const message = this.protoSrv.write.SetRotationRequest(req);
+    return this.pushAgent(STF.MessageType.SET_ROTATION, message);
+  }
 
-  public async GestureStartMessage(req: STFAg.GestureStartMessage): Promise<number> {
-    const message = this.protoAgent.write.GestureStartMessage(req);
-    return this.pushAgent(STFAg.MessageType.GestureStartMessage, message);
-  }
-  public async TouchDownMessage(req: STFAg.TouchDownMessage): Promise<number> {
-    const message = this.protoAgent.write.TouchDownMessage(req);
-    return this.pushAgent(STFAg.MessageType.TouchDownMessage, message);
-  }
-  public async TouchCommitMessage(req: STFAg.TouchCommitMessage): Promise<number> {
-    const message = this.protoAgent.write.TouchCommitMessage(req);
-    return this.pushAgent(STFAg.MessageType.TouchCommitMessage, message);
-  }
-  public async TouchMoveMessage(req: STFAg.TouchMoveMessage): Promise<number> {
-    const message = this.protoAgent.write.TouchMoveMessage(req);
-    return this.pushAgent(STFAg.MessageType.TouchMoveMessage, message);
-  }
-  public async TouchUpMessage(req: STFAg.TouchUpMessage): Promise<number> {
-    const message = this.protoAgent.write.TouchUpMessage(req);
-    return this.pushAgent(STFAg.MessageType.TouchUpMessage, message);
-  }
-  public async GestureStopMessage(req: STFAg.GestureStopMessage): Promise<number> {
-    const message = this.protoAgent.write.GestureStopMessage(req);
-    return this.pushAgent(STFAg.MessageType.GestureStopMessage, message);
-  }
+  // public async GestureStartMessage(req: STFAg.GestureStartMessage): Promise<number> {
+  //   const message = this.protoAgent.write.GestureStartMessage(req);
+  //   return this.pushAgent(STFAg.MessageType.GestureStartMessage, message);
+  // }
+  // public async TouchDownMessage(req: STFAg.TouchDownMessage): Promise<number> {
+  //   const message = this.protoAgent.write.TouchDownMessage(req);
+  //   return this.pushAgent(STFAg.MessageType.TouchDownMessage, message);
+  // }
+  // public async TouchCommitMessage(req: STFAg.TouchCommitMessage): Promise<number> {
+  //   const message = this.protoAgent.write.TouchCommitMessage(req);
+  //   return this.pushAgent(STFAg.MessageType.TouchCommitMessage, message);
+  // }
+  // public async TouchMoveMessage(req: STFAg.TouchMoveMessage): Promise<number> {
+  //   const message = this.protoAgent.write.TouchMoveMessage(req);
+  //   return this.pushAgent(STFAg.MessageType.TouchMoveMessage, message);
+  // }
+  // public async TouchUpMessage(req: STFAg.TouchUpMessage): Promise<number> {
+  //   const message = this.protoAgent.write.TouchUpMessage(req);
+  //   return this.pushAgent(STFAg.MessageType.TouchUpMessage, message);
+  // }
+  // public async GestureStopMessage(req: STFAg.GestureStopMessage): Promise<number> {
+  //   const message = this.protoAgent.write.GestureStopMessage(req);
+  //   return this.pushAgent(STFAg.MessageType.GestureStopMessage, message);
+  // }
 
   public stop() {
     if (this.servicesSocket) {
       this.servicesSocket.destroy();
       this.servicesSocket = undefined;
     }
-    if (this.agentSocket) {
-      this.agentSocket.destroy();
-      this.agentSocket = undefined;
+    if (this._agentSocket) {
+      this._agentSocket.then(a => a.destroy());
+      this._agentSocket = undefined;
     }
     //this.minicapServer.destroy();
   }

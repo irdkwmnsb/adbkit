@@ -4,6 +4,7 @@ import adb, { DeviceClient, KeyCodes, Utils, MotionEvent } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
 import { KeyEvent, RingerMode } from '../src/adb/thirdparty/STFService/STFServiceModel';
+import Util from '../src/adb/util';
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -121,7 +122,7 @@ const testMinicap = async (deviceClient: DeviceClient) => {
 
 const testSTFService = async (deviceClient: DeviceClient) => {
   // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
-  const STFService = deviceClient.STFService({timeout: 2000000});
+  const STFService = deviceClient.STFService({timeout: 200000});
   try {
     STFService.on("airplaneMode", (data) => console.log('airplaneMode', data));
     STFService.on("battery", (data) => console.log('battery', data));
@@ -129,6 +130,8 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     STFService.on("connectivity", (data) => console.log('connectivity', data));
     STFService.on("phoneState", (data) => console.log('phoneState', data));
     STFService.on("rotation", (data) => console.log('rotation', data));
+    console.log('STFService.start');
+
     await STFService.start();
 
     // console.log(await STFService.getAccounts()); // Ok
@@ -147,6 +150,10 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     // console.log(await STFService.setRingerMode({mode: RingerMode.VIBRATE}));
 
     // 42["input.touchCommit","lltyo9nLCZaZdViaqnTeSMafku8=",{"seq":28}]
+    await Util.delay(1000);
+    await STFService.doWake({});
+    await STFService.doKeyEvent({event: KeyEvent.PRESS, keyCode: KeyCodes.KEYCODE_0});
+    await STFService.doType({text: 'test'});
 
     // let seq = 1;
     // const contact = 0;
@@ -154,8 +161,11 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     // // not working
     // let x = 0.4;
     // const y = 0.4;
+    // await Util.delay(1000);
+    // console.log('sending GestureStartMessage');
     // await STFService.GestureStartMessage({seq});
     // seq++;
+    // await Util.delay(1000);
     // await STFService.TouchDownMessage({seq, contact, x, y, pressure});
     // seq++;
     // await STFService.TouchCommitMessage({seq});
@@ -254,9 +264,9 @@ const main = async () => {
   // testScrcpy(deviceClient);
   // testUiautomator(deviceClient);
   // testScrcpyTextInput(deviceClient);
-  testScrcpyswap(deviceClient);
+  // testScrcpyswap(deviceClient);
   // testMinicap(deviceClient);
-  // testSTFService(deviceClient);
+  testSTFService(deviceClient);
   // const bug = await deviceClient.execOut('ls', 'utf8');
   // const bug = await deviceClient.execOut('wm size', 'utf8');
   // const duplex = new PromiseDuplex(await deviceClient.exec('ls'));
