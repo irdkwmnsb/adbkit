@@ -112,19 +112,20 @@ export default class Minicap extends EventEmitter {
     const sdkLevel = parseInt(props['ro.build.version.sdk']);
     const minicapName = (sdkLevel >= 16) ? 'minicap' : 'minicap-nopie';
 
-    const binFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/bin/${minicapName}`);
-    const soFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/lib/android-${sdkLevel}/minicap.so`);
+    let binFile: string;
+    let soFile: string;
 
-    // const prebuildRoot = require.resolve('@devicefarmer/minicap-prebuilt/prebuilt');
-    //const prebuildRoot = path.resolve(ThirdUtils.nodeModulesDir, '@devicefarmer', 'minicap-prebuilt', 'prebuilt');
-    // try {
-    //   await fs.promises.stat(prebuildRoot);
-    // } catch (e) {
-    //   throw Error(`minicap not found in ${prebuildRoot} please install @devicefarmer/minicap-prebuilt to use minicap`);
-    // }
-    // const binFile = path.resolve(prebuildRoot, 'prebuilt', abi, 'bin', minicapName);
-    // const soFile = path.resolve(prebuildRoot, 'prebuilt', abi, 'lib', `android-${sdkLevel}`, 'minicap.so');
-    // const apkFile = path.resolve(prebuildRoot, 'noarch', 'minicap.apk');
+    try {
+      binFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/bin/${minicapName}`);
+    } catch (e) {
+      throw Error(`minicap not found in @devicefarmer/minicap-prebuilt/prebuilt/${abi}/bin/ please install @devicefarmer/minicap-prebuilt to use minicap`);
+    }
+
+    try {
+      soFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/lib/android-${sdkLevel}/minicap.so`);
+    } catch (e) {
+      throw Error(`minicap.so for your device check for @devicefarmer/minicap-prebuilt update that support android-${sdkLevel}`);
+    }
 
     try {
       await this.client.push(binFile, '/data/local/tmp/minicap', 0o755);
@@ -155,14 +156,6 @@ export default class Minicap extends EventEmitter {
     this.minicapServer = new PromiseDuplex(await this.client.shell(args.map(a => a.toString()).join(' ')));
     ThirdUtils.dumpReadable(this.minicapServer, 'minicap');
 
-
-    // try {
-    //   await this.client.forward(`tcp:${this.config.port}`, 'localabstract:minicap');
-    // } catch (e) {
-    //   debug(`Impossible to forward port ${this.config.port}:`, e);
-    //   throw e;
-    // }
-
     if (!Utils.waitforReadable(this.minicapServer, this.config.tunnelDelay)) {
       // try to read error
       const out = await this.minicapServer.setEncoding('utf8').readAll();
@@ -172,15 +165,9 @@ export default class Minicap extends EventEmitter {
     await Util.delay(this.config.tunnelDelay);
     this.videoSocket = new PromiseSocket(new net.Socket());
 
-
     // Connect videoSocket
     try {
-      // await this.videoSocket.connect(this.config.port, '127.0.0.1')
-      // const aa = await this.client.openLocal('localabstract:minicap');
-      // this.videoSocket = new PromiseDuplex(aa);
       this.videoSocket = await this.client.openLocal2('localabstract:minicap');
-      // this.videoSocket = new PromiseDuplex(aa);
-      
     } catch (e) {
       debug(`Impossible to connect video Socket localabstract:minicap`, e);
       throw e;

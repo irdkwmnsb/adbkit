@@ -217,14 +217,7 @@ export default class Scrcpy extends EventEmitter {
       debug('Impossible to run server:', e);
       throw e;
     }
-
-    // try {
-    //   await this.client.forward(`tcp:${this.config.port}`, 'localabstract:scrcpy');
-    // } catch (e) {
-    //   debug(`Impossible to forward port ${this.config.port}:`, e);
-    //   throw e;
-    // }
-
+    
     if (Utils.waitforReadable(this.scrcpyServer, this.config.tunnelDelay)) {
       await this.scrcpyServer.read();
       // const buffer = await this.scrcpyServer.read();
@@ -236,27 +229,10 @@ export default class Scrcpy extends EventEmitter {
     // Wait 1 sec to forward to work
     await Util.delay(this.config.tunnelDelay);
     
+    // Connect videoSocket
     this.videoSocket = await this.client.openLocal2('localabstract:scrcpy');
+    // Connect controlSocket
     this.controlSocket = await this.client.openLocal2('localabstract:scrcpy');
-    
-    // this.videoSocket = new PromiseSocket(new net.Socket());
-    // this.controlSocket = new PromiseSocket(new net.Socket());
-
-    // Connect videoSocket
-    // try {
-    //   await this.videoSocket.connect(this.config.port, '127.0.0.1')
-    // } catch (e) {
-    //   debug(`Impossible to connect video Socket "127.0.0.1:${this.config.port}":`, e);
-    //   throw e;
-    // }
-
-    // Connect videoSocket
-    // try {
-    //   await this.controlSocket.connect(this.config.port, '127.0.0.1')
-    // } catch (e) {
-    //   debug(`Impossible to connect control Socket "127.0.0.1:${this.config.port}":`, e);
-    //   throw e;
-    // }
 
     // First chunk is 69 bytes length -> 1 dummy byte, 64 bytes for deviceName, 2 bytes for width & 2 bytes for height
     try {

@@ -114,32 +114,6 @@ export default class STFService extends EventEmitter {
     }
     // Starting service: Intent { act=jp.co.cyberagent.stf.ACTION_START cmp=jp.co.cyberagent.stf/.Service }
     // console.log(msg.trim());
-    // try {
-    //   await this.client.forward(`tcp:${this.config.servicePort}`, 'localabstract:stfservice');
-    // } catch (e) {
-    //   debug(`Impossible to forward port ${this.config.servicePort}:`, e);
-    //   throw e;
-    // }
-    // try {
-    //   await this.client.forward(`tcp:${this.config.agentPort}`, 'localabstract:stfagent');
-    // } catch (e) {
-    //   debug(`Impossible to forward port ${this.config.agentPort}:`, e);
-    //   throw e;
-    // }
-    // this.agentSocket = new PromiseSocket(new net.Socket());
-    // this.servicesSocket = new PromiseSocket(new net.Socket());
-    // try {
-    //   await this.agentSocket.connect(this.config.agentPort, '127.0.0.1')
-    // } catch (e) {
-    //   debug(`Impossible to connect agent Socket "127.0.0.1:${this.config.agentPort}":`, e);
-    //   throw e;
-    // }
-    // try {
-    //   await this.servicesSocket.connect(this.config.servicePort, '127.0.0.1')
-    // } catch (e) {
-    //   debug(`Impossible to connect agent Socket "127.0.0.1:${this.config.servicePort}":`, e);
-    //   throw e;
-    // }
 
     this.servicesSocket = await this.client.openLocal2('localabstract:stfservice');
     this.agentSocket = await this.client.openLocal2('localabstract:stfagent');
@@ -210,7 +184,6 @@ export default class STFService extends EventEmitter {
     }
   }
 
-
   private async startAgentStream() {
     // const root = await wireP;
     for (; ;) {
@@ -223,12 +196,6 @@ export default class STFService extends EventEmitter {
       await Utils.delay(0);
     }
   }
-
-
-
-
-
-
 
   private responseHook: { [key: number]: (response: Uint8Array) => void } = {}
   private reqCnt = 1;
