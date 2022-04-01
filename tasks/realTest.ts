@@ -166,17 +166,14 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     // const pressure = 0.5;
     // // not working
     let x = 0.4;
-    const y = 0.4;
+    const y = 0.3;
     await Util.delay(1000);
-    await STFService.down(x * w, y * w);
-    await STFService.commit();
+    await STFService.downCommit(x * w, y * w);
     for (let i = 0; i< 20; i++) {
       x += 0.01
-      await STFService.move(x * w, y * w);
-      await STFService.commit();
+      await STFService.moveCommit(x * w, y * w);
     }
-    await STFService.up();
-    await STFService.commit();
+    await STFService.upCommit();
 
     console.log(`done`);
     await Utils.delay(1000);

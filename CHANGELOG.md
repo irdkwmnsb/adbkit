@@ -1,9 +1,12 @@
 # CHANGELOG
 
-## v3.1.6
+## v3.1.6 (2022-04-01)
 
 * fix STFService localisation code
 * fix STFService message parsing
+* add STFService agent
+* add STFService minitouchagent
+* drop port fowarding from thirdparty apis
 * expose STFService options
 
 ## v3.1.5 (2022-03-29)

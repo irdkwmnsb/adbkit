@@ -12,7 +12,8 @@
             "args": ["./tasks/realTest.ts", "--transpile-only"],
             "cwd": "${workspaceFolder}",
             "internalConsoleOptions": "openOnSessionStart",
-            "skipFiles": ["<node_internals>/**", "node_modules/**"],
+            // "skipFiles": ["<node_internals>/**", "node_modules/**"],
+            "skipFiles": ["<node_internals>/**" ],
             "env": {
               "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json",
               "DEBUG": "*"

@@ -401,6 +401,25 @@ export default class STFService extends EventEmitter {
     return s.write(cmd, 'ascii');
   }
 
+  public async moveCommit(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
+    const cmd = `m ${contact | 0} ${x|0} ${y|0} ${pressure|0}\nc\n`;
+    const s = await this.getMinitouchSocket();
+    return s.write(cmd, 'ascii');
+  }
+
+  public async downCommit(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
+    const cmd = `d ${contact} ${x|0} ${y|0} ${pressure|0}\nc\n`;
+    const s = await this.getMinitouchSocket();
+    return s.write(cmd, 'ascii');
+  }
+
+  public async upCommit(contact = 0 as 0 | 1): Promise<number> {
+    const cmd = `u ${contact | 0}\nc\n`;
+    const s = await this.getMinitouchSocket();
+    return s.write(cmd, 'ascii');
+  }
+
+
   public async wait(time : number): Promise<number> {
     const cmd = `w ${time}\n`;
     const s = await this.getMinitouchSocket();
