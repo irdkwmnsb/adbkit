@@ -72,7 +72,9 @@ export default class Parser {
       this.stream.removeListener('end', endListener);
     })
   }
-
+  /**
+   * @returns the internal Duplex
+   */
   public raw(): Duplex {
     return this.stream;
   }

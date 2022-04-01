@@ -10,11 +10,6 @@ import PromiseSocket from "promise-socket";
 
 export interface MinicapOptions {
   /**
-   * local port use for minicap
-   */
-  port: number,
-
-  /**
    * {RealWidth}x{RealHeight}@{VirtualWidth}x{VirtualHeight}/{Orientation}
    */
   dimention: string;
@@ -34,7 +29,7 @@ interface IEmissions {
 
 export default class Minicap extends EventEmitter {
   private config: MinicapOptions;
-  private videoSocket: PromiseSocket<net.Socket> | undefined;
+  private videoSocket: PromiseDuplex<Duplex> | undefined;
   private minicapServer: PromiseDuplex<Duplex>;
 
   /** 0=255 */
@@ -59,7 +54,6 @@ export default class Minicap extends EventEmitter {
   constructor(private client: DeviceClient, config = {} as Partial<MinicapOptions>) {
     super();
     this.config = {
-      port: 1313,
       tunnelDelay: 1000,
       dimention: '',
       ...config,
@@ -160,12 +154,14 @@ export default class Minicap extends EventEmitter {
     }
     this.minicapServer = new PromiseDuplex(await this.client.shell(args.map(a => a.toString()).join(' ')));
     ThirdUtils.dumpReadable(this.minicapServer, 'minicap');
-    try {
-      await this.client.forward(`tcp:${this.config.port}`, 'localabstract:minicap');
-    } catch (e) {
-      debug(`Impossible to forward port ${this.config.port}:`, e);
-      throw e;
-    }
+
+
+    // try {
+    //   await this.client.forward(`tcp:${this.config.port}`, 'localabstract:minicap');
+    // } catch (e) {
+    //   debug(`Impossible to forward port ${this.config.port}:`, e);
+    //   throw e;
+    // }
 
     if (!Utils.waitforReadable(this.minicapServer, this.config.tunnelDelay)) {
       // try to read error
@@ -179,9 +175,14 @@ export default class Minicap extends EventEmitter {
 
     // Connect videoSocket
     try {
-      await this.videoSocket.connect(this.config.port, '127.0.0.1')
+      // await this.videoSocket.connect(this.config.port, '127.0.0.1')
+      // const aa = await this.client.openLocal('localabstract:minicap');
+      // this.videoSocket = new PromiseDuplex(aa);
+      this.videoSocket = await this.client.openLocal2('localabstract:minicap');
+      // this.videoSocket = new PromiseDuplex(aa);
+      
     } catch (e) {
-      debug(`Impossible to connect video Socket "127.0.0.1:${this.config.port}":`, e);
+      debug(`Impossible to connect video Socket localabstract:minicap`, e);
       throw e;
     }
 

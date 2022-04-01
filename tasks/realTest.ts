@@ -22,7 +22,7 @@ function fmtSize(trData: number): string {
 }
 
 const testScrcpy = async (deviceClient: DeviceClient) => {
-  const scrcpy = deviceClient.scrcpy({port: 8099});
+  const scrcpy = deviceClient.scrcpy({});
   let nbPkg = 0;
   let trData = 0;
   setInterval(() => {
@@ -49,7 +49,7 @@ const testScrcpy = async (deviceClient: DeviceClient) => {
 }
 
 const testScrcpyTextInput = async (deviceClient: DeviceClient) => {
-  const scrcpy = deviceClient.scrcpy({port: 8099});
+  const scrcpy = deviceClient.scrcpy({});
   try {
     await scrcpy.start();
     console.log(`Started`);
@@ -73,7 +73,7 @@ const testScrcpyTextInput = async (deviceClient: DeviceClient) => {
 
 const testScrcpyswap = async (deviceClient: DeviceClient) => {
   // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
-  const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1});
+  const scrcpy = deviceClient.scrcpy({maxFps: 1});
   try {
     const pointerId = BigInt('0xFFFFFFFFFFFFFFFF');
     await scrcpy.start();
@@ -110,7 +110,7 @@ const testMinicap = async (deviceClient: DeviceClient) => {
     minicap.on('data', (buf: Buffer) => {
       console.log('rcv Buffer ', buf.length);
     })
-    await Utils.delay(100000)
+    await Utils.delay(10000)
     console.log(`done`);
   } catch(e) {
     console.error('scrcpy failed', e);
@@ -123,12 +123,12 @@ const testSTFService = async (deviceClient: DeviceClient) => {
   // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
   const STFService = deviceClient.STFService({timeout: 2000000});
   try {
-    // STFService.on("airplaneMode", (data) => console.log('airplaneMode', data));
-    // STFService.on("battery", (data) => console.log('battery', data));
-    // STFService.on("browerPackage", (data) => console.log('browerPackage', data));
-    // STFService.on("connectivity", (data) => console.log('connectivity', data));
-    // STFService.on("phoneState", (data) => console.log('phoneState', data));
-    // STFService.on("rotation", (data) => console.log('rotation', data));
+    STFService.on("airplaneMode", (data) => console.log('airplaneMode', data));
+    STFService.on("battery", (data) => console.log('battery', data));
+    STFService.on("browerPackage", (data) => console.log('browerPackage', data));
+    STFService.on("connectivity", (data) => console.log('connectivity', data));
+    STFService.on("phoneState", (data) => console.log('phoneState', data));
+    STFService.on("rotation", (data) => console.log('rotation', data));
     await STFService.start();
 
     // console.log(await STFService.getAccounts()); // Ok
@@ -146,22 +146,30 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     // console.log(await STFService.getRingerMode()); // Ok
     // console.log(await STFService.setRingerMode({mode: RingerMode.VIBRATE}));
 
+    // 42["input.touchCommit","lltyo9nLCZaZdViaqnTeSMafku8=",{"seq":28}]
+
     // let seq = 1;
-    // console.log(await STFService.keyEvent({event: KeyEvent.DOWN, keyCode:})); // Ok
+    // const contact = 0;
+    // const pressure = 0.5;
+    // // not working
+    // let x = 0.4;
+    // const y = 0.4;
+    // await STFService.GestureStartMessage({seq});
     // seq++;
-    // console.log(await STFService.touchDownMessage({seq, contact: 1, x: 201, y: 200})); // Ok
+    // await STFService.TouchDownMessage({seq, contact, x, y, pressure});
     // seq++;
-    // console.log(await STFService.touchDownMessage({seq, contact: 1, x: 202, y: 200})); // Ok
+    // await STFService.TouchCommitMessage({seq});
+    // for (let i=0; i< 20; i++) {
+    //   seq++;
+    //   x += 0.01
+    //   await STFService.TouchMoveMessage({seq, contact, x, y, pressure});
+    //   seq++;
+    //   await STFService.TouchCommitMessage({seq});
+    // }
     // seq++;
-    // console.log(await STFService.touchDownMessage({seq, contact: 1, x: 203, y: 200})); // Ok
+    // await STFService.TouchUpMessage({seq, contact});
     // seq++;
-    // console.log(await STFService.touchDownMessage({seq, contact: 1, x: 204, y: 200})); // Ok
-
-
-    // not working
-    //console.log(await STFService.setRotationRequest({lock: false, rotation: 270}));
-    
-
+    // await STFService.TouchCommitMessage({seq});
     // console.log(await STFService.GetClipboard());
     // {
     //   const acc = await STFService.GetBrowsers()
@@ -182,8 +190,11 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     // STFService.on('data', (buf: Buffer) => {
     //  console.log('rcv Buffer ', buf.length);
     //})
-    // await Utils.delay(100000)
+
     console.log(`done`);
+    await Utils.delay(1000);
+    console.log(await STFService.getSdStatus()); // Ok
+    console.log(await STFService.getWifiStatus()); // Ok
   } catch(e) {
     console.error('scrcpy failed', e);
   } finally {
@@ -243,9 +254,9 @@ const main = async () => {
   // testScrcpy(deviceClient);
   // testUiautomator(deviceClient);
   // testScrcpyTextInput(deviceClient);
-  // testScrcpyswap(deviceClient);
+  testScrcpyswap(deviceClient);
   // testMinicap(deviceClient);
-  testSTFService(deviceClient);
+  // testSTFService(deviceClient);
   // const bug = await deviceClient.execOut('ls', 'utf8');
   // const bug = await deviceClient.execOut('wm size', 'utf8');
   // const duplex = new PromiseDuplex(await deviceClient.exec('ls'));

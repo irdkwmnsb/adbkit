@@ -5,10 +5,6 @@ export interface Point {
 
 export interface ScrcpyOptions {
     /**
-     * local port use for scrcpy
-     */
-    port: number,
-    /**
      * maxSize         (integer, multiple of 8) 0
      * Max width
      */

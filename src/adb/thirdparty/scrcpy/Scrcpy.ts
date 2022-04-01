@@ -1,13 +1,9 @@
 import EventEmitter from 'node:events';
-import net from 'node:net';
-import PromiseSocket from 'promise-socket';
 import PromiseDuplex from 'promise-duplex';
-
 import Debug from 'debug';
 import DeviceClient from '../../DeviceClient';
 import Util from '../../util';
 import { Duplex } from 'node:stream';
-
 import { MotionEvent, Orientation, ControlMessage } from './ScrcpyConst';
 import { KeyCodes, Utils } from '../../..';
 import { Point, ScrcpyOptions } from './ScrcpyModel';
@@ -63,8 +59,8 @@ interface IEmissions {
  */
 export default class Scrcpy extends EventEmitter {  
   private config: ScrcpyOptions;
-  private videoSocket: PromiseSocket<net.Socket> | undefined;
-  private controlSocket: PromiseSocket<net.Socket> | undefined;
+  private videoSocket: PromiseDuplex<Duplex> | undefined;
+  private controlSocket: PromiseDuplex<Duplex> | undefined;
   /**
    * used to recive Process Error
    */
@@ -80,7 +76,7 @@ export default class Scrcpy extends EventEmitter {
   constructor(private client: DeviceClient, config = {} as Partial<ScrcpyOptions>) {
     super();
     this.config = {
-      port: 8099,
+      // port: 8099,
       maxSize: 600,
       maxFps: 0,
       flip: false,
@@ -222,12 +218,12 @@ export default class Scrcpy extends EventEmitter {
       throw e;
     }
 
-    try {
-      await this.client.forward(`tcp:${this.config.port}`, 'localabstract:scrcpy');
-    } catch (e) {
-      debug(`Impossible to forward port ${this.config.port}:`, e);
-      throw e;
-    }
+    // try {
+    //   await this.client.forward(`tcp:${this.config.port}`, 'localabstract:scrcpy');
+    // } catch (e) {
+    //   debug(`Impossible to forward port ${this.config.port}:`, e);
+    //   throw e;
+    // }
 
     if (Utils.waitforReadable(this.scrcpyServer, this.config.tunnelDelay)) {
       await this.scrcpyServer.read();
@@ -239,24 +235,28 @@ export default class Scrcpy extends EventEmitter {
 
     // Wait 1 sec to forward to work
     await Util.delay(this.config.tunnelDelay);
-    this.videoSocket = new PromiseSocket(new net.Socket());
-    this.controlSocket = new PromiseSocket(new net.Socket());
+    
+    this.videoSocket = await this.client.openLocal2('localabstract:scrcpy');
+    this.controlSocket = await this.client.openLocal2('localabstract:scrcpy');
+    
+    // this.videoSocket = new PromiseSocket(new net.Socket());
+    // this.controlSocket = new PromiseSocket(new net.Socket());
 
     // Connect videoSocket
-    try {
-      await this.videoSocket.connect(this.config.port, '127.0.0.1')
-    } catch (e) {
-      debug(`Impossible to connect video Socket "127.0.0.1:${this.config.port}":`, e);
-      throw e;
-    }
+    // try {
+    //   await this.videoSocket.connect(this.config.port, '127.0.0.1')
+    // } catch (e) {
+    //   debug(`Impossible to connect video Socket "127.0.0.1:${this.config.port}":`, e);
+    //   throw e;
+    // }
 
     // Connect videoSocket
-    try {
-      await this.controlSocket.connect(this.config.port, '127.0.0.1')
-    } catch (e) {
-      debug(`Impossible to connect control Socket "127.0.0.1:${this.config.port}":`, e);
-      throw e;
-    }
+    // try {
+    //   await this.controlSocket.connect(this.config.port, '127.0.0.1')
+    // } catch (e) {
+    //   debug(`Impossible to connect control Socket "127.0.0.1:${this.config.port}":`, e);
+    //   throw e;
+    // }
 
     // First chunk is 69 bytes length -> 1 dummy byte, 64 bytes for deviceName, 2 bytes for width & 2 bytes for height
     try {

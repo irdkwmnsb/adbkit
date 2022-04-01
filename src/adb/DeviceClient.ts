@@ -40,6 +40,8 @@ import { RebootType } from './command/host-transport/reboot';
 import Minicap, { MinicapOptions } from './thirdparty/minicap/Minicap';
 import STFService, { STFServiceOptions } from './thirdparty/STFService/STFService';
 import PromiseDuplex from 'promise-duplex';
+import Protocol from './protocol';
+import { Utils } from '..';
 
 const debug = d('adb:client');
 
@@ -390,6 +392,22 @@ export default class DeviceClient {
   public async openLocal(path: string): Promise<Duplex> {
     const transport = await this.transport();
     return new hostCmd.LocalCommand(transport).execute(path);
+  }
+
+  /**
+   * Testing only
+   */
+  public async openLocal2(path: string): Promise<PromiseDuplex<Duplex>> {
+    const transport = await this.transport();
+    const data = path.includes(':') ? path : `localfilesystem:${path}`;
+    const duplex = new PromiseDuplex(transport.parser.raw());
+    await duplex.write(Protocol.encodeData(data));
+    await Utils.waitforReadable(duplex);
+    const code = await (duplex.read(4) as Promise<Buffer>);
+    if (!code.equals(Protocol.bOKAY)) {
+      return transport.parser.readError();
+    }
+    return duplex;
   }
 
   /**

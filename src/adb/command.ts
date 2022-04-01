@@ -10,8 +10,6 @@ const RE_ESCAPE = /([$`\\!"])/g;
 
 export default abstract class Command<T> {
   public parser: Parser;
-  public protocol = Protocol;
-  public connection: Connection;
   public readonly options: { sudo: boolean };
   private lastCmd: string;
 
@@ -19,8 +17,7 @@ export default abstract class Command<T> {
     return this.lastCmd || '';
   }
 
-  constructor(connection: Connection, options = {} as { sudo?: boolean }) {
-    this.connection = connection;
+  constructor(public connection: Connection, options = {} as { sudo?: boolean }) {
     this.parser = this.connection.parser;
     this.options = { sudo: false, ...options };
   }
@@ -30,6 +27,7 @@ export default abstract class Command<T> {
   public abstract execute(...args: any[]): Promise<T>;
 
   /**
+   * encode message and send it to ADB socket
    * @returns byte write count
    */
   public _send(data: string | Buffer): Promise<number> {
@@ -77,9 +75,9 @@ export default abstract class Command<T> {
   protected async readOKAY(): Promise<void> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case this.protocol.OKAY:
+      case Protocol.OKAY:
         return;
-      case this.protocol.FAIL:
+      case Protocol.FAIL:
         return this.parser.readError();
       default:
         return this.parser.unexpected(reply, 'OKAY or FAIL');

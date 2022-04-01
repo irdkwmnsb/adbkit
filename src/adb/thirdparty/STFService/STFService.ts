@@ -1,15 +1,11 @@
-// import path from "node:path";
 import fs from "node:fs";
-import net from 'node:net';
-import Debug from 'debug';
 import DeviceClient from "../../DeviceClient";
 import { Utils } from "../../..";
 import PromiseDuplex from "promise-duplex";
-import { EventEmitter } from "node:stream";
-import PromiseSocket from "promise-socket";
+import { Duplex, EventEmitter } from "node:stream";
 import ThirdUtils from "../ThirdUtils";
 import * as STF from "./STFServiceModel";
-// import * as STFAg from "./STFAgentModel";
+import * as STFAg from "./STFAgentModel";
 import { Reader } from "protobufjs";
 import STFServiceBuf from "./STFServiceBuf";
 import STFAgentBuf from "./STFAgentBuf";
@@ -30,32 +26,34 @@ export interface STFServiceOptions {
   /**
    * local port use for STFService
    */
-  servicePort: number,
+  // servicePort: number,
   /**
    * local port use for STFService
    */
-  agentPort: number,
+  // agentPort: number,
   /**
    * calls timeout default is 15000 ms
    */
   timeout: number,
 }
 
-const debug = Debug('STFService');
+// const debug = Debug('STFService');
 const PKG = 'jp.co.cyberagent.stf';
 
 export default class STFService extends EventEmitter {
   private config: STFServiceOptions;
-  private servicesSocket: PromiseSocket<net.Socket> | undefined;
-  private agentSocket: PromiseSocket<net.Socket> | undefined;
+  // private servicesSocket: PromiseSocket<net.Socket> | undefined;
+  // private agentSocket: PromiseSocket<net.Socket> | undefined;
+  private servicesSocket: PromiseDuplex<Duplex> | undefined;
+  private agentSocket: PromiseDuplex<Duplex> | undefined;
   private protoSrv!: STFServiceBuf;
   private protoAgent!: STFAgentBuf;
 
   constructor(private client: DeviceClient, config = {} as Partial<STFServiceOptions>) {
     super();
     this.config = {
-      agentPort: 1090,
-      servicePort: 1100,
+      // agentPort: 1090,
+      // servicePort: 1100,
       timeout: 15000,
       ...config,
     }
@@ -114,44 +112,44 @@ export default class STFService extends EventEmitter {
     if (msg.includes('Error')) {
       throw Error(msg.trim())
     }
+    // Starting service: Intent { act=jp.co.cyberagent.stf.ACTION_START cmp=jp.co.cyberagent.stf/.Service }
     // console.log(msg.trim());
+    // try {
+    //   await this.client.forward(`tcp:${this.config.servicePort}`, 'localabstract:stfservice');
+    // } catch (e) {
+    //   debug(`Impossible to forward port ${this.config.servicePort}:`, e);
+    //   throw e;
+    // }
+    // try {
+    //   await this.client.forward(`tcp:${this.config.agentPort}`, 'localabstract:stfagent');
+    // } catch (e) {
+    //   debug(`Impossible to forward port ${this.config.agentPort}:`, e);
+    //   throw e;
+    // }
+    // this.agentSocket = new PromiseSocket(new net.Socket());
+    // this.servicesSocket = new PromiseSocket(new net.Socket());
+    // try {
+    //   await this.agentSocket.connect(this.config.agentPort, '127.0.0.1')
+    // } catch (e) {
+    //   debug(`Impossible to connect agent Socket "127.0.0.1:${this.config.agentPort}":`, e);
+    //   throw e;
+    // }
+    // try {
+    //   await this.servicesSocket.connect(this.config.servicePort, '127.0.0.1')
+    // } catch (e) {
+    //   debug(`Impossible to connect agent Socket "127.0.0.1:${this.config.servicePort}":`, e);
+    //   throw e;
+    // }
 
-    try {
-      await this.client.forward(`tcp:${this.config.servicePort}`, 'localabstract:stfservice');
-    } catch (e) {
-      debug(`Impossible to forward port ${this.config.servicePort}:`, e);
-      throw e;
-    }
+    this.servicesSocket = await this.client.openLocal2('localabstract:stfservice');
+    this.agentSocket = await this.client.openLocal2('localabstract:stfagent');
 
-    try {
-      await this.client.forward(`tcp:${this.config.agentPort}`, 'localabstract:stfagent');
-    } catch (e) {
-      debug(`Impossible to forward port ${this.config.agentPort}:`, e);
-      throw e;
-    }
-
-    this.agentSocket = new PromiseSocket(new net.Socket());
-    this.servicesSocket = new PromiseSocket(new net.Socket());
-
-    try {
-      await this.agentSocket.connect(this.config.agentPort, '127.0.0.1')
-    } catch (e) {
-      debug(`Impossible to connect agent Socket "127.0.0.1:${this.config.agentPort}":`, e);
-      throw e;
-    }
-
-    try {
-      await this.servicesSocket.connect(this.config.servicePort, '127.0.0.1')
-    } catch (e) {
-      debug(`Impossible to connect agent Socket "127.0.0.1:${this.config.servicePort}":`, e);
-      throw e;
-    }
+    this.agentSocket.once('close').then(() => console.log('agentSocket just closed'));
+    this.servicesSocket.once('close').then(() => console.log('servicesSocket just closed'));
 
     void this.startServiceStream().catch((e) => { console.log('Service failed', e); this.stop() });
     void this.startAgentStream().catch((e) => { console.log('Agent failed', e); this.stop() });
   }
-
-
 
   private async startServiceStream() {
     let buffer: Buffer | null = null;
@@ -170,7 +168,7 @@ export default class STFService extends EventEmitter {
         const bufLen = envelopLen + reader.pos;
         // need mode data to complet envelop
         if (buffer.length < envelopLen) break;
-        
+
         let chunk: Buffer;
         if (bufLen === buffer.length) {
           // chunk len match Envelop len should speedup parsing, depending on nodeJS internal Buffer implementation, need to check Buffer.subarray implementation
@@ -182,7 +180,7 @@ export default class STFService extends EventEmitter {
         }
         try {
           const eventObj = this.protoSrv.readEnvelope(chunk);
-          const {id, message} = eventObj;
+          const { id, message } = eventObj;
           if (id) {
             const resolv = this.responseHook[id];
             if (resolv) {
@@ -265,33 +263,10 @@ export default class STFService extends EventEmitter {
   }
 
 
-  private pushAgent<T>(type: STF.MessageType, message: Uint8Array, requestReader: null | ((req: Uint8Array) => T)): Promise<T> {
-    const id = (this.reqCnt + 1) | 0xFFFFFF;
-    this.reqCnt = id;
-    const envelope = { type, message, id };
-    //let pReject: (error: Error) => void;
-    const promise = new Promise<T>((resolve, reject) => {
-      // pReject = reject;
-      this.responseHook[id] = (message: Uint8Array) => {
-        if (requestReader) {
-          const conv = requestReader(message);
-          resolve(conv);
-        } else {
-          resolve(null);
-        }
-      }
-    });
-    const buf = this.protoSrv.write.Envelope(envelope)
-    // this.agentSocket.write(buf);
-    this.servicesSocket.write(buf);
-    // const timeout = Utils.delay(this.config.timeout).then(() => {
-    //   if (this.responseHook[id]) {
-    //     delete this.responseHook[id];
-    //     pReject(Error('timeout'));
-    //   }
-    // });
-    // Promise.race([promise, timeout]);
-    return promise;
+  private pushAgent(type: STFAg.MessageType, message: Uint8Array): Promise<number> {
+    const envelope = { type, message, channel: '1234' };
+    const buf = this.protoAgent.write.Envelope(envelope)
+    return this.servicesSocket.write(buf);
   }
 
 
@@ -397,13 +372,35 @@ export default class STFService extends EventEmitter {
   // STF.MessageType.DO_TYPE
   // STF.MessageType.DO_WAKE
   // STF.MessageType.SET_ROTATION
-  public async keyEvent(req: STF.KeyEventRequest): Promise<any> {
-    const message = this.protoSrv.write.KeyEventRequest(req);
-    return this.pushAgent<any>(STF.MessageType.DO_KEYEVENT, message, null);
+  // public async keyEvent(req: STF.KeyEventRequest): Promise<any> {
+  //   const message = this.protoSrv.write.KeyEventRequest(req);
+  //   return this.pushAgent<any>(STF.MessageType.DO_KEYEVENT, message, null);
+  // }
+
+  public async GestureStartMessage(req: STFAg.GestureStartMessage): Promise<number> {
+    const message = this.protoAgent.write.GestureStartMessage(req);
+    return this.pushAgent(STFAg.MessageType.GestureStartMessage, message);
   }
-
-
-
+  public async TouchDownMessage(req: STFAg.TouchDownMessage): Promise<number> {
+    const message = this.protoAgent.write.TouchDownMessage(req);
+    return this.pushAgent(STFAg.MessageType.TouchDownMessage, message);
+  }
+  public async TouchCommitMessage(req: STFAg.TouchCommitMessage): Promise<number> {
+    const message = this.protoAgent.write.TouchCommitMessage(req);
+    return this.pushAgent(STFAg.MessageType.TouchCommitMessage, message);
+  }
+  public async TouchMoveMessage(req: STFAg.TouchMoveMessage): Promise<number> {
+    const message = this.protoAgent.write.TouchMoveMessage(req);
+    return this.pushAgent(STFAg.MessageType.TouchMoveMessage, message);
+  }
+  public async TouchUpMessage(req: STFAg.TouchUpMessage): Promise<number> {
+    const message = this.protoAgent.write.TouchUpMessage(req);
+    return this.pushAgent(STFAg.MessageType.TouchUpMessage, message);
+  }
+  public async GestureStopMessage(req: STFAg.GestureStopMessage): Promise<number> {
+    const message = this.protoAgent.write.GestureStopMessage(req);
+    return this.pushAgent(STFAg.MessageType.GestureStopMessage, message);
+  }
 
   public stop() {
     if (this.servicesSocket) {
