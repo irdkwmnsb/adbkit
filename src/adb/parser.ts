@@ -38,6 +38,7 @@ export default class Parser {
   public static PrematureEOFError = PrematureEOFError;
   public static UnexpectedDataError = UnexpectedDataError;
   private ended = false;
+  public lastMessage = '';
 
   constructor(public stream: Duplex) {
     // empty
@@ -203,8 +204,15 @@ export default class Parser {
   }
 
   public async readError(): Promise<never> {
-    const value = await this.readValue();
-    throw new Parser.FailError(value.toString());
+    let error = 'unknown Error';
+    try {
+      error = (await this.readValue()).toString();
+    } catch (e) {
+      // ignore
+    }
+    if (this.lastMessage)
+      error += ` after sending "${this.lastMessage}"`;
+    throw new Parser.FailError(error);
   }
 
   public async readValue(): Promise<Buffer> {

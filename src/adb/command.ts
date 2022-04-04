@@ -30,7 +30,8 @@ export default abstract class Command<T> {
    * encode message and send it to ADB socket
    * @returns byte write count
    */
-  public _send(data: string | Buffer): Promise<number> {
+  public _send(data: string): Promise<number> {
+    this.parser.lastMessage = data;
     const encoded = Protocol.encodeData(data);
     if (debug.enabled) {
       debug(`Send '${encoded}'`);

@@ -255,7 +255,7 @@ export default class Scrcpy extends EventEmitter {
     if (this.config.sendFrameMeta) {
       void this.startStreamWithMeta().catch(() => this.stop());
     } else {
-      void this.startStreamRaw();
+      this.startStreamRaw();
     }
   }
 

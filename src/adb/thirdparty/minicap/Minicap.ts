@@ -30,7 +30,7 @@ interface IEmissions {
 export default class Minicap extends EventEmitter {
   private config: MinicapOptions;
   private videoSocket: PromiseDuplex<Duplex> | undefined;
-  private minicapServer: PromiseDuplex<Duplex>;
+  private minicapServer: PromiseDuplex<Duplex> | undefined;
 
   /** 0=255 */
   private _version: Promise<number>;
@@ -234,6 +234,7 @@ export default class Minicap extends EventEmitter {
     }
     if (this.minicapServer) {
       this.minicapServer.destroy();
+      this.minicapServer = undefined;
     }
   }
 }

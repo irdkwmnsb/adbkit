@@ -110,12 +110,13 @@ export default class STFService extends EventEmitter {
     const agentProcess = new PromiseDuplex(await this.client.exec(startAgent));
     await Util.waitforText(agentProcess, '@stfagent', 10000);
 
-    ThirdUtils.dumpReadable(agentProcess, 'STFagent');
+    // debug only
+    // ThirdUtils.dumpReadable(agentProcess, 'STFagent');
     // Starting service: Intent { act=jp.co.cyberagent.stf.ACTION_START cmp=jp.co.cyberagent.stf/.Service }
     // console.log(msg.trim());
 
     this.servicesSocket = await this.client.openLocal2('localabstract:stfservice');
-    
+
     this.servicesSocket.once('close').then(() => console.log('servicesSocket just closed'));
 
     void this.startServiceStream().catch((e) => { console.log('Service failed', e); this.stop() });
@@ -126,7 +127,7 @@ export default class STFService extends EventEmitter {
     if (this._minitouchagent) return this._minitouchagent;
     this._minitouchagent = this.client.openLocal2('localabstract:minitouchagent');
     const socket = await this._minitouchagent;
-    void this.startAgentStream(socket);
+    void this.startAgentStream(socket).catch(() => { socket.destroy() });
     socket.once('close').then(() => {
       console.log('agentSocket just closed');
     });
@@ -138,7 +139,7 @@ export default class STFService extends EventEmitter {
     if (this._agentSocket) return this._agentSocket;
     this._agentSocket = this.client.openLocal2('localabstract:stfagent');
     this._agentSocket.then(socket => {
-      void this.startAgentStream(socket);
+      void this.startAgentStream(socket).catch(() => { socket.destroy() });
       socket.once('close').then(() => {
         console.log('agentSocket just closed');
       });
@@ -382,15 +383,15 @@ export default class STFService extends EventEmitter {
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
-  
+
   public async move(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
-    const cmd = `m ${contact | 0} ${x|0} ${y|0} ${pressure|0}\n`;
+    const cmd = `m ${contact | 0} ${x | 0} ${y | 0} ${pressure | 0}\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
 
   public async down(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
-    const cmd = `d ${contact} ${x|0} ${y|0} ${pressure|0}\n`;
+    const cmd = `d ${contact} ${x | 0} ${y | 0} ${pressure | 0}\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
@@ -402,13 +403,13 @@ export default class STFService extends EventEmitter {
   }
 
   public async moveCommit(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
-    const cmd = `m ${contact | 0} ${x|0} ${y|0} ${pressure|0}\nc\n`;
+    const cmd = `m ${contact | 0} ${x | 0} ${y | 0} ${pressure | 0}\nc\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
 
   public async downCommit(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
-    const cmd = `d ${contact} ${x|0} ${y|0} ${pressure|0}\nc\n`;
+    const cmd = `d ${contact} ${x | 0} ${y | 0} ${pressure | 0}\nc\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
@@ -420,7 +421,7 @@ export default class STFService extends EventEmitter {
   }
 
 
-  public async wait(time : number): Promise<number> {
+  public async wait(time: number): Promise<number> {
     const cmd = `w ${time}\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
