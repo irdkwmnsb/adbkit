@@ -5,7 +5,7 @@ import dump from './dump';
 import d from 'debug';
 import { Socket, connect } from 'node:net';
 import { promisify } from 'node:util';
-import { ClientOptions } from '../ClientOptions';
+import { ClientOptions } from '../models/ClientOptions';
 import { ObjectEncodingOptions } from 'node:fs';
 import { Client } from '..';
 

@@ -11,11 +11,11 @@ import {
   HostKillCommand,
 } from './command/host';
 import TcpUsbServer from './tcpusb/server';
-import Device from '../Device';
-import { ClientOptions } from '../ClientOptions';
-import SocketOptions from '../SocketOptions';
+import Device from '../models/Device';
+import { ClientOptions } from '../models/ClientOptions';
+import SocketOptions from '../models/SocketOptions';
 import Tracker from './tracker';
-import DeviceWithPath from '../DeviceWithPath';
+import DeviceWithPath from '../models/DeviceWithPath';
 import DeviceClient from './DeviceClient';
 
 /**

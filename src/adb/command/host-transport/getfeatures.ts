@@ -1,5 +1,5 @@
 import Command from '../../command';
-import { Features } from '../../../Features';
+import { Features } from '../../../models/Features';
 
 const RE_FEATURE = /^feature:(.*?)(?:=(.*?))?\r?$/gm;
 

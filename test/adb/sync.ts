@@ -12,7 +12,7 @@ import PushTransfer from '../../src/adb/sync/pushtransfer';
 import PullTransfer from '../../src/adb/sync/pulltransfer';
 import MockConnection from '../mock/connection';
 import Client from '../../src/adb/client';
-import Device from '../../src/Device';
+import Device from '../../src/models/Device';
 
 // This test suite is a bit special in that it requires a connected Android
 // device (or many devices). All will be tested.

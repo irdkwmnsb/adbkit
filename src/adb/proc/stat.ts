@@ -1,7 +1,7 @@
 import EventEmitter from 'node:events';
 import Parser from '../parser';
 import Sync from '../sync';
-import { CpuStats, Loads } from '../../CpuStats';
+import { CpuStats, Loads } from '../../models/CpuStats';
 
 const RE_CPULINE = /^cpu[0-9]+ .*$/gm;
 const RE_COLSEP = / +/g;

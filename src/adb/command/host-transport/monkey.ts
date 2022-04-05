@@ -2,10 +2,11 @@ import Connection from '../../connection';
 import Command from '../../command';
 import { Duplex } from 'node:stream';
 import Utils from '../../../adb/util';
+import { DeviceClientOptions } from '../../../models/DeviceClientOptions';
 
 export default class MonkeyCommand extends Command<Duplex> {
-  constructor (connection: Connection, private timeout = 1000) {
-    super(connection);
+  constructor (connection: Connection, private timeout = 1000, options?: Partial<DeviceClientOptions>) {
+    super(connection, options);
   }
 
   async execute(port: number): Promise<Duplex> {

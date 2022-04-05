@@ -3,8 +3,8 @@ import d from 'debug';
 import RgbTransform from '../../framebuffer/rgbtransform';
 import Command from '../../command';
 import { Readable } from 'node:stream';
-import FramebufferMeta, { ColorFormat } from '../../../FramebufferMeta';
-import FramebufferStreamWithMeta from '../../../FramebufferStreamWithMeta';
+import FramebufferMeta, { ColorFormat } from '../../../models/FramebufferMeta';
+import FramebufferStreamWithMeta from '../../../models/FramebufferStreamWithMeta';
 
 const debug = d('adb:command:framebuffer');
 

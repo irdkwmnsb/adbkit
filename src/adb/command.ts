@@ -2,7 +2,8 @@ import Connection from './connection';
 import Protocol from './protocol';
 import Parser from './parser';
 import d from 'debug';
-import WithToString from '../WithToString';
+import WithToString from '../models/WithToString';
+import { DeviceClientOptions } from '../models/DeviceClientOptions';
 
 const debug = d('adb:command');
 const RE_SQUOT = /'/g;
@@ -17,7 +18,7 @@ export default abstract class Command<T> {
     return this.lastCmd || '';
   }
 
-  constructor(public connection: Connection, options = {} as { sudo?: boolean }) {
+  constructor(public connection: Connection, options = {} as Partial<DeviceClientOptions>) {
     this.parser = this.connection.parser;
     this.options = { sudo: false, ...options };
   }

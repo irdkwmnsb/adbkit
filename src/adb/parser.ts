@@ -208,7 +208,14 @@ export default class Parser {
     try {
       error = (await this.readValue()).toString();
     } catch (e) {
-      // ignore
+      // keep localy generated error
+      if (e instanceof FailError) {
+        throw e;
+      } else if (e instanceof PrematureEOFError) {
+        throw e;
+      } else if (e instanceof UnexpectedDataError) {
+        throw e;
+      }
     }
     if (this.lastMessage)
       error += ` after sending "${this.lastMessage}"`;

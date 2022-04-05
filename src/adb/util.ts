@@ -1,6 +1,6 @@
 import Parser from './parser';
 import Auth from './auth';
-import ExtendedPublicKey from '../ExtendedPublicKey';
+import ExtendedPublicKey from '../models/ExtendedPublicKey';
 import { Duplex } from 'node:stream';
 import PromiseDuplex from 'promise-duplex';
 

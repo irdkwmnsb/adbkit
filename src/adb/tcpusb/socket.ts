@@ -10,7 +10,7 @@ import Client from '../client';
 import Net from 'node:net';
 import ServiceMap from './servicemap';
 import Service from './service';
-import SocketOptions from '../../SocketOptions';
+import SocketOptions from '../../models/SocketOptions';
 
 const debug = d('adb:tcpusb:socket');
 const UINT32_MAX = 0xffffffff;

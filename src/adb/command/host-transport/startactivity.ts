@@ -1,7 +1,7 @@
 import Parser from '../../parser';
 import Command from '../../command';
-import StartActivityOptions from '../../../StartActivityOptions';
-import { Extra, ExtraObject, ExtraValue } from '../../../StartServiceOptions';
+import StartActivityOptions from '../../../models/StartActivityOptions';
+import { Extra, ExtraObject, ExtraValue } from '../../../models/StartServiceOptions';
 
 const RE_ERROR = /^Error: (.*)$/;
 

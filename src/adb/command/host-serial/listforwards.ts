@@ -1,5 +1,5 @@
 import Command from '../../command';
-import Forward from '../../../Forward';
+import Forward from '../../../models/Forward';
 
 export default class ListForwardsCommand extends Command<Forward[]> {
   async execute(serial: string): Promise<Forward[]> {

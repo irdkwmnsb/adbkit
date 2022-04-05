@@ -1,5 +1,5 @@
 import Command from '../../command';
-import Reverse from '../../../Reverse';
+import Reverse from '../../../models/Reverse';
 
 export default class ListReversesCommand extends Command<Reverse[]> {
   async execute(): Promise<Reverse[]> {

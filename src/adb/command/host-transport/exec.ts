@@ -1,6 +1,6 @@
 import Command from '../../command';
 import { Duplex } from 'node:stream';
-import WithToString from '../../../WithToString';
+import WithToString from '../../../models/WithToString';
 
 export default class ExecCommand extends Command<Duplex> {
   async execute(command: string | ArrayLike<WithToString>): Promise<Duplex> {

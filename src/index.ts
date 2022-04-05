@@ -1,23 +1,23 @@
 
 export { default } from './adb';
 export { default as Adb } from './adb';
-export { ClientOptions } from './ClientOptions';
+export { ClientOptions } from './models/ClientOptions';
 
-export { CpuStats, Loads } from './CpuStats';
-export { default as Device } from './Device';
-export { default as DeviceWithPath } from './DeviceWithPath';
-export { default as ExtendedPublicKey } from './ExtendedPublicKey';
-export { Features } from './Features';
-export { default as Forward } from './Forward';
-export { default as FramebufferMeta } from './FramebufferMeta';
-export { default as FramebufferStreamWithMeta } from './FramebufferStreamWithMeta';
-export { Properties } from './Properties';
-export { default as Reverse } from './Reverse';
-export { default as SocketOptions } from './SocketOptions';
-export { default as StartActivityOptions } from './StartActivityOptions';
-export { default as StartServiceOptions, ExtraValue, ExtraObject, Extra } from './StartServiceOptions';
-export { default as TrackerChangeSet } from './TrackerChangeSet';
-export { default as WithToString } from './WithToString';
+export { CpuStats, Loads } from './models/CpuStats';
+export { default as Device } from './models/Device';
+export { default as DeviceWithPath } from './models/DeviceWithPath';
+export { default as ExtendedPublicKey } from './models/ExtendedPublicKey';
+export { Features } from './models/Features';
+export { default as Forward } from './models/Forward';
+export { default as FramebufferMeta } from './models/FramebufferMeta';
+export { default as FramebufferStreamWithMeta } from './models/FramebufferStreamWithMeta';
+export { Properties } from './models/Properties';
+export { default as Reverse } from './models/Reverse';
+export { default as SocketOptions } from './models/SocketOptions';
+export { default as StartActivityOptions } from './models/StartActivityOptions';
+export { default as StartServiceOptions, ExtraValue, ExtraObject, Extra } from './models/StartServiceOptions';
+export { default as TrackerChangeSet } from './models/TrackerChangeSet';
+export { default as WithToString } from './models/WithToString';
 
 export { default as Client } from './adb/client';
 export { default as DeviceClient } from './adb/DeviceClient';

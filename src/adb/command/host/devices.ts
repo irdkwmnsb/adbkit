@@ -1,5 +1,5 @@
 import Command from '../../command';
-import Device from '../../../Device';
+import Device from '../../../models/Device';
 import DeviceClient from '../../DeviceClient';
 
 export default class HostDevicesCommand extends Command<Device[]> {

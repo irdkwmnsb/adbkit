@@ -1,5 +1,5 @@
 import StartActivityCommand from './startactivity';
-import StartServiceOptions from '../../../StartServiceOptions';
+import StartServiceOptions from '../../../models/StartServiceOptions';
 
 export default class StartServiceCommand extends StartActivityCommand {
   execute(options: StartServiceOptions): Promise<boolean> {

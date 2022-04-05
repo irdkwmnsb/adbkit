@@ -1,4 +1,4 @@
-import { DeviceClient } from ".";
+import { DeviceClient } from "..";
 
 export default interface Device {
   id: string;

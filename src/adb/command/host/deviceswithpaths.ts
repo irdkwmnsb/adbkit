@@ -1,5 +1,5 @@
 import Command from '../../command';
-import DeviceWithPath from '../../../DeviceWithPath';
+import DeviceWithPath from '../../../models/DeviceWithPath';
 import DeviceClient from '../../DeviceClient';
 
 export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[]> {

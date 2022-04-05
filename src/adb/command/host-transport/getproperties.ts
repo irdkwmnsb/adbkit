@@ -1,5 +1,5 @@
 import Command from '../../command';
-import { Properties } from '../../../Properties';
+import { Properties } from '../../../models/Properties';
 
 const RE_KEYVAL = /^\[([\s\S]*?)\]: \[([\s\S]*?)\]\r?$/gm;
 

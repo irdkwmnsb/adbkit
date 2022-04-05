@@ -242,6 +242,7 @@ describe('Parser', () => {
             })
             stream.write('000cepic failure');
         });
+
         it('should reject with Parser.PrematureEOFError if stream ends before the error can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);

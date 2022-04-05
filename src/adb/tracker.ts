@@ -1,9 +1,9 @@
 import Parser from './parser';
 import EventEmitter from 'node:events';
-import Device from '../Device';
+import Device from '../models/Device';
 import HostDevicesCommand from './command/host/devices';
 import HostDevicesWithPathsCommand from './command/host/deviceswithpaths';
-import TrackerChangeSet from '../TrackerChangeSet';
+import TrackerChangeSet from '../models/TrackerChangeSet';
 
 /**
  * enforce EventEmitter typing

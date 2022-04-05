@@ -1,7 +1,7 @@
 import Client from './adb/client';
 // import { Keycode } from './adb/keycode';
 import util from './adb/util';
-import { ClientOptions } from './ClientOptions';
+import { ClientOptions } from './models/ClientOptions';
 
 export interface Options {
   host?: string;
@@ -10,7 +10,6 @@ export interface Options {
 }
 
 export default class Adb {
-  // static Keycode = Keycode;
   static util = util;
 
   public static createClient(options: Options = {}): Client {
