@@ -106,7 +106,7 @@ export default class Minicap extends EventEmitter {
    */
   get QuickTear(): Promise<boolean> { return this.bitflags.then(v => !!(v & 4)); }
 
-  async start(): Promise<void> {
+  async start(): Promise<this> {
     const props = await this.client.getProperties();
     const abi = props['ro.product.cpu.abi'];
     const sdkLevel = parseInt(props['ro.build.version.sdk']);
@@ -170,8 +170,10 @@ export default class Minicap extends EventEmitter {
       debug(`Impossible to connect video Socket localabstract:minicap`, e);
       throw e;
     }
-
     void this.startStream().catch(() => this.stop());
+    // wait until first stream chunk is recieved
+    await this.bitflags;
+    return this;
   }
 
   private async startStream() {

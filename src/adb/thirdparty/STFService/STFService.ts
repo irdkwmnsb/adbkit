@@ -75,7 +75,7 @@ export default class STFService extends EventEmitter {
     await this.client.install(apk);
   }
 
-  async start(): Promise<void> {
+  async start(): Promise<this> {
     this.protoSrv = await STFServiceBuf.get();
     // this.protoAgent = await STFAgentBuf.get();
 
@@ -120,6 +120,7 @@ export default class STFService extends EventEmitter {
     this.servicesSocket.once('close').then(() => console.log('servicesSocket just closed'));
 
     void this.startServiceStream().catch((e) => { console.log('Service failed', e); this.stop() });
+    return this;
   }
 
   private _minitouchagent: Promise<PromiseDuplex<Duplex>> | null = null;

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v3.1.7
+
+* thirdparty starts function retuns Promise<this>
+* thirdparty starts function get resolved once fully initalized
+* add host-serial:killforward command
+* improve error messages
+* add some exception catchs
+
 ## v3.1.6 (2022-04-01)
 
 * fix STFService localisation code

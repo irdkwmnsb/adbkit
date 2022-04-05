@@ -164,7 +164,7 @@ export default class Scrcpy extends EventEmitter {
    * Will connect to the android device, send & run the server and return deviceName, width and height.
    * After that data will be offered as a 'data' event.
    */
-  async start(): Promise<void> {
+  async start(): Promise<this> {
     const jarDest = '/data/local/tmp/scrcpy-server.jar';
     // Transfer server...
     try {
@@ -257,6 +257,9 @@ export default class Scrcpy extends EventEmitter {
     } else {
       this.startStreamRaw();
     }
+    // wait the first chunk
+    await this.height;
+    return this;
   }
 
   public stop() {

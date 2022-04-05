@@ -12,6 +12,7 @@ import {
   GetDevicePathCommand,
   GetSerialNoCommand,
   GetStateCommand,
+  KillForwardCommand,
   ListForwardsCommand,
   WaitForDeviceCommand,
 } from './command/host-serial';
@@ -48,7 +49,7 @@ const debug = d('adb:client');
 const NoUserOptionError = (err: Error) => err.message.indexOf('--user') !== -1;
 
 export default class DeviceClient {
-  private specialOptions = {sudo: false};
+  private specialOptions = { sudo: false };
   constructor(public readonly client: Client, public readonly serial: string) {
     // no code
   }
@@ -215,6 +216,16 @@ export default class DeviceClient {
   public async forward(local: string, remote: string): Promise<boolean> {
     const conn = await this.connection();
     return new ForwardCommand(conn).execute(this.serial, local, remote);
+  }
+
+  /**
+   * Remove the port forward at ADB server host (local). This is analogous to adb forward --remove <local>. It's important to note that if you are connected to a remote ADB server, the forward on that host will be removed.
+   * @param local A string representing the local endpoint on the ADB host. At time of writing, can be one of: `tcp:<port>`, `localabstract:<unix domain socket name>`, `localreserved:<unix domain socket name>`, `localfilesystem:<unix domain socket name>`, `dev:<character device name>`
+   * @returns true
+   */
+  public async removeForward(local: string): Promise<boolean> {
+    const conn = await this.connection();
+    return new KillForwardCommand(conn).execute(this.serial, local);
   }
 
   /**
@@ -765,7 +776,7 @@ export default class DeviceClient {
     const minicap = new Minicap(this, options);
     return minicap;
   }
- 
+
   /**
    * prepare a STFService and STFagent 
    * this server must be started with the start() method
