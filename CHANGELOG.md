@@ -7,7 +7,7 @@
 * add host-serial:killforward command
 * improve error messages
 * add some exception catchs
-* update sudo command usage
+* fix sudo command
 
 ## v3.1.6 (2022-04-01)
 

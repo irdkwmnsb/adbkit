@@ -2,7 +2,7 @@ import Command from '../../command';
 
 export default class InstallCommand extends Command<boolean> {
   async execute(apk: string): Promise<boolean> {
-    this._send(`shell:pm install -r ${this.escapeCompat(apk)}`);
+    this.sendCommand(`shell:pm install -r ${this.escapeCompat(apk)}`);
     await this.readOKAY();
     try {
       const match = await this.parser.searchLine(/^(Success|Failure \[(.*?)\])$/);

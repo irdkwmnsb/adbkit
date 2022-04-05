@@ -58,7 +58,7 @@ export default class DeviceClient {
   }
 
   public sudo(): DeviceClient {
-    if (this.sudo)
+    if (this.options.sudo)
       return this;
     else
       return new DeviceClient(this.client, this.serial, {...this.options, sudo: true})

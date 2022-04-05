@@ -32,7 +32,7 @@ export default class StartActivityCommand extends Command<boolean> {
   }
 
   async _run(command: string, args: Array<string | number>): Promise<boolean> {
-    this._send(`shell:am ${command} ${args.join(' ')}`);
+    this.sendCommand(`shell:am ${command} ${args.join(' ')}`);
     await this.readOKAY();
     try {
       const match = await this.parser.searchLine(RE_ERROR);

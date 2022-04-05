@@ -18,7 +18,7 @@ export interface AdbServiceInfo {
 
 export default class ServiceListCommand extends Command<AdbServiceInfo[]> {
   async execute(): Promise<AdbServiceInfo[]> {
-    this._send('shell:service list 2>/dev/null');
+    this.sendCommand('shell:service list 2>/dev/null');
     await this.readOKAY();
     const data = await this.parser.readAll()
     return this._parse(data.toString());

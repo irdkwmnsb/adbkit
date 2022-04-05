@@ -3,7 +3,7 @@ import { KnownServices } from './servicesList';
 
 export default class ServiceListCommand extends Command<Buffer> {
   async execute(serviceName: KnownServices | string, code: number | string): Promise<Buffer> {
-    this._send(`shell:service call ${serviceName} ${code} 2>/dev/null`);
+    this.sendCommand(`shell:service call ${serviceName} ${code} 2>/dev/null`);
     await this.readOKAY();
     const data = await this.parser.readAll();
     return this._parse(data.toString());

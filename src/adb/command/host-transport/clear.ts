@@ -2,7 +2,7 @@ import Command from '../../command';
 
 export default class ClearCommand extends Command<boolean> {
   async execute(pkg: string): Promise<boolean> {
-    this._send(`shell:pm clear ${pkg}`);
+    this.sendCommand(`shell:pm clear ${pkg}`);
     await this.readOKAY();
     try {
       const result = await this.parser.searchLine(/^(Success|Failed)$/)

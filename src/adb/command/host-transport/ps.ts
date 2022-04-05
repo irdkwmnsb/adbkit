@@ -31,9 +31,9 @@ import Command from '../../command';
 export default class PsCommand extends Command<Array<Partial<PsEntry>>> {
   async execute(...args: string[]): Promise<Array<Partial<PsEntry>>> {
     if (!args.length) {
-      this._send(`shell:ps`); //  2>/dev/null
+      this.sendCommand(`shell:ps`); //  2>/dev/null
     } else {
-      this._send(`shell:ps ${args.join(' ')}`); //  2>/dev/null
+      this.sendCommand(`shell:ps ${args.join(' ')}`); //  2>/dev/null
     }
     await this.readOKAY();
     const data = await this.parser.readAll()

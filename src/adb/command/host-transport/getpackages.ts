@@ -3,9 +3,9 @@ import Command from '../../command';
 export default class GetPackagesCommand extends Command<string[]> {
   async execute(flags?: string): Promise<string[]> {
     if (flags) {
-      this._send(`shell:pm list packages ${flags} 2>/dev/null`);
+      this.sendCommand(`shell:pm list packages ${flags} 2>/dev/null`);
     } else {
-      this._send('shell:pm list packages 2>/dev/null');
+      this.sendCommand('shell:pm list packages 2>/dev/null');
     }
     await this.readOKAY();
     const data = await this.parser.readAll();
