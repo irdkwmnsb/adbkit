@@ -213,8 +213,7 @@ export default class STFService extends EventEmitter {
       await Utils.waitforReadable(socket);
       const chunk = await socket.read() as Buffer;
       if (chunk) {
-        console.log('agentSocket RCV: ', chunk.length);
-        console.log(chunk.toString('hex'))
+        console.log('agentSocket RCV chunk len:', chunk.length, chunk.toString('hex').substring(0, 80));
       }
       await Utils.delay(0);
     }
