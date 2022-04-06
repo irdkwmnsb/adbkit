@@ -10,8 +10,6 @@ import { Reader } from "protobufjs";
 import STFServiceBuf from "./STFServiceBuf";
 import Util from "../../util";
 
-const version = '2.4.9';
-
 interface IEmissions {
   airplaneMode: (data: STF.AirplaneModeEvent) => void
   battery: (data: STF.BatteryEvent) => void
@@ -24,17 +22,13 @@ interface IEmissions {
 
 export interface STFServiceOptions {
   /**
-   * local port use for STFService
-   */
-  // servicePort: number,
-  /**
-   * local port use for STFService
-   */
-  // agentPort: number,
-  /**
    * calls timeout default is 15000 ms
    */
   timeout: number,
+  /**
+   * do not install the APK, if you use a custom apk
+   */
+  noInstall: boolean;
 }
 
 // const debug = Debug('STFService');
@@ -45,12 +39,27 @@ export default class STFService extends EventEmitter {
   private servicesSocket: PromiseDuplex<Duplex> | undefined;
   private protoSrv!: STFServiceBuf;
 
-  constructor(private client: DeviceClient, config = {} as Partial<STFServiceOptions>) {
+  private _maxContact: Promise<number>;
+  private _width: Promise<number>;
+  private _height: Promise<number>;
+  private _maxPressure: Promise<number>;
+
+  private setMaxContact: (width: number) => void;
+  private setWidth: (height: number) => void;
+  private setHeight: (height: number) => void;
+  private setMaxPressure: (height: number) => void;
+
+  constructor(private client: DeviceClient, options = {} as Partial<STFServiceOptions>) {
     super();
     this.config = {
       timeout: 15000,
-      ...config,
+      noInstall: false,
+      ...options,
     }
+    this._maxContact = new Promise<number>((resolve) => this.setMaxContact = resolve);
+    this._width = new Promise<number>((resolve) => this.setWidth = resolve);
+    this._height = new Promise<number>((resolve) => this.setHeight = resolve);
+    this._maxPressure = new Promise<number>((resolve) => this.setMaxPressure = resolve);
   }
 
   public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
@@ -58,38 +67,80 @@ export default class STFService extends EventEmitter {
   public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
   public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
-  private async getPath(): Promise<string> {
-    const resp = (await this.client.execOut(`pm path ${PKG}`, 'utf8')).trim();
-    if (resp.startsWith('package:'))
-      return resp.substring(8);
-    return '';
-  }
+  get maxContact(): Promise<number> { return this._maxContact; }
+  get width(): Promise<number> { return this._width; }
+  get height(): Promise<number> { return this._height; }
+  get maxPressure(): Promise<number> { return this._maxPressure; }
 
-  private async installApk(): Promise<void> {
+  /**
+   * find the APK and install it
+   */
+  private async installApk(version: string): Promise<boolean> {
     const apk = ThirdUtils.getResource(`STFService_${version}.apk`);
     try {
       await fs.promises.stat(apk);
     } catch (e) {
       throw Error(`can not find APK bin/STFService_${version}.apk`);
     }
-    await this.client.install(apk);
+    this._cachedApk = '';
+    return this.client.install(apk);
   }
 
-  async start(): Promise<this> {
-    this.protoSrv = await STFServiceBuf.get();
-    // this.protoAgent = await STFAgentBuf.get();
 
-    let setupPath = await this.getPath();
-    if (!setupPath) {
-      await this.installApk();
-      setupPath = await this.getPath();
+  private _cachedApk = '';
+  private async getApkPath(): Promise<string> {
+    if (this._cachedApk)
+      return this._cachedApk;
+    /**
+     * locate the installed apk file
+     */
+    let setupPath = (await this.client.execOut(`pm path ${PKG}`, 'utf8')).trim();
+    if (!setupPath.startsWith('package:')) {
+      return '';
+      // throw new Error(`Failed to find ${PKG} package path`);
     }
-    // console.log('current version is: ', currentVersion.trim());
+    setupPath = setupPath.substring(8);
+    this._cachedApk = setupPath;
+    return setupPath;
+  }
 
+  /**
+   * get the version number
+   */
+  private async checkVersion(version: string): Promise<'OK' | 'MISMATCH' | 'MISSING'> {
+    const setupPath = await this.getApkPath();
+    const getVersion = `export CLASSPATH='${setupPath}'; exec app_process /system/bin '${PKG}.Agent' --version 2>/dev/null`
+    const currentVersion = await this.client.execOut(getVersion, 'utf8');
+    if (!currentVersion)
+      return 'MISSING';
+    if (currentVersion.trim() !== version) {
+      return 'MISMATCH';
+    }
+    return 'OK';
+  }
+
+  /**
+    * start agent
+    */
+  private async startAgent() {
+    const setupPath = await this.getApkPath();
+    const startAgent = `export CLASSPATH='${setupPath}'; exec app_process /system/bin '${PKG}.Agent' 2>&1`
+    const agentProcess = new PromiseDuplex(await this.client.exec(startAgent));
+    await Util.waitforText(agentProcess, '@stfagent', 10000);
+    // Starting service: Intent { act=jp.co.cyberagent.stf.ACTION_START cmp=jp.co.cyberagent.stf/.Service }
+    // console.log(msg.trim());
+    // debug only
+    // ThirdUtils.dumpReadable(agentProcess, 'STFagent');
+  }
+
+  /**
+   * start long running service and keep the duplex opened
+   */
+  private async startService(): Promise<void> {
     const props = await this.client.getProperties();
-    const sdkLevel = parseInt(props['ro.build.version.sdk']);
     const action = `${PKG}.ACTION_START`;
     const component = `${PKG}/.Service`;
+    const sdkLevel = parseInt(props['ro.build.version.sdk']);
     const startServiceCmd = (sdkLevel < 26) ? 'startservice' : 'start-foreground-service'
     const duplex = new PromiseDuplex(await this.client.shell(`am ${startServiceCmd} --user 0 -a '${action}' -n '${component}'`));
     await Utils.waitforReadable(duplex);
@@ -97,54 +148,58 @@ export default class STFService extends EventEmitter {
     if (msg.includes('Error')) {
       throw Error(msg.trim())
     }
+  }
 
-    const getVersion = `export CLASSPATH='${setupPath}'; exec app_process /system/bin '${PKG}.Agent' --version 2>/dev/null`
-    const currentVersion = await this.client.execOut(getVersion, 'utf8');
-    if (currentVersion.trim() !== version) {
-      await this.client.uninstall(PKG);
-      await this.installApk();
-      setupPath = await this.getPath();
+  /**
+   * uninstall the service
+   */
+  public uninstall(): Promise<boolean> {
+    return this.client.uninstall(PKG);
+  }
+
+  async start(): Promise<this> {
+    this.protoSrv = await STFServiceBuf.get();
+    if (!this.config.noInstall) {
+      const versionStatus = await this.checkVersion('2.4.9');
+      if (versionStatus === 'MISMATCH') {
+        await this.uninstall();
+      }
+      if (versionStatus !== 'OK') {
+        await this.installApk('2.4.9');
+      }
     }
-
-    const startAgent = `export CLASSPATH='${setupPath}'; exec app_process /system/bin '${PKG}.Agent' 2>&1`
-    const agentProcess = new PromiseDuplex(await this.client.exec(startAgent));
-    await Util.waitforText(agentProcess, '@stfagent', 10000);
-
-    // debug only
-    // ThirdUtils.dumpReadable(agentProcess, 'STFagent');
-    // Starting service: Intent { act=jp.co.cyberagent.stf.ACTION_START cmp=jp.co.cyberagent.stf/.Service }
-    // console.log(msg.trim());
-
+    await this.startService();
+    await this.startAgent();
     this.servicesSocket = await this.client.openLocal2('localabstract:stfservice');
-
     this.servicesSocket.once('close').then(() => console.log('servicesSocket just closed'));
-
     void this.startServiceStream().catch((e) => { console.log('Service failed', e); this.stop() });
     return this;
   }
 
-  private _minitouchagent: Promise<PromiseDuplex<Duplex>> | null = null;
+  private _minitouchagent: Promise<PromiseDuplex<Duplex>> | undefined;
+  /**
+   * get minitouch duplex, if not connected open connexion
+   */
   async getMinitouchSocket(): Promise<PromiseDuplex<Duplex>> {
     if (this._minitouchagent) return this._minitouchagent;
     this._minitouchagent = this.client.openLocal2('localabstract:minitouchagent');
     const socket = await this._minitouchagent;
-    void this.startAgentStream(socket).catch(() => { socket.destroy() });
     socket.once('close').then(() => {
       console.log('agentSocket just closed');
     });
+    void this.startMinitouchStream(socket).catch(() => { socket.destroy() });
     return socket;
   }
 
-  private _agentSocket: Promise<PromiseDuplex<Duplex>> | null = null;
-  getAgentSocket(): Promise<PromiseDuplex<Duplex>> {
+  private _agentSocket: Promise<PromiseDuplex<Duplex>> | undefined;
+  async getAgentSocket(): Promise<PromiseDuplex<Duplex>> {
     if (this._agentSocket) return this._agentSocket;
     this._agentSocket = this.client.openLocal2('localabstract:stfagent');
-    this._agentSocket.then(socket => {
-      void this.startAgentStream(socket).catch(() => { socket.destroy() });
-      socket.once('close').then(() => {
-        console.log('agentSocket just closed');
-      });
-    })
+    const socket = await this._agentSocket;
+    socket.once('close').then(() => {
+      console.log('agentSocket just closed');
+    });
+    void this.startAgentStream(socket).catch(() => { socket.destroy() });
     return this._agentSocket;
   }
 
@@ -206,9 +261,44 @@ export default class STFService extends EventEmitter {
       await Utils.delay(0);
     }
   }
+  /**
+   * RCV banne:
+   * v 1
+   * ^ %d %d %d %d DEFAULT_MAX_CONTACTS, width, height, DEFAULT_MAX_PRESSURE;
+   * @param socket 
+   */
+  private async startMinitouchStream(socket: PromiseDuplex<Duplex>) {
+    socket.setEncoding('ascii');
+    let data = '';
+    for (; ;) {
+      await Utils.waitforReadable(socket);
+      const chunk = await socket.read() as string;
+      data = data + chunk;
+      for (;;) {
+        const p = data.indexOf('\n');
+        if (p >= 0)
+          break;
+        const line = data.substring(0, p);
+        data = data.substring(p + 1);
+
+        if (line.startsWith('v 1'))
+          continue;
+        if (line.startsWith('^')) {
+          const [, mc, w, h, mp ] = line.split(/ /);
+          this.setMaxContact(Number(mc));
+          this.setWidth(Number(w));
+          this.setHeight(Number(h));
+          this.setMaxPressure(Number(mp));
+          continue;
+        }
+        console.error('minitouchSocket RCV chunk len:', line);
+      }
+      await Utils.delay(0);
+    }
+  }
+
 
   private async startAgentStream(socket: PromiseDuplex<Duplex>) {
-    // const root = await wireP;
     for (; ;) {
       await Utils.waitforReadable(socket);
       const chunk = await socket.read() as Buffer;
@@ -218,10 +308,18 @@ export default class STFService extends EventEmitter {
       await Utils.delay(0);
     }
   }
-
+  /**
+   * esponce callback hooks
+   */
   private responseHook: { [key: number]: (response: Uint8Array) => void } = {}
+  /**
+   * request id counter [1..0xFFFFFF]
+   */
   private reqCnt = 1;
 
+  /**
+   * Generic method to push message to service
+   */
   private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader: null | ((req: Uint8Array) => T)): Promise<T> {
     const id = (this.reqCnt + 1) | 0xFFFFFF;
     this.reqCnt = id;
@@ -240,7 +338,6 @@ export default class STFService extends EventEmitter {
     });
     const buf = this.protoSrv.write.Envelope(envelope)
     this.servicesSocket.write(buf);
-
     const timeout = Utils.delay(this.config.timeout).then(() => {
       if (this.responseHook[id]) {
         delete this.responseHook[id];
@@ -251,7 +348,9 @@ export default class STFService extends EventEmitter {
     return promise;
   }
 
-
+  /**
+   * Generic method to push message to agent
+   */
   private async pushAgent(type: STF.MessageType, message: Uint8Array): Promise<number> {
     const envelope = { type, message };
     // const buf = this.protoAgent.write.Envelope(envelope)
@@ -260,6 +359,8 @@ export default class STFService extends EventEmitter {
     return socket.write(buf);
   }
 
+  ////////////////////////////
+  // public methods
 
   public async getAccounts(type?: string): Promise<STF.GetAccountsResponse> {
     const message = this.protoSrv.write.GetAccountsRequest({ type });
@@ -376,7 +477,7 @@ export default class STFService extends EventEmitter {
   }
 
   /**
-   * commit minitouch events
+   * Send commit minitouch events
    */
   public async commit(): Promise<number> {
     const cmd = `c\n`;
@@ -384,49 +485,72 @@ export default class STFService extends EventEmitter {
     return s.write(cmd, 'ascii');
   }
 
+  /**
+   * Send move minitouch events
+   */
   public async move(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
     const cmd = `m ${contact | 0} ${x | 0} ${y | 0} ${pressure | 0}\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
 
+  /**
+   * Send press down minitouch events
+   */
   public async down(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
     const cmd = `d ${contact} ${x | 0} ${y | 0} ${pressure | 0}\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
 
+  /**
+   * Send press up minitouch events
+   */
   public async up(contact = 0 as 0 | 1): Promise<number> {
     const cmd = `u ${contact | 0}\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
 
+  /**
+   * Send move + commit minitouch events
+   */
   public async moveCommit(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
     const cmd = `m ${contact | 0} ${x | 0} ${y | 0} ${pressure | 0}\nc\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
 
+  /**
+   * Send press down + commit minitouch events
+   */
   public async downCommit(x: number, y: number, contact = 0 as 0 | 1, pressure = 0): Promise<number> {
     const cmd = `d ${contact} ${x | 0} ${y | 0} ${pressure | 0}\nc\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
 
+  /**
+   * Send press up + commit minitouch events
+   */
   public async upCommit(contact = 0 as 0 | 1): Promise<number> {
     const cmd = `u ${contact | 0}\nc\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
 
-
+  /**
+   * Send wait instruction minitouch events
+   */
   public async wait(time: number): Promise<number> {
     const cmd = `w ${time}\n`;
     const s = await this.getMinitouchSocket();
     return s.write(cmd, 'ascii');
   }
 
+  /**
+   * stop the service
+   */
   public stop() {
     if (this.servicesSocket) {
       this.servicesSocket.destroy();
@@ -436,6 +560,9 @@ export default class STFService extends EventEmitter {
       this._agentSocket.then(a => a.destroy());
       this._agentSocket = undefined;
     }
-    //this.minicapServer.destroy();
+    if (this._minitouchagent) {
+      this._minitouchagent.then(a => a.destroy());
+      this._minitouchagent = undefined;
+    }
   }
 }
