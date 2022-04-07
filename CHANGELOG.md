@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v3.1.7
+## v3.1.7 (2022-04-07)
 
 * thirdparty starts function retuns Promise<this>
 * thirdparty starts function get resolved once fully initalized
@@ -8,6 +8,7 @@
 * improve error messages
 * add some exception catchs
 * fix sudo command
+* rewrite STFService connector, add noInstall flag
 
 ## v3.1.6 (2022-04-01)
 
