@@ -5,7 +5,6 @@ import Debug from 'debug';
 import net from 'node:net';
 import ThirdUtils from "../ThirdUtils";
 import { Utils } from "../../..";
-import Util from "../../util";
 import PromiseSocket from "promise-socket";
 
 export interface MinicapOptions {
@@ -13,8 +12,6 @@ export interface MinicapOptions {
    * {RealWidth}x{RealHeight}@{VirtualWidth}x{VirtualHeight}/{Orientation}
    */
   dimention: string;
-
-  tunnelDelay: number,
 }
 
 const debug = Debug('minicap');
@@ -25,6 +22,7 @@ const debug = Debug('minicap');
 interface IEmissions {
   data: (data: Buffer) => void
   error: (error: Error) => void
+  disconnect: () => void
 }
 
 export default class Minicap extends EventEmitter {
@@ -54,7 +52,6 @@ export default class Minicap extends EventEmitter {
   constructor(private client: DeviceClient, config = {} as Partial<MinicapOptions>) {
     super();
     this.config = {
-      tunnelDelay: 1000,
       dimention: '',
       ...config,
     }
@@ -152,15 +149,23 @@ export default class Minicap extends EventEmitter {
       }
     }
     this.minicapServer = new PromiseDuplex(await this.client.shell(args.map(a => a.toString()).join(' ')));
-    ThirdUtils.dumpReadable(this.minicapServer, 'minicap');
-
-    if (!Utils.waitforReadable(this.minicapServer, this.config.tunnelDelay)) {
-      // try to read error
-      const out = await this.minicapServer.setEncoding('utf8').readAll();
-      console.log('read out:', out);
-    }
-    // Wait 1 sec to forward to work
-    await Util.delay(this.config.tunnelDelay);
+    // minicap: PID: 14231
+    // INFO: Using projection 1080x2376@1080x2376/0
+    // INFO: (external/MY_minicap/src/minicap_30.cpp:243) Creating SurfaceComposerClient
+    // INFO: (external/MY_minicap/src/minicap_30.cpp:246) Performing SurfaceComposerClient init check
+    // INFO: (external/MY_minicap/src/minicap_30.cpp:257) Creating virtual display
+    // INFO: (external/MY_minicap/src/minicap_30.cpp:263) Creating buffer queue
+    // INFO: (external/MY_minicap/src/minicap_30.cpp:266) Setting buffer options
+    // INFO: (external/MY_minicap/src/minicap_30.cpp:270) Creating CPU consumer
+    // INFO: (external/MY_minicap/src/minicap_30.cpp:274) Creating frame waiter
+    // INFO: (external/MY_minicap/src/minicap_30.cpp:278) Publishing virtual display
+    // INFO: (jni/minicap/JpgEncoder.cpp:64) Allocating 7783428 bytes for JPG encoder
+    // if (!Utils.waitforReadable(this.minicapServer, this.config.tunnelDelay)) {
+    //   // try to read error
+    //   const out = await this.minicapServer.setEncoding('utf8').readAll();
+    //   console.log('read minicapServer stdOut:', out);
+    // }
+    await Utils.waitforText(this.minicapServer, 'JpgEncoder');
     this.videoSocket = new PromiseSocket(new net.Socket());
 
     // Connect videoSocket
@@ -229,14 +234,24 @@ export default class Minicap extends EventEmitter {
     }
   }
 
-  public stop() {
+  public stop(): boolean {
+    let close = false;
     if (this.videoSocket) {
       this.videoSocket.destroy();
       this.videoSocket = undefined;
+      close = true;
     }
     if (this.minicapServer) {
       this.minicapServer.destroy();
       this.minicapServer = undefined;
+      close = true;
     }
+    if (close)
+      this.emit('disconnect');
+    return close;
+  }
+
+  isRunning(): boolean {
+    return this.videoSocket !== null;
   }
 }

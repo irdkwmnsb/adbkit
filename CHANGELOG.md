@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v3.1.8 (2022-04-12)
+
+* add disconnect event in third party modules.
+* add isRunning() in third party modules.
+* remove tunnelDelay from MiniCap option
+
 ## v3.1.7 (2022-04-07)
 
 * thirdparty starts function retuns Promise<this>

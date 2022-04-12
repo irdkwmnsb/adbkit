@@ -18,6 +18,7 @@ interface IEmissions {
   rotation: (data: STF.RotationEvent) => void
   browerPackage: (data: STF.BrowserPackageEvent) => void
   error: (data: Error) => void
+  disconnect: () => void
 }
 
 export interface STFServiceOptions {
@@ -171,7 +172,7 @@ export default class STFService extends EventEmitter {
     await this.startService();
     await this.startAgent();
     this.servicesSocket = await this.client.openLocal2('localabstract:stfservice');
-    this.servicesSocket.once('close').then(() => console.log('servicesSocket just closed'));
+    this.servicesSocket.once('close').then(() => this.stop());
     void this.startServiceStream().catch((e) => { console.log('Service failed', e); this.stop() });
     return this;
   }
@@ -551,18 +552,28 @@ export default class STFService extends EventEmitter {
   /**
    * stop the service
    */
-  public stop() {
+  public stop(): boolean {
+    let close = false;
     if (this.servicesSocket) {
       this.servicesSocket.destroy();
       this.servicesSocket = undefined;
+      close = true;
     }
     if (this._agentSocket) {
       this._agentSocket.then(a => a.destroy());
       this._agentSocket = undefined;
+      close = true;
     }
     if (this._minitouchagent) {
       this._minitouchagent.then(a => a.destroy());
       this._minitouchagent = undefined;
+      close = true;
     }
+    if (close)
+      this.emit('disconnect');
+    return close;
+  }
+  isRunning(): boolean {
+    return this.servicesSocket !== null;
   }
 }

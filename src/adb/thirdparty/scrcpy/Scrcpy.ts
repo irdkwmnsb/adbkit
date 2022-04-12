@@ -33,6 +33,7 @@ interface IEmissions {
   data: (pts: BigInt, data: Buffer) => void
   raw: (data: Buffer) => void
   error: (error: Error) => void
+  disconnect: () => void
 }
 
 /**
@@ -57,7 +58,7 @@ interface IEmissions {
  * WARNING:
  * Need USB Debug checked in developper option for MIUI
  */
-export default class Scrcpy extends EventEmitter {  
+export default class Scrcpy extends EventEmitter {
   private config: ScrcpyOptions;
   private videoSocket: PromiseDuplex<Duplex> | undefined;
   private controlSocket: PromiseDuplex<Duplex> | undefined;
@@ -217,7 +218,7 @@ export default class Scrcpy extends EventEmitter {
       debug('Impossible to run server:', e);
       throw e;
     }
-    
+
     if (Utils.waitforReadable(this.scrcpyServer, this.config.tunnelDelay)) {
       await this.scrcpyServer.read();
       // const buffer = await this.scrcpyServer.read();
@@ -228,7 +229,7 @@ export default class Scrcpy extends EventEmitter {
 
     // Wait 1 sec to forward to work
     await Util.delay(this.config.tunnelDelay);
-    
+
     // Connect videoSocket
     this.videoSocket = await this.client.openLocal2('localabstract:scrcpy');
     // Connect controlSocket
@@ -262,17 +263,28 @@ export default class Scrcpy extends EventEmitter {
     return this;
   }
 
-  public stop() {
+  public stop(): boolean {
+    let close = false;
     if (this.videoSocket) {
       this.videoSocket.destroy();
       this.videoSocket = undefined;
+      close = true;
     }
     if (this.controlSocket) {
       this.controlSocket.destroy();
       this.controlSocket = undefined;
+      close = true;
     }
     this.scrcpyServer.destroy();
+    if (close)
+      this.emit('disconnect');
+    return close;
   }
+
+  isRunning(): boolean {
+    return this.videoSocket !== null;
+  }
+
 
   private startStreamRaw() {
     this.videoSocket.stream.on('data', d => this.emit('raw', d));
@@ -291,7 +303,7 @@ export default class Scrcpy extends EventEmitter {
     let pts = BigInt(0);// Buffer.alloc(0);
     for (; ;) {
       await Utils.waitforReadable(this.videoSocket);
-      let len: number| undefined = undefined;
+      let len: number | undefined = undefined;
       if (this.config.sendFrameMeta) {
         const frameMeta = this.videoSocket.stream.read(12) as Buffer;
         if (!frameMeta) {
@@ -300,7 +312,7 @@ export default class Scrcpy extends EventEmitter {
         }
         pts = frameMeta.readBigUint64BE();
         len = frameMeta.readUInt32BE(8);
-        if (pts === 0xFFFFFFFFFFFFFFFFn){
+        if (pts === 0xFFFFFFFFFFFFFFFFn) {
           // non-media data packet
           pts = -1n;
         }
@@ -386,7 +398,7 @@ export default class Scrcpy extends EventEmitter {
   }
 
   async injectScrollEvent(position: Point, screenSize: Point, HScroll: number, VScroll: number): Promise<void> {
-    const chunk =new BufWrite(20);
+    const chunk = new BufWrite(20);
     chunk.writeUint8(ControlMessage.TYPE_INJECT_SCROLL_EVENT);
     // Writes a long to the underlying output stream as eight bytes, high byte first.
     chunk.writeUint32BE(position.x | 0);
