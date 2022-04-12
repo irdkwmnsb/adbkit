@@ -2,8 +2,8 @@ import Protocol from './protocol';
 import { Duplex } from 'node:stream';
 
 export class FailError extends Error {
-  constructor(message: string) {
-    super(`Failure: '${message}'`);
+  constructor(message: string, lastMessage: string) {
+    super(`Failure: '${message}' lastMessage:${lastMessage}`);
     Object.setPrototypeOf(this, FailError.prototype);
     this.name = 'FailError';
     Error.captureStackTrace(this, FailError);
@@ -12,8 +12,8 @@ export class FailError extends Error {
 
 export class PrematureEOFError extends Error {
   public missingBytes: number;
-  constructor(howManyMissing: number) {
-    super(`Premature end of stream, needed ${howManyMissing} more bytes`);
+  constructor(howManyMissing: number, lastMessage: string) {
+    super(`Premature end of stream, needed ${howManyMissing} more bytes lastMessage:${lastMessage}`);
     Object.setPrototypeOf(this, PrematureEOFError.prototype);
     this.name = 'PrematureEOFError';
     this.missingBytes = howManyMissing;
@@ -22,8 +22,8 @@ export class PrematureEOFError extends Error {
 }
 
 export class UnexpectedDataError extends Error {
-  constructor(public unexpected: string, public expected: string) {
-    super(`Unexpected '${unexpected}', was expecting ${expected}`);
+  constructor(public unexpected: string, public expected: string, lastMessage: string) {
+    super(`Unexpected '${unexpected}', was expecting ${expected} lastMessage:${lastMessage}`);
     Object.setPrototypeOf(this, UnexpectedDataError.prototype);
     this.name = 'UnexpectedDataError';
     Error.captureStackTrace(this, UnexpectedDataError);
@@ -137,7 +137,7 @@ export default class Parser {
             }
           }
           if (this.ended) {
-            return reject(new Parser.PrematureEOFError(howMany));
+            return reject(new Parser.PrematureEOFError(howMany, this.lastMessage));
           }
         } else {
           return resolve(Buffer.alloc(0));
@@ -145,7 +145,7 @@ export default class Parser {
       };
       endListener = () => {
         this.ended = true;
-        return reject(new Parser.PrematureEOFError(howMany));
+        return reject(new Parser.PrematureEOFError(howMany, this.lastMessage));
       };
       errorListener = (err) => {
         reject(err)
@@ -179,7 +179,7 @@ export default class Parser {
             }
           }
           if (this.ended) {
-            return reject(new Parser.PrematureEOFError(howMany));
+            return reject(new Parser.PrematureEOFError(howMany, this.lastMessage));
           }
         } else {
           return resolve();
@@ -187,7 +187,7 @@ export default class Parser {
       };
       endListener = () => {
         this.ended = true;
-        return reject(new Parser.PrematureEOFError(howMany));
+        return reject(new Parser.PrematureEOFError(howMany, this.lastMessage));
       };
       errorListener = (err) => {
         return reject(err);
@@ -217,9 +217,7 @@ export default class Parser {
         throw e;
       }
     }
-    if (this.lastMessage)
-      error += ` after sending "${this.lastMessage}"`;
-    throw new Parser.FailError(error);
+    throw new Parser.FailError(error, this.lastMessage);
   }
 
   public async readValue(): Promise<Buffer> {
@@ -265,6 +263,6 @@ export default class Parser {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public unexpected(data: string, expected: string): Promise<never> {
-    return Promise.reject(new Parser.UnexpectedDataError(data, expected));
+    return Promise.reject(new Parser.UnexpectedDataError(data, expected, this.lastMessage));
   }
 }

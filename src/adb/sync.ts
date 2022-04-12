@@ -31,6 +31,7 @@ export interface ENOENT extends Error {
 
 export default class Sync extends EventEmitter {
   private parser: Parser;
+  private lastMessage: string;
 
   public static temp(path: string): string {
     return `${TEMP_PATH}/${Path.basename(path)}`;
@@ -249,7 +250,7 @@ export default class Sync extends EventEmitter {
     try {
       const length = await this.parser.readBytes(4);
       const buf = await this.parser.readBytes(length.readUInt32LE(0));
-      return Promise.reject(new Parser.FailError(buf.toString()));
+      return Promise.reject(new Parser.FailError(buf.toString(), this.lastMessage));
     } finally {
       await this.parser.end();
     }
@@ -267,6 +268,7 @@ export default class Sync extends EventEmitter {
     const payload = Buffer.alloc(cmd.length + 4);
     payload.write(cmd, 0, cmd.length);
     payload.writeUInt32LE(length, cmd.length);
+    this.lastMessage = `${cmd} ${length}`;
     return this.connection.write(payload);
   }
 
@@ -277,7 +279,8 @@ export default class Sync extends EventEmitter {
    * @returns byte write count
    */
   private sendCommandWithArg(cmd: string, arg: string): Promise<number> {
-    debug(`${cmd} ${arg}`);
+    this.lastMessage = `${cmd} ${arg}`;
+    debug(this.lastMessage);
     const arglen = Buffer.byteLength(arg, 'utf-8');
     const payload = Buffer.alloc(cmd.length + 4 + arglen);
     let pos = 0;

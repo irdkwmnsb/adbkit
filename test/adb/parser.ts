@@ -376,7 +376,7 @@ describe('Parser', () => {
             parser.unexpected('foo', "'bar' or end of stream").catch(e => {
                 const err = e as UnexpectedDataError;
                 expect(err).to.be.an.instanceOf(Parser.UnexpectedDataError);
-                expect(err.message).to.equal("Unexpected 'foo', was expecting 'bar' or end of stream");
+                expect(err.message).to.equal("Unexpected 'foo', was expecting 'bar' or end of stream lastMessage:");
                 expect(err.unexpected).to.equal('foo');
                 expect(err.expected).to.equal("'bar' or end of stream");
                 done();

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.1.9
+
+* improve Error message buy adding context
+
 ## v3.1.8 (2022-04-12)
 
 * add disconnect event in third party modules.
