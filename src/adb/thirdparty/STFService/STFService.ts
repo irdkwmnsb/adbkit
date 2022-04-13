@@ -83,15 +83,15 @@ export default class STFService extends EventEmitter {
     } catch (e) {
       throw Error(`can not find APK bin/STFService_${version}.apk`);
     }
-    this._cachedApk = '';
+    this._cachedApkPath = '';
     return this.client.install(apk);
   }
 
 
-  private _cachedApk = '';
+  private _cachedApkPath = '';
   private async getApkPath(): Promise<string> {
-    if (this._cachedApk)
-      return this._cachedApk;
+    if (this._cachedApkPath)
+      return this._cachedApkPath;
     /**
      * locate the installed apk file
      */
@@ -101,7 +101,7 @@ export default class STFService extends EventEmitter {
       // throw new Error(`Failed to find ${PKG} package path`);
     }
     setupPath = setupPath.substring(8);
-    this._cachedApk = setupPath;
+    this._cachedApkPath = setupPath;
     return setupPath;
   }
 

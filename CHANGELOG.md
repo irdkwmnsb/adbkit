@@ -1,8 +1,9 @@
 # CHANGELOG
 
-## v3.1.9
+## v3.1.9 (2022-04-13)
 
 * improve Error message buy adding context
+* fix broken DeviceClient.install()
 
 ## v3.1.8 (2022-04-12)
 

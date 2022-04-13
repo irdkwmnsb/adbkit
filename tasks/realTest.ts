@@ -180,14 +180,14 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     console.log(await STFService.getSdStatus()); // Ok
     console.log(await STFService.getWifiStatus()); // Ok
   } catch(e) {
-    console.error('scrcpy failed', e);
+    console.error('STFService failed', e);
   } finally {
     //minicap.stop();
   }
 }
 
 const testRouting = async (deviceClient: DeviceClient) => {
-  deviceClient.sudo = true;
+  deviceClient = deviceClient.sudo();
   const rules = await deviceClient.ipRule('list');
   const routes = await deviceClient.ipRoute('list', 'table', 'all');
   const routesWifi = await deviceClient.ipRoute('show table wlan0');

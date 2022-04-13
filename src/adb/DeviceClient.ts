@@ -552,26 +552,10 @@ export default class DeviceClient {
    */
   public async install(apk: string | ReadStream): Promise<boolean> {
     const temp = Sync.temp(typeof apk === 'string' ? apk : '_stream.apk');
-    // const transfer = 
-    await this.push(apk, temp);
+    const transfer = await this.push(apk, temp);
+    await transfer.waitForEnd();
     const value = await this.installRemote(temp);
     return value
-    // let endListener!: () => void;
-    // let errorListener!: (err: Error) => void;
-    // try {
-    //   return await new Promise<boolean>((resolve, reject) => {
-    //     errorListener = (err_1: Error) => reject(err_1);
-    //     endListener = async () => {
-    //       const value = await this.installRemote(temp);
-    //       resolve(value);
-    //     };
-    //     transfer.on('error', errorListener);
-    //     transfer.on('end', endListener);
-    //   });
-    // } finally {
-    //   transfer.removeListener('error', errorListener);
-    //   transfer.removeListener('end', endListener);
-    // }
   }
 
   /**
@@ -584,8 +568,10 @@ export default class DeviceClient {
    */
   public async installRemote(apk: string): Promise<boolean> {
     const transport = await this.transport();
+
     await new hostCmd.InstallCommand(transport, this.options).execute(apk);
-    const stream = await this.shell(['rm', '-f', apk]);
+
+    const stream = await this.exec(['rm', '-f', apk]);
     await new Parser(stream).readAll();
     return true;
   }

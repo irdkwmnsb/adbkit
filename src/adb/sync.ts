@@ -33,6 +33,11 @@ export default class Sync extends EventEmitter {
   private parser: Parser;
   private lastMessage: string;
 
+  /**
+   * get a temp file path
+   * @param path filename
+   * @returns full path on android devices
+   */
   public static temp(path: string): string {
     return `${TEMP_PATH}/${Path.basename(path)}`;
   }
