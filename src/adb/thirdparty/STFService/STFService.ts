@@ -89,6 +89,10 @@ export default class STFService extends EventEmitter {
 
 
   private _cachedApkPath = '';
+  /**
+   * 
+   * @returns get agent setup path
+   */
   private async getApkPath(): Promise<string> {
     if (this._cachedApkPath)
       return this._cachedApkPath;
@@ -106,7 +110,8 @@ export default class STFService extends EventEmitter {
   }
 
   /**
-   * get the version number
+   * get the current installed Agent version number
+   * @returns 'MISSING' if not installed, 'OK' if expected, 'MISMATCH' if version differ
    */
   private async checkVersion(version: string): Promise<'OK' | 'MISMATCH' | 'MISSING'> {
     const setupPath = await this.getApkPath();

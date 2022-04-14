@@ -180,13 +180,13 @@ export default class DeviceClient {
   }
 
   /**
-   * Retrieves the list of available services
+   * exec a service call command and return Parcel responce Data as a Buffer
    *
    * @returns a PsEntry array
    */
-  public async callServiceRaw(serviceName: hostCmd.KnownServices | string, code: number | string): Promise<Buffer> {
+  public async callServiceRaw(serviceName: hostCmd.KnownServices | string, code: number | string, ...args: Array<hostCmd.ServiceCallArg>): Promise<hostCmd.ParcelReader> {
     const transport = await this.transport();
-    return new hostCmd.ServiceCallCommand(transport, this.options).execute(serviceName, code);
+    return new hostCmd.ServiceCallCommand(transport, this.options).execute(serviceName, code, args);
   }
 
   /**

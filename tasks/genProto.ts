@@ -2,6 +2,10 @@ import { EOL } from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 
+/**
+ * Gent Typescript interface from protobuf.
+ */
+
 function convert(data: string) {
   data = data.replace(/ \[default = \d+\]/g, '');
   data = data.replace(/message (\w+) /g, 'export interface $1 ');

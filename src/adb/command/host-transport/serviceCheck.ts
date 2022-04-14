@@ -1,9 +1,9 @@
 import Command from '../../command';
 import { KnownServices } from './servicesList';
 
-export default class ServiceCallCommand extends Command<boolean> {
+export default class ServiceCheckCommand extends Command<boolean> {
   async execute(serviceName: KnownServices | string): Promise<boolean> {
-    this.sendCommand(`shell:service check ${serviceName} 2>/dev/null`);
+    this.sendCommand(`exec:service check ${serviceName} 2>/dev/null`);
     await this.readOKAY();
     const data = await this.parser.readAll()
     return this._parse(data.toString());

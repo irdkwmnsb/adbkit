@@ -30,6 +30,7 @@ export { KeyCodes } from './adb/keycode';
 export { default as Utils } from './adb/util';
 
 export { PsEntry } from './adb/command/host-transport/ps';
+export { ServiceCallArg, ParcelReader } from './adb/command/host-transport';
 
 export { default as Scrcpy } from './adb/thirdparty/scrcpy/Scrcpy';
 export * from './adb/thirdparty/scrcpy/ScrcpyModel';
