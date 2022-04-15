@@ -1,5 +1,4 @@
 import Command from '../../command';
-import pc from 'picocolors'
 import ShellExecError from './ShellExecError';
 import Connection from '../../connection';
 
@@ -109,7 +108,7 @@ export class IpRouteEntry {
             (this[next] as string) = value;
           break;
         default:
-          throw Error(`Failed to parse line:\n ${line}\n token: ${pc.yellow(next)} in ip route response, Fix me in ipRoute.ts`);
+          throw Error(`Failed to parse line:\n ${line}\n token: ${next} in ip route response, Fix me in ipRoute.ts`);
       }
     }
   }

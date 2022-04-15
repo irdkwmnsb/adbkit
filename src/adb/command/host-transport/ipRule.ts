@@ -1,5 +1,4 @@
 import Command from '../../command';
-import pc from 'picocolors'
 
 /**
  * Usage: ip rule { add | del } SELECTOR ACTION
@@ -61,7 +60,7 @@ export class IpRuleEntry {
           this[next] = true;
           break;
         default:
-          throw Error(`Failed to parse line:\n ${line}\n token: ${pc.yellow(next)} in ip route response, Fix me in ipRule.ts`);
+          throw Error(`Failed to parse line:\n ${line}\n token: ${next} in ip route response, Fix me in ipRule.ts`);
       }
     }
   }
