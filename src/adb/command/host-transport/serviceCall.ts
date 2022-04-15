@@ -2,7 +2,6 @@ import Command from '../../command';
 import { KnownServices } from './servicesList';
 import { EOL } from 'os';
 
-
 export type ServiceCallArg = ServiceCallArgNumber | ServiceCallArgString | ServiceCallArgNull;
 
 export class ServiceCallArgNumber {
@@ -37,28 +36,26 @@ export class ParcelReader {
     let pos = this.pos;
     const data = this.data;
     // 32 bit len in number of char16_t chars
-    let chars = data.readInt32BE(pos);
-    if (chars & 1) {
-      chars++;
-    }
-    const len = chars * 2;
-    const dest = Buffer.allocUnsafe(len);
+    const chars = data.readInt32BE(pos);
     pos += 4;
+    const block = (chars + 1) >> 1;
+    const dest = Buffer.allocUnsafe(block  * 4);
 
-    for (let i = 0; i < len - 1; i += 2) {
-      const code = data.readUInt16BE(pos + i);
-      dest.writeUint16LE(code, i);
+    for (let i = 0; i < block; i++) {
+      const src = pos + i * 4;
+      const dst = i * 4;
+      const code1 = data.readUInt16BE(src);
+      const code2 = data.readUInt16BE(src + 2);
+      dest.writeUint16LE(code2, dst);
+      dest.writeUint16LE(code1, dst + 2);
     }
-    for (let i = 0; i < len; i += 4) {
-      const p1 = dest[i]
-      const p2 = dest[i + 1]
-      dest[i] = dest[i + 2];
-      dest[i + 1] = dest[i + 3];
-      dest[i + 2] = p1;
-      dest[i + 3] = p2;
+    this.pos += pos + block * 4;
+
+    if (chars & 1) {
+      return dest.toString('utf16le', 0, dest.length - 1);
+    } else {
+      return dest.toString('utf16le');
     }
-    this.pos += pos + len;
-    return dest.toString('utf16le');
   }
 
   public dump(): string {
