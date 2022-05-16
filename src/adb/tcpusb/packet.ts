@@ -63,7 +63,8 @@ export default class Packet {
   ) {}
 
   public verifyChecksum(): boolean {
-    return this.check === Packet.checksum(this.data);
+    // see https://github.com/DeviceFarmer/adbkit/issues/42
+    return this.check === 0 || this.check === Packet.checksum(this.data);
   }
 
   public verifyMagic(): boolean {

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v3.1.11
+* Fix https://github.com/DeviceFarmer/adbkit/issues/42
+
 ## v3.1.10 (2022-05-16)
 * Tracker.on('add', listenner) always receves previous add events.
 
