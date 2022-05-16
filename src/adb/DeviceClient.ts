@@ -44,6 +44,7 @@ import PromiseDuplex from 'promise-duplex';
 import Protocol from './protocol';
 import { Utils } from '..';
 import { DeviceClientOptions } from '../models/DeviceClientOptions';
+import ServiceCallCommand, { ParcelReader, ServiceCallArg } from './command/host-transport/serviceCall';
 
 const debug = d('adb:client');
 
@@ -184,9 +185,9 @@ export default class DeviceClient {
    *
    * @returns a PsEntry array
    */
-  public async callServiceRaw(serviceName: hostCmd.KnownServices | string, code: number | string, ...args: Array<hostCmd.ServiceCallArg>): Promise<hostCmd.ParcelReader> {
+  public async callServiceRaw(serviceName: hostCmd.KnownServices | string, code: number | string, ...args: Array<ServiceCallArg>): Promise<ParcelReader> {
     const transport = await this.transport();
-    return new hostCmd.ServiceCallCommand(transport, this.options).execute(serviceName, code, args);
+    return new ServiceCallCommand(transport, this.options).execute(serviceName, code, args);
   }
 
   /**

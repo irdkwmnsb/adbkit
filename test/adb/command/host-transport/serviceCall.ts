@@ -1,6 +1,6 @@
 import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
-import { ServiceCallCommand, ParcelReader } from '../../../../src/adb/command/host-transport';
+import { ServiceCallCommand, ParcelReader } from '../../../../src/';
 Chai.use(simonChai);
 import Tester from './Tester';
 const t = new Tester(ServiceCallCommand);

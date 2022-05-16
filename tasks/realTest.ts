@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// import path from 'node:path';
 import adb, { DeviceClient, KeyCodes, Utils, MotionEvent } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
 import { KeyEvent } from '../src/adb/thirdparty/STFService/STFServiceModel';
 import ThirdUtils from '../src/adb/thirdparty/ThirdUtils';
 import Util from '../src/adb/util';
+import fs from 'fs';
+import path from 'path';
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -45,7 +46,7 @@ const testScrcpy = async (deviceClient: DeviceClient) => {
   try {
     await scrcpy.start();
     console.log(`Started`);
-  } catch(e) {
+  } catch (e) {
     console.error('Impossible to start', e);
   }
 }
@@ -68,14 +69,14 @@ const testScrcpyTextInput = async (deviceClient: DeviceClient) => {
     console.log(`stop`);
     scrcpy.stop();
     console.log(`done`);
-  } catch(e) {
+  } catch (e) {
     console.error('Impossible to start', e);
   }
 }
 
 const testScrcpyswap = async (deviceClient: DeviceClient) => {
   // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
-  const scrcpy = deviceClient.scrcpy({maxFps: 1});
+  const scrcpy = deviceClient.scrcpy({ maxFps: 1 });
   try {
     const pointerId = BigInt('0xFFFFFFFFFFFFFFFF');
     await scrcpy.start();
@@ -83,9 +84,9 @@ const testScrcpyswap = async (deviceClient: DeviceClient) => {
     await Utils.delay(100);
     const width = await scrcpy.width;
     const height = await scrcpy.height;
-    const position = { x: width/2, y: height * 0.2 };
+    const position = { x: width / 2, y: height * 0.2 };
     const bottom = height * 0.8;
-    const screenSize = { x:width, y: height }
+    const screenSize = { x: width, y: height }
     await scrcpy.injectTouchEvent(MotionEvent.ACTION_DOWN, pointerId, position, screenSize, 0xFFFF);
     console.log('start position', position);
     while (position.y < bottom) {
@@ -97,7 +98,7 @@ const testScrcpyswap = async (deviceClient: DeviceClient) => {
     await scrcpy.injectTouchEvent(MotionEvent.ACTION_UP, pointerId, position, screenSize, 0x0000);
     await Utils.delay(1000);
     console.log(`done`);
-  } catch(e) {
+  } catch (e) {
     console.error('scrcpy failed', e);
   } finally {
     scrcpy.stop();
@@ -114,16 +115,104 @@ const testMinicap = async (deviceClient: DeviceClient) => {
     })
     await Utils.delay(10000)
     console.log(`done`);
-  } catch(e) {
+  } catch (e) {
     console.error('scrcpy failed', e);
   } finally {
     minicap.stop();
   }
 }
 
+const testService = async (deviceClient: DeviceClient) => {
+  //   String getDeviceId(String callingPackage);
+  // const imei = await deviceClient.callServiceRaw('iphonesubinfo', 1);
+  // console.log(imei.readType());
+  // console.log('GET:', imei.readString());
+  // console.log('Exp:', '861758051379536');
+  let diasble = true;
+  diasble = false;
+
+  if (diasble) {
+    const version = await deviceClient.callServiceRaw('iphonesubinfo', 6);
+    console.log(version.readType());
+    console.log('GET:', version.readString());
+    console.log('Exp:', '24');
+  }
+
+  if (diasble) {
+    const parcel = await deviceClient.callServiceRaw('iphonesubinfo', 8);
+    console.log(parcel.readType());
+    console.log('GET:', parcel.readString());
+  }
+
+  if (diasble) {
+    const parcel = await deviceClient.callServiceRaw('iphonesubinfo', 12);
+    console.log(parcel.readType());
+    console.log('GET:', parcel.readString()); // 8933150319110286529
+  }
+
+  if (diasble) {
+    // num de tel
+    const parcel = await deviceClient.callServiceRaw('iphonesubinfo', 15);
+    console.log(parcel.readType());
+    console.log('GET:', parcel.readString()); // 8933150319110286529
+  }
+
+  if (diasble) {
+    // GET: Attempt to invoke virtual method 'java.security.PublicKey android.telephony.ImsiEncryptionInfo.getPublicKey()' on a null object reference
+    const parcel = await deviceClient.callServiceRaw('iphonesubinfo', 24);
+    console.log(parcel.readType());
+    console.log('GET:', parcel.readString()); // 8933150319110286529
+  }
+  if (diasble) {
+    // GET: Attempt to invoke virtual method 'java.security.PublicKey android.telephony.ImsiEncryptionInfo.getPublicKey()' on a null object reference
+    try {
+      const parcel = await deviceClient.callServiceRaw('iphonesubinfo', 500);
+      console.log(parcel.readType());
+      console.log('GET:', parcel.readString()); // 8933150319110286529
+    } catch (e) {
+      console.log(e) // 8933150319110286529
+    }
+  }
+
+  if (diasble) {
+    // Attempt to invoke interface method 'void android.net.wifi.IOnWifiActivityEnergyInfoListener.onWifiActivityEnergyInfo(android.os.connectivity.WifiActivityEnergyInfo)' on a null object reference
+    const parcel = await deviceClient.callServiceRaw('wifi', 2);
+    console.log(parcel.readType());
+    console.log('GET:', parcel.readString()); // 8933150319110286529
+  }
+
+  {
+    // Attempt to invoke interface method 'void android.net.wifi.IOnWifiActivityEnergyInfoListener.onWifiActivityEnergyInfo(android.os.connectivity.WifiActivityEnergyInfo)' on a null object reference
+    const parcel = await deviceClient.callServiceRaw('wifi', 3);
+    console.log(parcel.readType());
+    console.log('GET:', parcel.readString()); // 8933150319110286529
+  }
+}
+
+const extractFramesStream = async (deviceClient: DeviceClient) => {
+
+  const dest = path.join(__dirname , 'capture');
+  try {
+    fs.mkdirSync(dest);
+  } catch (e) {
+    //ignore 
+  }
+  const scrcpy = deviceClient.scrcpy();
+  const toCapture = 100;
+  let captured = 0;
+
+  scrcpy.on('data', (pts, data) => {
+    captured++;
+    const d = path.join(dest, `${captured.toString(10).padStart(3, '0')}.raw`);
+    fs.writeFileSync(d, data)
+    if (captured > toCapture) scrcpy.stop();
+  });
+  scrcpy.start();
+}
+
 const testSTFService = async (deviceClient: DeviceClient) => {
   // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
-  const STFService = deviceClient.STFService({timeout: 200000});
+  const STFService = deviceClient.STFService({ timeout: 200000 });
   try {
     STFService.on("airplaneMode", (data) => console.log('airplaneMode', data));
     STFService.on("battery", (data) => console.log('battery', data));
@@ -153,12 +242,12 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     // 42["input.touchCommit","lltyo9nLCZaZdViaqnTeSMafku8=",{"seq":28}]
     // await Util.delay(1000);
     await STFService.doWake({});
-    await STFService.doKeyEvent({event: KeyEvent.PRESS, keyCode: KeyCodes.KEYCODE_0});
-    await STFService.doKeyEvent({event: KeyEvent.PRESS, keyCode: KeyCodes.KEYCODE_0});
-    await STFService.doType({text: 'test'});
+    await STFService.doKeyEvent({ event: KeyEvent.PRESS, keyCode: KeyCodes.KEYCODE_0 });
+    await STFService.doKeyEvent({ event: KeyEvent.PRESS, keyCode: KeyCodes.KEYCODE_0 });
+    await STFService.doType({ text: 'test' });
 
 
-    const {x: w, y: h} = await ThirdUtils.getScreenSize(deviceClient);
+    const { x: w, y: h } = await ThirdUtils.getScreenSize(deviceClient);
     // const dim = `${x}x${y}`;
 
 
@@ -169,7 +258,7 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     const y = 0.3;
     await Util.delay(1000);
     await STFService.downCommit(x * w, y * w);
-    for (let i = 0; i< 20; i++) {
+    for (let i = 0; i < 20; i++) {
       x += 0.01
       await STFService.moveCommit(x * w, y * w);
     }
@@ -179,7 +268,7 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     await Utils.delay(1000);
     console.log(await STFService.getSdStatus()); // Ok
     console.log(await STFService.getWifiStatus()); // Ok
-  } catch(e) {
+  } catch (e) {
     console.error('STFService failed', e);
   } finally {
     //minicap.stop();
@@ -240,7 +329,9 @@ const main = async () => {
   // testScrcpyTextInput(deviceClient);
   // testScrcpyswap(deviceClient);
   // testMinicap(deviceClient);
-  testSTFService(deviceClient);
+  // mtestSTFService(deviceClient);
+  // testService(deviceClient);
+  extractFramesStream(deviceClient);
   // const bug = await deviceClient.execOut('ls', 'utf8');
   // const bug = await deviceClient.execOut('wm size', 'utf8');
   // const duplex = new PromiseDuplex(await deviceClient.exec('ls'));

@@ -1,6 +1,7 @@
 import Command from '../../command';
 import { KnownServices } from './servicesList';
 import { EOL } from 'os';
+import { ParcelVal } from './Parcel';
 
 export type ServiceCallArg = ServiceCallArgNumber | ServiceCallArgString | ServiceCallArgNull;
 
@@ -23,12 +24,26 @@ export class ParcelReader {
   constructor(private data: Buffer) {
   }
 
+
+  public read(): any {
+    const type: ParcelVal = this.readType();
+    switch (type) {
+      case ParcelVal.VAL_STRING:
+        return this.readString();
+      default:
+        throw Error(`ParcelReader need to be complet, and do not support Type: ${type}`)
+    }
+    return null;
+  }
+
+
   // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/os/Parcel.java
+  // https://android.googlesource.com/platform/frameworks/native/+/master/libs/binder/ParcelValTypes.h
   // https://android.googlesource.com/platform/frameworks/base/+/master/core/jni/android_os_Parcel.cpp
   // https://android.googlesource.com/platform/frameworks/native/+/jb-dev/libs/binder/Parcel.cpp
   // https://android.googlesource.com/platform/system/libhwbinder/+/o-preview/Parcel.cpp
   // git clone https://android.googlesource.com/platform/system/libhwbinder
-  public readType(): number {
+  public readType(): ParcelVal {
     const type = this.data.readInt32BE(this.pos);
     this.pos += 4;
     return type;

@@ -39,5 +39,26 @@
             ],
             "type": "pwa-node"
         },
+        {
+            "name": "Mocha Tests serviceCall",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "-r",
+                "ts-node/register",
+                "--project",
+                "tsconfig.json",
+                "--no-timeouts",
+                "--colors",
+                "${workspaceFolder}/test/adb/command/host-transport/serviceCall.ts"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
+        },
+
     ]
 }

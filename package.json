@@ -47,7 +47,7 @@
         "format": "eslint ./ --ext .ts --fix",
         "test": "mocha -r ts-node/register --reporter spec --colors test/**/*.ts",
         "test2": "mocha -r ts-node/register --reporter spec --colors test/adb/thirdparty/**/*.ts",
-        "test3": "mocha -r ts-node/register --reporter spec --colors test/adb/parser.ts"
+        "test3": "mocha -r ts-node/register --reporter spec --colors test/adb/command/host-transport/serviceCall.ts"
     },
     "dependencies": {
         "@u4/adbkit-logcat": "2.1.1",

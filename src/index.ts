@@ -1,4 +1,3 @@
-
 export { default } from './adb';
 export { default as Adb } from './adb';
 export { ClientOptions } from './models/ClientOptions';
@@ -30,7 +29,7 @@ export { KeyCodes } from './adb/keycode';
 export { default as Utils } from './adb/util';
 
 export { PsEntry } from './adb/command/host-transport/ps';
-export { ServiceCallArg, ParcelReader } from './adb/command/host-transport';
+export { default as ServiceCallCommand, ServiceCallArg, ParcelReader } from './adb/command/host-transport/serviceCall';
 
 export { default as Scrcpy } from './adb/thirdparty/scrcpy/Scrcpy';
 export * from './adb/thirdparty/scrcpy/ScrcpyModel';
