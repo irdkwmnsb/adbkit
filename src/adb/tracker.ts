@@ -31,7 +31,14 @@ export default class Tracker extends EventEmitter {
     this.readloop();
   }
 
-  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => {
+    if (event === 'add') {
+      for (const device of this.deviceMap.values())
+        (listener as ((device: Device) => void))(device);
+    }
+    super.on(event, listener);
+    return this;
+  }
   public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
   public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
   public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)

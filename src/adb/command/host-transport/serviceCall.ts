@@ -24,8 +24,7 @@ export class ParcelReader {
   constructor(private data: Buffer) {
   }
 
-
-  public read(): any {
+  public read(): string {
     const type: ParcelVal = this.readType();
     switch (type) {
       case ParcelVal.VAL_STRING:
@@ -33,9 +32,7 @@ export class ParcelReader {
       default:
         throw Error(`ParcelReader need to be complet, and do not support Type: ${type}`)
     }
-    return null;
   }
-
 
   // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/os/Parcel.java
   // https://android.googlesource.com/platform/frameworks/native/+/master/libs/binder/ParcelValTypes.h
