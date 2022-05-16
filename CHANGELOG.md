@@ -1,5 +1,12 @@
 # CHANGELOG
 
+
+## v3.1.10 (2022-05-16)
+* Improve parcel
+* Rewrite Tracker avoiding stack leak
+* add offline event in Tracker
+* Improve typing
+
 ## v3.1.9 (2022-04-13)
 
 * improve Error message buy adding context

@@ -319,11 +319,23 @@ const testUiautomator = async (deviceClient: DeviceClient) => {
 const main = async () => {
   const adbClient = adb.createClient();
   const devices = await adbClient.listDevices();
-  if (!devices.length) {
-    console.error('Need at least one connected android device');
-    return;
-  }
-  const deviceClient = devices[0].getClient();
+
+  const tracker = await adbClient.trackDevices()
+  tracker.on('add', (device) => console.log('add Device ', device))
+  tracker.on('remove', (device) => console.log('remove Device ', device))
+  tracker.on('change', (device) => console.log('change Device ', device))
+  tracker.on('offline', (device) => console.log('offline Device ', device))
+  tracker.on('end', () => console.log('end Device'))
+
+  // if (!devices.length) {
+  //   console.error('Need at least one connected android device');
+  //   return;
+  // }
+
+  tracker.end();
+
+
+  // const deviceClient = devices[0].getClient();
   // testScrcpy(deviceClient);
   // testUiautomator(deviceClient);
   // testScrcpyTextInput(deviceClient);
@@ -331,7 +343,7 @@ const main = async () => {
   // testMinicap(deviceClient);
   // mtestSTFService(deviceClient);
   // testService(deviceClient);
-  extractFramesStream(deviceClient);
+  // extractFramesStream(deviceClient);
   // const bug = await deviceClient.execOut('ls', 'utf8');
   // const bug = await deviceClient.execOut('wm size', 'utf8');
   // const duplex = new PromiseDuplex(await deviceClient.exec('ls'));

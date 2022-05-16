@@ -102,6 +102,11 @@ export default class Client extends EventEmitter {
     return new HostDevicesWithPathsCommand(conn).execute();
   }
 
+  /**
+   * Gets a device tracker. Events will be emitted when devices are added, removed, or their type changes (i.e. to/from `offline`). Note that the same events will be emitted for the initially connected devices also, so that you don't need to use both `client.listDevices()` and `client.trackDevices()`.
+   * Note that as the tracker will keep a connection open, you must call `tracker.end()` if you wish to stop tracking devices.
+   */
+
   public async trackDevices(): Promise<Tracker> {
     const conn = await this.connection();
     return new HostTrackDevicesCommand(conn).execute();

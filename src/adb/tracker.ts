@@ -12,29 +12,23 @@ import { HostTrackDevicesCommand } from './command/host';
 interface IEmissions {
   end: () => void
   add: (device: Device) => void
+  offline: (device: Device) => void
   remove: (device: Device) => void
   change: (newDevice: Device, oldDevice: Device) => void
   changeSet: (changeSet: TrackerChangeSet) => void
   error: (data: Error) => void
 }
 
+/**
+ * emit event on Device status chage
+ */
 export default class Tracker extends EventEmitter {
-  private deviceList: Device[] = [];
-  private deviceMap: Record<string, Device> = {};
-  private reader: Promise<void | Device[]>;
+  private deviceMap = new Map<string, Device>();
+  private stoped = false;
 
   constructor(private readonly command: HostDevicesCommand | HostDevicesWithPathsCommand | HostTrackDevicesCommand) {
     super();
-    this.reader = this.read().catch((err) => {
-      this.emit('error', err)
-      if (err instanceof Parser.PrematureEOFError) {
-        throw new Error('Connection closed');
-      }
-    })
-      .finally(async () => {
-        await this.command.parser.end();
-        this.emit('end');
-      });
+    this.readloop();
   }
 
   public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
@@ -42,49 +36,63 @@ export default class Tracker extends EventEmitter {
   public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
   public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
-  public async read(): Promise<Device[]> {
-    const list = await this.command._readDevices();
-    this.update(list);
-    return this.read();
+  private async readloop(): Promise<void> {
+    try {
+      for (; ;) {
+        const list = await this.command._readDevices();
+        this.update(list);
+      }
+    } catch (err) {
+      if (!this.stoped) {
+        this.emit('error', err as Error)
+        if (err instanceof Parser.PrematureEOFError) {
+          throw new Error('Connection closed');
+        }
+      }
+    } finally {
+      this.command.parser.end().catch(() => {/* drop error */ });
+      this.emit('end');
+    }
   }
-
-  public update(newList: Device[]): Tracker {
+  /**
+   * should be private but need public for testing
+   * @param newList updated Device list
+   * @returns this
+   */
+  public update(newList: Device[]): this {
     const changeSet: TrackerChangeSet = {
       removed: [],
       changed: [],
       added: [],
     };
-    const newMap: Record<string, Device> = {};
-    for (let i = 0, len = newList.length; i < len; i++) {
-      const device = newList[i];
-      const oldDevice = this.deviceMap[device.id];
+    const newMap = new Map<string, Device>();
+    for (const device of newList) {
+      newMap.set(device.id, device);
+      const oldDevice = this.deviceMap.get(device.id);
       if (oldDevice) {
+        this.deviceMap.delete(device.id);
         if (oldDevice.type !== device.type) {
           changeSet.changed.push(device);
           this.emit('change', device, oldDevice);
+          if (device.type === 'offline')
+            this.emit('offline', device);
         }
       } else {
         changeSet.added.push(device);
         this.emit('add', device);
       }
-      newMap[device.id] = device;
     }
-    const ref = this.deviceList;
-    for (let i = 0, len = ref.length; i < len; i++) {
-      const device = ref[i];
-      if (!newMap[device.id]) {
-        changeSet.removed.push(device);
-        this.emit('remove', device);
-      }
+    for (const [, deleted] of this.deviceMap) {
+      changeSet.removed.push(deleted);
+      this.emit('remove', deleted);
     }
     this.emit('changeSet', changeSet);
-    this.deviceList = newList;
     this.deviceMap = newMap;
     return this;
   }
 
-  public end(): Tracker {
-    // this.reader.cancel();
-    return this;
+  public end(): void {
+    this.stoped = true;
+    this.command.parser.end().catch(() => {/* drop error */ });
   }
 }
