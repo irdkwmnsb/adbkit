@@ -36,7 +36,7 @@ export default class Client extends EventEmitter {
     this.host = host;
     this.port = port;
     this.bin = bin;
-    this.options = { port, bin };
+    this.options = { host, port, bin };
   }
 
   public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
