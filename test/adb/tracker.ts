@@ -6,7 +6,7 @@ Chai.use(sinonChai);
 import Parser from '../../src/adb/parser';
 import Tracker from '../../src/adb/tracker';
 import Protocol from '../../src/adb/protocol';
-import HostTrackDevicesCommand from '../../src/adb/command/host/trackdevices';
+import HostTrackDevicesCommand from '../../src/adb/command/host/HostTrackDevicesCommand';
 import Connection from '../../src/adb/connection';
 import { Device, DeviceClient } from '../../src';
 import Util from '../../src/adb/util';

@@ -3,7 +3,7 @@ import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
-import HostVersionCommand from '../../../../src/adb/command/host/version';
+import HostVersionCommand from '../../../../src/adb/command/host/HostVersionCommand';
 
 describe('HostVersionCommand', () => {
     it("should send 'host:version'", () => {

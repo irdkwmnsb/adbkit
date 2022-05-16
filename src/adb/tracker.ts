@@ -1,9 +1,10 @@
 import Parser from './parser';
 import EventEmitter from 'node:events';
 import Device from '../models/Device';
-import HostDevicesCommand from './command/host/devices';
-import HostDevicesWithPathsCommand from './command/host/deviceswithpaths';
+import HostDevicesCommand from './command/host/HostDevicesCommand';
+import HostDevicesWithPathsCommand from './command/host/HostDevicesWithPathsCommand';
 import TrackerChangeSet from '../models/TrackerChangeSet';
+import { HostTrackDevicesCommand } from './command/host';
 
 /**
  * enforce EventEmitter typing
@@ -22,7 +23,7 @@ export default class Tracker extends EventEmitter {
   private deviceMap: Record<string, Device> = {};
   private reader: Promise<void | Device[]>;
 
-  constructor(private readonly command: HostDevicesCommand | HostDevicesWithPathsCommand) {
+  constructor(private readonly command: HostDevicesCommand | HostDevicesWithPathsCommand | HostTrackDevicesCommand) {
     super();
     this.reader = this.read().catch((err) => {
       this.emit('error', err)

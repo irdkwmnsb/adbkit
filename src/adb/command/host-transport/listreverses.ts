@@ -3,7 +3,7 @@ import Reverse from '../../../models/Reverse';
 
 export default class ListReversesCommand extends Command<Reverse[]> {
   async execute(): Promise<Reverse[]> {
-    this._send('reverse:list-forward');
+    await this._send('reverse:list-forward');
     await this.readOKAY();
     const value = await this.parser.readValue()
     return this._parseReverses(value);

@@ -52,6 +52,7 @@ const NoUserOptionError = (err: Error) => err.message.indexOf('--user') !== -1;
 
 export default class DeviceClient {
   private options: DeviceClientOptions;
+  
   constructor(public readonly client: Client, public readonly serial: string, options?: Partial<DeviceClientOptions>) {
     options = options || {};
     const sudo =  options.sudo || false;

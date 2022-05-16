@@ -7,7 +7,7 @@ const RE_OK = /^$/;
 
 export default class HostDisconnectCommand extends Command<string> {
   async execute(host: string, port: number): Promise<string> {
-    this._send(`host:disconnect:${host}:${port}`);
+    await this._send(`host:disconnect:${host}:${port}`);
     await this.readOKAY();
     const value = await this.parser.readValue()
     if (RE_OK.test(value.toString())) {

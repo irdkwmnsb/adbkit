@@ -8,7 +8,7 @@ const RE_OK = /connected to|already connected/;
 
 export default class HostConnectCommand extends Command<string> {
   async execute(host: string, port: number): Promise<string> {
-    this._send(`host:connect:${host}:${port}`);
+    await this._send(`host:connect:${host}:${port}`);
     await this.readOKAY();
     const value = await this.parser.readValue();
     if (RE_OK.test(value.toString())) {

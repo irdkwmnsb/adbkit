@@ -3,7 +3,7 @@ import Forward from '../../../models/Forward';
 
 export default class ListForwardsCommand extends Command<Forward[]> {
   async execute(serial: string): Promise<Forward[]> {
-    this._send(`host-serial:${serial}:list-forward`);
+    await this._send(`host-serial:${serial}:list-forward`);
     await this.readOKAY();
     const value = await this.parser.readValue()
     return this._parseForwards(value);

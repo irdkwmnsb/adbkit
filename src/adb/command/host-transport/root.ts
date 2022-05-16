@@ -4,7 +4,7 @@ const RE_OK = /restarting adbd as root/;
 
 export default class RootCommand extends Command<true> {
   async execute(): Promise<true> {
-    this._send('root:');
+    await this._send('root:');
     await this.readOKAY();
     const value = await this.parser.readAll();
     if (RE_OK.test(value.toString())) {

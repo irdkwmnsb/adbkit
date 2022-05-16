@@ -3,7 +3,7 @@ import Protocol from '../../protocol';
 
 export default class HostVersionCommand extends Command<number> {
   async execute(): Promise<number> {
-    this._send('host:version');
+    await this._send('host:version');
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:

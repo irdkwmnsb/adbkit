@@ -3,13 +3,13 @@ import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
-import DisconnectCommand from '../../../../src/adb/command/host/disconnect';
+import HostDisconnectCommand from '../../../../src/adb/command/host/HostDisconnectCommand';
 import Connection from '../../../../src/adb/connection';
 
 describe('DisconnectCommand', () => {
     it("should send 'host:disconnect:<host>:<port>'", () => {
         const conn = new MockConnection();
-        const cmd = new DisconnectCommand(conn);
+        const cmd = new HostDisconnectCommand(conn);
         conn.getSocket().on('write', (chunk) => {
             return expect(chunk.toString()).to.equal(
                 Protocol.encodeData('host:disconnect:192.168.2.2:5555').toString(),
@@ -24,7 +24,7 @@ describe('DisconnectCommand', () => {
     });
     it('should resolve with the new device id if disconnected', async () => {
         const conn = new MockConnection();
-        const cmd = new DisconnectCommand(conn as Connection);
+        const cmd = new HostDisconnectCommand(conn as Connection);
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead(Protocol.encodeData(''));
@@ -35,7 +35,7 @@ describe('DisconnectCommand', () => {
     });
     it('should reject with error if unable to disconnect', async () => {
         const conn = new MockConnection();
-        const cmd = new DisconnectCommand(conn as Connection);
+        const cmd = new HostDisconnectCommand(conn as Connection);
         setImmediate(() => {
             conn.getSocket().causeRead(Protocol.OKAY);
             conn.getSocket().causeRead(Protocol.encodeData('No such device 192.168.2.2:5555'));

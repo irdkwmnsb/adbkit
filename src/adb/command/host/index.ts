@@ -1,8 +1,8 @@
-export { default as HostConnectCommand } from './connect';
-export { default as HostDevicesCommand } from './devices';
-export { default as HostDevicesWithPathsCommand } from './deviceswithpaths';
-export { default as HostDisconnectCommand } from './disconnect';
-export { default as HostKillCommand } from './kill';
-export { default as HostTrackDevicesCommand } from './trackdevices';
-export { default as HostTransportCommand } from './transport';
-export { default as HostVersionCommand } from './version';
+export { default as HostConnectCommand } from './HostConnectCommand';
+export { default as HostDevicesCommand } from './HostDevicesCommand';
+export { default as HostDevicesWithPathsCommand } from './HostDevicesWithPathsCommand';
+export { default as HostDisconnectCommand } from './HostDisconnectCommand';
+export { default as HostKillCommand } from './HostKillCommand';
+export { default as HostTrackDevicesCommand } from './HostTrackDevicesCommand';
+export { default as HostTransportCommand } from './HostTransportCommand';
+export { default as HostVersionCommand } from './HostVersionCommand';

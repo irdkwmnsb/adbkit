@@ -3,7 +3,7 @@ import JdwpTracker from '../../jdwptracker';
 
 export default class TrackJdwpCommand extends Command<JdwpTracker> {
   async execute(): Promise<JdwpTracker> {
-    this._send('track-jdwp');
+    await this._send('track-jdwp');
     await this.readOKAY();
     return new JdwpTracker(this);
   }

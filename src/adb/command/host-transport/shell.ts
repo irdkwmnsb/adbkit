@@ -7,7 +7,7 @@ export default class ShellCommand extends Command<Duplex> {
     if (Array.isArray(command)) {
       command = command.map(this.escape).join(' ');
     }
-    this._send(`shell:${command}`);
+    await this._send(`shell:${command}`);
     await this.readOKAY();
     return this.parser.raw();
   }

@@ -4,7 +4,7 @@ import DeviceClient from '../../DeviceClient';
 
 export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[]> {
   async execute(): Promise<DeviceWithPath[]> {
-    this._send('host:devices-l');
+    await this._send('host:devices-l');
     await this.readOKAY();
     return this._readDevices();
   }
