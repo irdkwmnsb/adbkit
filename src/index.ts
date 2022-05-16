@@ -17,7 +17,7 @@ export { default as StartActivityOptions } from './models/StartActivityOptions';
 export { default as StartServiceOptions, ExtraValue, ExtraObject, Extra } from './models/StartServiceOptions';
 export { default as TrackerChangeSet } from './models/TrackerChangeSet';
 export { default as WithToString } from './models/WithToString';
-
+export { default as Parser } from './adb/parser';
 export { default as Client } from './adb/client';
 export { default as DeviceClient } from './adb/DeviceClient';
 export { default as ShellCommand } from './adb/command/host-transport/shell';
