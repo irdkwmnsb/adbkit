@@ -1,7 +1,7 @@
-import Device from '../../../models/Device';
 import Command from '../../command';
-import Tracker from '../../tracker';
+import Device, { DeviceType } from '../../../models/Device';
 import DeviceClient from '../../DeviceClient';
+import Tracker from '../../tracker';
 
 export default class HostTrackDevicesCommand extends Command<Tracker> {
   async execute(): Promise<Tracker> {
@@ -10,7 +10,7 @@ export default class HostTrackDevicesCommand extends Command<Tracker> {
     return new Tracker(this);
   }
 
-  // copy from HostDevicesCommand in devices.ts
+  // copy from HostDevicesCommand.ts
   public async _readDevices(): Promise<Device[]> {
     const value = await this.parser.readValue();
     return this._parseDevices(value);
@@ -20,12 +20,12 @@ export default class HostTrackDevicesCommand extends Command<Tracker> {
     return value
       .toString('ascii')
       .split('\n')
-      .filter(e => e)
+      .filter((e) => e)
       .map((line: string) => {
-        const [id, type] = line.split('\t');
+        const [id, type] = line.split(/\s+/);
         return {
           id,
-          type: type as 'emulator' | 'device' | 'offline',
+          type: type as DeviceType,
           getClient: () => new DeviceClient(this.connection.parent, id),
         };
       });

@@ -1,7 +1,9 @@
 import { DeviceClient } from "..";
 
+export type DeviceType = 'emulator' | 'device' | 'offline';
+
 export default interface Device {
   id: string;
-  type: 'emulator' | 'device' | 'offline';
+  type: DeviceType;
   getClient: () => DeviceClient;
 }

@@ -1,7 +1,8 @@
 # CHANGELOG
 
-## v3.1.11
+## v3.1.11 (2022-05-17)
 * Fix https://github.com/DeviceFarmer/adbkit/issues/42
+* improve Tracker on 'offline' and 'online' so they can be use as the 'add' and 'remove' event.
 
 ## v3.1.10 (2022-05-16)
 * Tracker.on('add', listenner) always receves previous add events.

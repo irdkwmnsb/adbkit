@@ -11,9 +11,13 @@ import { HostTrackDevicesCommand } from './command/host';
  */
 interface IEmissions {
   end: () => void
+
   add: (device: Device) => void
-  offline: (device: Device) => void
   remove: (device: Device) => void
+
+  offline: (device: Device) => void
+  online: (device: Device) => void
+
   change: (newDevice: Device, oldDevice: Device) => void
   changeSet: (changeSet: TrackerChangeSet) => void
   error: (data: Error) => void
@@ -32,9 +36,18 @@ export default class Tracker extends EventEmitter {
   }
 
   public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => {
+    // never miss past events
     if (event === 'add') {
       for (const device of this.deviceMap.values())
         (listener as ((device: Device) => void))(device);
+    } else if (event === 'online') {
+      for (const device of this.deviceMap.values())
+        if (device.type !== 'offline')
+          (listener as ((device: Device) => void))(device);
+    } else if (event === 'offline') {
+      for (const device of this.deviceMap.values())
+        if (device.type === 'offline')
+          (listener as ((device: Device) => void))(device);
     }
     super.on(event, listener);
     return this;
@@ -67,11 +80,9 @@ export default class Tracker extends EventEmitter {
    * @returns this
    */
   public update(newList: Device[]): this {
-    const changeSet: TrackerChangeSet = {
-      removed: [],
-      changed: [],
-      added: [],
-    };
+    let changeSet: TrackerChangeSet | undefined;
+    if (this.listenerCount('changeSet')) changeSet = { removed: [], changed: [], added: []};
+
     const newMap = new Map<string, Device>();
     for (const device of newList) {
       newMap.set(device.id, device);
@@ -79,21 +90,30 @@ export default class Tracker extends EventEmitter {
       if (oldDevice) {
         this.deviceMap.delete(device.id);
         if (oldDevice.type !== device.type) {
-          changeSet.changed.push(device);
+          if (changeSet) changeSet.changed.push(device);
           this.emit('change', device, oldDevice);
           if (device.type === 'offline')
             this.emit('offline', device);
+          else
+            this.emit('online', device);
         }
       } else {
-        changeSet.added.push(device);
+        if (changeSet) changeSet.added.push(device);
         this.emit('add', device);
+        if (device.type === 'offline') {
+          this.emit('offline', device);
+        } else {
+          this.emit('online', device);
+        }
       }
     }
-    for (const [, deleted] of this.deviceMap) {
-      changeSet.removed.push(deleted);
-      this.emit('remove', deleted);
+    for (const device of this.deviceMap.values()) {
+      if (changeSet) changeSet.removed.push(device);
+      this.emit('remove', device);
+      if (device.type !== 'offline')
+        this.emit('offline', device);
     }
-    this.emit('changeSet', changeSet);
+    if (changeSet) this.emit('changeSet', changeSet);
     this.deviceMap = newMap;
     return this;
   }

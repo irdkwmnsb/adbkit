@@ -1,6 +1,8 @@
 import Command from '../../command';
 import DeviceWithPath from '../../../models/DeviceWithPath';
 import DeviceClient from '../../DeviceClient';
+import { DeviceType } from '../../../models/Device';
+
 
 export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[]> {
   async execute(): Promise<DeviceWithPath[]> {
@@ -8,6 +10,7 @@ export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[
     await this.readOKAY();
     return this._readDevices();
   }
+
 
   public async _readDevices(): Promise<DeviceWithPath[]> {
     const value = await this.parser.readValue();
@@ -19,12 +22,11 @@ export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[
       .toString('ascii')
       .split('\n')
       .filter((e) => e)
-      .map((line) => {
-        // For some reason, the columns are separated by spaces instead of tabs
+      .map((line: string) => {
         const [id, type, path, product, model, device, transportId] = line.split(/\s+/);
         return {
           id,
-          type: type as 'emulator' | 'device' | 'offline',
+          type: type as DeviceType,
           path,
           product,
           model,
