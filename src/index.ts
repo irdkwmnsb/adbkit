@@ -38,3 +38,5 @@ export { MotionEvent, DeviceMessageType, SurfaceControl, Orientation, KeyEventMe
 export { default as Minicap, MinicapOptions } from './adb/thirdparty/minicap/Minicap';
 
 export { default as STFService, STFServiceOptions } from './adb/thirdparty/STFService/STFService';
+
+export { VideoStreamFramePacket, H264Configuration } from './adb/thirdparty/scrcpy/Scrcpy';

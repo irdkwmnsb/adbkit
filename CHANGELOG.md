@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v3.1.14
+* add scrcpy type export
+
 ## v3.1.13 (2022-05-18)
 * use scrcpy 1.24
 * change scrcpy emited message
