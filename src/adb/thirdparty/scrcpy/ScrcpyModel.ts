@@ -4,6 +4,7 @@ export interface Point {
 }
 
 export interface ScrcpyOptions {
+    version: 20 | 24;
     /**
      * maxSize         (integer, multiple of 8) 0
      * Max width
@@ -50,4 +51,19 @@ export interface ScrcpyOptions {
     codecOptions: string;
     encoderName: string;
     powerOffScreenOnClose: boolean;
+    /**
+     * since scrcpy 1.21
+     */
+    clipboardAutosync?: boolean;
+    /**
+     * since scrcpy 1.22
+     */
+    downsizeOnError?: boolean;
+    sendDeviceMeta?: boolean;
+    sendDummyByte?: boolean;
+    rawVideoStream?: boolean;
+    /**
+     * since scrcpy 1.23
+     */
+    cleanup?: boolean;
 }

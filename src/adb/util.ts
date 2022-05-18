@@ -19,7 +19,9 @@ export default class Util {
     });
   }
 
-  public static async waitforReadable(duplex: Duplex | PromiseDuplex<Duplex>, timeout = 0): Promise<boolean> {
+  public static async waitforReadable(duplex?: Duplex | PromiseDuplex<Duplex>, timeout = 0): Promise<boolean> {
+    if (!duplex)
+      return false
     const waitRead = new Promise<void>((resolve) => {
       if (duplex instanceof Duplex) {
         duplex.once('readable', resolve)

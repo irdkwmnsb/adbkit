@@ -22,10 +22,6 @@ const debug = Debug('scrcpy');
  * adb forward tcp:8099 localabstract:scrcpy
  */
 
-// supported version 8 and 20
-// eslint-disable-next-line prefer-const
-let scrcpyServerVersion = 20;
-
 /**
  * enforce EventEmitter typing
  */
@@ -75,11 +71,12 @@ export default class Scrcpy extends EventEmitter {
   private setHeight: (height: number) => void;
 
   private _onFatal: Promise<string>;
-  private setError: (error: string) => void;
+  private setFatalError: (error: string) => void;
 
   constructor(private client: DeviceClient, config = {} as Partial<ScrcpyOptions>) {
     super();
     this.config = {
+      version: 24,
       // port: 8099,
       maxSize: 600,
       maxFps: 0,
@@ -88,21 +85,22 @@ export default class Scrcpy extends EventEmitter {
       lockedVideoOrientation: Orientation.LOCK_VIDEO_ORIENTATION_UNLOCKED,
       tunnelForward: true,
       tunnelDelay: 1000,
-      crop: '-', //'9999:9999:0:0',
+      crop: '', //'9999:9999:0:0',
       sendFrameMeta: true, // send PTS so that the client may record properly
       control: true,
       displayId: 0,
       showTouches: false,
       stayAwake: true,
-      codecOptions: '-',
-      encoderName: '-',
+      codecOptions: '',
+      encoderName: '',
       powerOffScreenOnClose: false,
+      // clipboardAutosync: true,
       ...config
     };
     this._name = new Promise<string>((resolve) => this.setName = resolve);
     this._width = new Promise<number>((resolve) => this.setWidth = resolve);
     this._height = new Promise<number>((resolve) => this.setHeight = resolve);
-    this._onFatal = new Promise<string>((resolve) => this.setError = resolve);
+    this._onFatal = new Promise<string>((resolve) => this.setFatalError = resolve);
   }
 
   public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
@@ -139,7 +137,7 @@ export default class Scrcpy extends EventEmitter {
             // emit Error but to not want to Quit Yet
           }
         } else {
-          this.setError(errors.join('\n'));
+          this.setFatalError(errors.join('\n'));
           break;
         }
       }
@@ -185,7 +183,7 @@ export default class Scrcpy extends EventEmitter {
     const jarDest = '/data/local/tmp/scrcpy-server.jar';
     // Transfer server...
     try {
-      const jar = ThirdUtils.getResource(`scrcpy-server-v1.${scrcpyServerVersion}.jar`);
+      const jar = ThirdUtils.getResource(`scrcpy-server-v1.${this.config.version}.jar`);
       const transfer = await this.client.push(jar, jarDest);
       await transfer.waitForEnd();
     } catch (e) {
@@ -199,32 +197,75 @@ export default class Scrcpy extends EventEmitter {
       const {
         maxSize, bitrate, maxFps, lockedVideoOrientation, tunnelForward, crop,
         sendFrameMeta, control, displayId, showTouches, stayAwake, codecOptions,
-        encoderName, powerOffScreenOnClose
+        encoderName, powerOffScreenOnClose, clipboardAutosync
       } = this.config;
       args.push(`CLASSPATH=${jarDest}`);
       args.push('app_process');
       args.push('/');
       args.push('com.genymobile.scrcpy.Server');
 
-      if (scrcpyServerVersion == 20) {
+      if (this.config.version <= 20) {
         // Version 11 => 20
-        args.push(`1.${scrcpyServerVersion}`); // arg 0 Scrcpy server version
+        args.push(`1.${this.config.version}`); // arg 0 Scrcpy server version
         args.push("info"); // Log level: info, verbose...
         args.push(maxSize); // Max screen width (long side)
         args.push(bitrate); // Bitrate of video
         args.push(maxFps); // Max frame per second
         args.push(lockedVideoOrientation); // Lock screen orientation: LOCK_SCREEN_ORIENTATION
         args.push(tunnelForward); // Tunnel forward
-        args.push(crop); //    Crop screen
+        args.push(crop || '-'); //    Crop screen
         args.push(sendFrameMeta); // Send frame rate to client
         args.push(control); //  Control enabled
         args.push(displayId); //     Display id
         args.push(showTouches); // Show touches
         args.push(stayAwake); //  if self.stay_awake else "false",  Stay awake
-        args.push(codecOptions); //     Codec (video encoding) options
-        args.push(encoderName); //     Encoder name
+        args.push(codecOptions || '-'); //     Codec (video encoding) options
+        args.push(encoderName || '-'); //     Encoder name
         args.push(powerOffScreenOnClose); // Power off screen after server closed
+      } else {
+        args.push(`1.${this.config.version}`); // arg 0 Scrcpy server version
+        args.push("log_level=info");
+        args.push(`max_size=${maxSize}`);
+        args.push(`bit_rate=${bitrate}`);
+        args.push(`max_fps=${maxFps}`);
+        args.push(`lock_video_orientation=${lockedVideoOrientation}`);
+        args.push(`tunnel_forward=${tunnelForward}`); // Tunnel forward
+        if (crop && crop !== '-')
+          args.push(`crop=${crop}`); //    Crop screen
+        args.push(`send_frame_meta=${sendFrameMeta}`); // Send frame rate to client
+        args.push(`control=${control}`); //  Control enabled
+        args.push(`display_id=${displayId}`); //     Display id
+        args.push(`show_touches=${showTouches}`); // Show touches
+        args.push(`stay_awake=${stayAwake}`); //  if self.stay_awake else "false",  Stay awake
+        if (codecOptions && codecOptions !== '-')
+          args.push(`codec_options=${codecOptions}`); //     Codec (video encoding) options
+        if (encoderName && encoderName !== '-')
+          args.push(`encoder_name=${encoderName}`); //     Encoder name
+        args.push(`power_off_on_close=${powerOffScreenOnClose}`); // Power off screen after server closed
+        args.push(`clipboard_autosync=${clipboardAutosync}`); // default is True
+        if (clipboardAutosync !== undefined)
+          args.push(`clipboard_autosync=${clipboardAutosync}`); // default is True
+        if (this.config.version >= 22) {
+          const {
+            downsizeOnError, sendDeviceMeta, sendDummyByte, rawVideoStream
+          } = this.config;    
+          if (downsizeOnError !== undefined)
+            args.push(`downsize_on_error=${downsizeOnError}`);
+          if (sendDeviceMeta !== undefined)
+            args.push(`send_device_meta=${sendDeviceMeta}`);
+          if (sendDummyByte !== undefined)
+            args.push(`send_dummy_byte=${sendDummyByte}`);
+          if (rawVideoStream !== undefined)
+            args.push(`raw_video_stream=${rawVideoStream}`);
+        }
+        if (this.config.version >= 22) {
+          const { cleanup } = this.config;    
+          if (cleanup !== undefined)
+            args.push(`raw_video_stream=${cleanup}`);
+        }
+        // check Server.java
       }
+
       const duplex = await this.client.shell(args.map(a => a.toString()).join(' '));
       this.scrcpyServer = new PromiseDuplex(duplex);
       // debug only
@@ -237,9 +278,23 @@ export default class Scrcpy extends EventEmitter {
 
     if (Utils.waitforReadable(this.scrcpyServer, this.config.tunnelDelay)) {
       const srvOut = await this.scrcpyServer.read();
-      const info = srvOut.toString();
-      if (!info.startsWith('[server] INFO: Device: '))
-        throw Error(`First line should be '[server] INFO: Device: Name (Version), reveived:${info}`);
+      let info = srvOut.toString();
+      if (!info.startsWith('[server] INFO: Device: ')) {
+        try {
+          while (await Utils.waitforReadable(this.scrcpyServer)) {
+            const line = await this.scrcpyServer.read();
+            if (!line)
+              break;
+            info += line;
+          }
+        } catch (e) {
+          // End of process;
+          console.log(e);
+        }
+        const msg = `First line should be '[server] INFO: Device: Name (Version), reveived:\n\n${info}`
+        this.setFatalError(msg);
+        throw Error(msg);
+      }
     }
 
     // Wait 1 sec to forward to work
@@ -291,8 +346,10 @@ export default class Scrcpy extends EventEmitter {
       close = true;
     }
     this.scrcpyServer.destroy();
-    if (close)
+    if (close) {
       this.emit('disconnect');
+      this.setFatalError('stoped');
+    }
     return close;
   }
 
@@ -317,6 +374,8 @@ export default class Scrcpy extends EventEmitter {
 
     let pts = BigInt(0);// Buffer.alloc(0);
     for (; ;) {
+      if (!this.videoSocket)
+        break;
       await Utils.waitforReadable(this.videoSocket);
       let len: number | undefined = undefined;
       if (this.config.sendFrameMeta) {

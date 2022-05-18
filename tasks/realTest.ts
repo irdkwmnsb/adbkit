@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import adb, { DeviceClient, KeyCodes, Utils, MotionEvent, Adb, Client } from '../src';
+import adb, { DeviceClient, KeyCodes, Utils, MotionEvent, Client } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
 import { KeyEvent } from '../src/adb/thirdparty/STFService/STFServiceModel';
@@ -111,7 +111,8 @@ const testScrcpyEncoder = async (deviceClient: DeviceClient) => {
   const scrcpy = deviceClient.scrcpy({ encoderName: '_' });
   try {
     let nbError = 0;
-    scrcpy.on('error', (e) => { nbError++; /* get Error message line per line */ });
+    scrcpy.on('error', (e) => { nbError++; console.log(e)});
+    // scrcpy.on('error', (e) => { nbError++; /* get Error message line per line */ });
     await scrcpy.start();
     const error = await scrcpy.onFatal;
     // full error message
@@ -120,10 +121,11 @@ const testScrcpyEncoder = async (deviceClient: DeviceClient) => {
     console.log(`Available Encoder are: ${m.map(pc.yellow).join(', ')}`);
     // Available Encoder are: OMX.qcom.video.encoder.avc, c2.android.avc.encoder, OMX.google.h264.encoder
   } catch (e) {
-    console.error('Unexpected exit:', e);
+    console.error('Unexpected exit:', (e as Error).message);
   } finally {
     scrcpy.stop();
   }
+  await Util.delay(1000);
 }
 
 const testMinicap = async (deviceClient: DeviceClient) => {
@@ -209,26 +211,37 @@ const testService = async (deviceClient: DeviceClient) => {
     console.log('GET:', parcel.readString()); // 8933150319110286529
   }
 }
+// Available Encoder are: OMX.qcom.video.encoder.avc, c2.android.avc.encoder, OMX.google.h264.encoder
 
-const extractFramesStream = async (deviceClient: DeviceClient) => {
-
-  const dest = path.join(__dirname , 'capture');
+const extractFramesStream = async (deviceClient: DeviceClient, encoderName: 'OMX.qcom.video.encoder.avc' | 'c2.android.avc.encoder' | 'OMX.google.h264.encoder') => {
+  const dest = path.join(__dirname , encoderName || 'capture');
   try {
     fs.mkdirSync(dest);
   } catch (e) {
     //ignore 
   }
-  const scrcpy = deviceClient.scrcpy();
+  const scrcpy = deviceClient.scrcpy({encoderName});
   const toCapture = 100;
   let captured = 0;
 
+  let ext = 'raw';
+  if (encoderName.includes('h264'))
+    ext = 'h264';
+  else if (encoderName.includes('avc'))
+    ext = 'avc';
+  
+
   scrcpy.on('data', (pts, data) => {
     captured++;
-    const d = path.join(dest, `${captured.toString(10).padStart(3, '0')}.raw`);
+    const d = path.join(dest, `${captured.toString().padStart(3, '0')}.${ext}`);
     fs.writeFileSync(d, data)
-    if (captured > toCapture) scrcpy.stop();
+    if (captured >= toCapture) {
+      console.log(`${toCapture} frame captured. lat frame:${d}`)
+      scrcpy.stop();
+    }
   });
-  scrcpy.start();
+  await scrcpy.start();
+  await scrcpy.onFatal;
 }
 
 const testSTFService = async (deviceClient: DeviceClient) => {
@@ -358,19 +371,22 @@ const main = async () => {
 
   const deviceClient = devices[0].getClient();
 
-  // testScrcpyEncoder(deviceClient);
-  // testScrcpy(deviceClient);
-  // testUiautomator(deviceClient);
-  // testScrcpyTextInput(deviceClient);
-  // testScrcpyswap(deviceClient);
-  testMinicap(deviceClient);
-  // mtestSTFService(deviceClient);
-  // testService(deviceClient);
-  // extractFramesStream(deviceClient);
+  // await testScrcpyEncoder(deviceClient);
+  // await testScrcpy(deviceClient);
+  // await testUiautomator(deviceClient);
+  // await testScrcpyTextInput(deviceClient);
+  // await testScrcpyswap(deviceClient);
+  // await testMinicap(deviceClient);
+  // await mtestSTFService(deviceClient);
+  // await testService(deviceClient);
+  await extractFramesStream(deviceClient, 'OMX.qcom.video.encoder.avc');
+  await extractFramesStream(deviceClient, 'c2.android.avc.encoder');
+  await extractFramesStream(deviceClient, 'OMX.google.h264.encoder');
   // const bug = await deviceClient.execOut('ls', 'utf8');
   // const bug = await deviceClient.execOut('wm size', 'utf8');
   // const duplex = new PromiseDuplex(await deviceClient.exec('ls'));
   // await protoTest();
+  console.log('all Done');
 }
 
 main();
