@@ -9,8 +9,42 @@ import { KeyCodes, Utils } from '../../..';
 import { Point, ScrcpyOptions } from './ScrcpyModel';
 import { BufWrite } from '../minicap/BufWrite';
 import ThirdUtils from '../ThirdUtils';
+import { parse_sequence_parameter_set } from './sps';
 
 const debug = Debug('scrcpy');
+
+// const KEYFRAME_PTS = BigInt(1) << BigInt(62);
+// from https://github.com/Genymobile/scrcpy/blob/master/server/src/main/java/com/genymobile/scrcpy/ScreenEncoder.java
+
+const PACKET_FLAG_CONFIG = BigInt(1) << BigInt(63);
+const PACKET_FLAG_KEY_FRAME = BigInt(1) << BigInt(62);
+
+export interface H264Configuration {
+  profileIndex: number;
+  constraintSet: number;
+  levelIndex: number;
+
+  encodedWidth: number;
+  encodedHeight: number;
+
+  cropLeft: number;
+  cropRight: number;
+
+  cropTop: number;
+  cropBottom: number;
+
+  croppedWidth: number;
+  croppedHeight: number;
+}
+
+
+export interface VideoStreamFramePacket {
+  // type: 'frame';
+  keyframe?: boolean | undefined;
+  pts?: bigint | undefined;
+  data: Uint8Array;
+}
+
 /**
  * by hand start:
  * 
@@ -26,7 +60,8 @@ const debug = Debug('scrcpy');
  * enforce EventEmitter typing
  */
 interface IEmissions {
-  data: (pts: bigint, data: Buffer) => void
+  frame: (data: VideoStreamFramePacket) => void
+  config: (data: H264Configuration) => void
   raw: (data: Buffer) => void
   error: (error: Error) => void
   disconnect: () => void
@@ -357,20 +392,29 @@ export default class Scrcpy extends EventEmitter {
     return this.videoSocket !== null;
   }
 
-
   private startStreamRaw() {
     this.videoSocket.stream.on('data', d => this.emit('raw', d));
   }
 
-  private async startStreamWithMeta() {
+  /**
+   * capture all video trafique in a loop
+   * get resolve once capture stop
+   */
+  private async startStreamWithMeta(): Promise<void> {
     this.videoSocket.stream.pause();
+
     //if (scrcpyServerVersion > 8) {
     await Utils.waitforReadable(this.videoSocket);
     const chunk = this.videoSocket.stream.read(68) as Buffer;
-    this.setName(chunk.toString('utf8', 0, 64).trim());
-    this.setWidth(chunk.readUint16BE(64));
-    this.setHeight(chunk.readUint16BE(66));
+    const name = chunk.toString('utf8', 0, 64).trim();
+    this.setName(name);
+    const width = chunk.readUint16BE(64);
+    this.setWidth(width);
+    const height = chunk.readUint16BE(66);
+    this.setHeight(height);
     //}
+
+    // let header: Uint8Array | undefined;
 
     let pts = BigInt(0);// Buffer.alloc(0);
     for (; ;) {
@@ -384,23 +428,54 @@ export default class Scrcpy extends EventEmitter {
           // regular end condition
           return;
         }
+        // console.log(frameMeta.toString('hex').replace(/(........)/g, '$1 '))
         pts = frameMeta.readBigUint64BE();
         len = frameMeta.readUInt32BE(8);
-        if (pts === 0xFFFFFFFFFFFFFFFFn) {
-          // non-media data packet
-          pts = -1n;
-        }
         // else {bufferInfo.presentationTimeUs - ptsOrigin}
         // debug(`\tHeader:PTS =`, pts);
         // debug(`\tHeader:len =`, len);
       }
+
+      const config = !!(pts & PACKET_FLAG_CONFIG);
+
       let streamChunk: Buffer | null = null;
       while (streamChunk === null) {
         await Utils.waitforReadable(this.videoSocket);
         streamChunk = this.videoSocket.stream.read(len) as Buffer;
         if (streamChunk) {
           // debug('\tPacket length:', streamChunk.length);
-          this.emit('data', pts, streamChunk);
+          if (config) { // non-media data packet len: 33
+            const sequenceParameterSet = parse_sequence_parameter_set(streamChunk);
+            const {
+              profile_idc: profileIndex,
+              constraint_set: constraintSet,
+              level_idc: levelIndex,
+              pic_width_in_mbs_minus1,
+              pic_height_in_map_units_minus1,
+              frame_mbs_only_flag,
+              frame_crop_left_offset,
+              frame_crop_right_offset,
+              frame_crop_top_offset,
+              frame_crop_bottom_offset,
+            } = sequenceParameterSet;
+            const encodedWidth = (pic_width_in_mbs_minus1 + 1) * 16;
+            const encodedHeight = (pic_height_in_map_units_minus1 + 1) * (2 - frame_mbs_only_flag) * 16;
+            const cropLeft = frame_crop_left_offset * 2;
+            const cropRight = frame_crop_right_offset * 2;
+            const cropTop = frame_crop_top_offset * 2;
+            const cropBottom = frame_crop_bottom_offset * 2;
+            const croppedWidth = encodedWidth - cropLeft - cropRight;
+            const croppedHeight = encodedHeight - cropTop - cropBottom;
+            // header = streamChunk;
+            this.emit('config', { profileIndex, constraintSet, levelIndex, encodedWidth, encodedHeight,
+              cropLeft, cropRight, cropTop, cropBottom, croppedWidth, croppedHeight});
+          } else {
+            const keyframe = !!(pts & PACKET_FLAG_KEY_FRAME);
+            if (keyframe) {
+              pts &= ~PACKET_FLAG_KEY_FRAME;
+            }
+            this.emit('frame', { keyframe, pts, data: streamChunk });
+          }
         } else {
           // large chunk.
           // console.log('fail to streamChunk len:', len);

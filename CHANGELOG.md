@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.1.13 (2022-05-18)
+* use scrcpy 1.24
+* change scrcpy emited message
+
 ## v3.1.12 (2022-05-17)
 * Fix https://github.com/DeviceFarmer/adbkit/issues/42
 * improve Tracker on 'offline' and 'online' so they can be use as the 'add' and 'remove' event.

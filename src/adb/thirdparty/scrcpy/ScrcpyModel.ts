@@ -49,7 +49,7 @@ export interface ScrcpyOptions {
     showTouches: boolean;
     stayAwake: boolean;
     codecOptions: string;
-    encoderName: string;
+    encoderName: 'OMX.qcom.video.encoder.avc' | 'c2.android.avc.encoder' | 'OMX.google.h264.encoder'  | string;
     powerOffScreenOnClose: boolean;
     /**
      * since scrcpy 1.21

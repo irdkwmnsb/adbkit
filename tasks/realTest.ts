@@ -37,7 +37,7 @@ const testScrcpy = async (deviceClient: DeviceClient) => {
     trData = 0;
   }, 1000);
   // const mille: BigInt = 1000n;
-  scrcpy.on('data', (pts, data) => {
+  scrcpy.on('frame', ({pts, data}) => {
     nbPkg++;
     trData += data.length;
     const asFloat = parseFloat(pts.toString())
@@ -111,7 +111,7 @@ const testScrcpyEncoder = async (deviceClient: DeviceClient) => {
   const scrcpy = deviceClient.scrcpy({ encoderName: '_' });
   try {
     let nbError = 0;
-    scrcpy.on('error', (e) => { nbError++; console.log(e)});
+    scrcpy.on('error', (e) => { nbError++; console.log(e) });
     // scrcpy.on('error', (e) => { nbError++; /* get Error message line per line */ });
     await scrcpy.start();
     const error = await scrcpy.onFatal;
@@ -126,6 +126,7 @@ const testScrcpyEncoder = async (deviceClient: DeviceClient) => {
     scrcpy.stop();
   }
   await Util.delay(1000);
+  await scrcpy.onFatal;
 }
 
 const testMinicap = async (deviceClient: DeviceClient) => {
@@ -214,27 +215,29 @@ const testService = async (deviceClient: DeviceClient) => {
 // Available Encoder are: OMX.qcom.video.encoder.avc, c2.android.avc.encoder, OMX.google.h264.encoder
 
 const extractFramesStream = async (deviceClient: DeviceClient, encoderName: 'OMX.qcom.video.encoder.avc' | 'c2.android.avc.encoder' | 'OMX.google.h264.encoder') => {
-  const dest = path.join(__dirname , encoderName || 'capture');
+  const dest = path.join(__dirname, encoderName || 'capture');
   try {
     fs.mkdirSync(dest);
   } catch (e) {
     //ignore 
   }
-  const scrcpy = deviceClient.scrcpy({encoderName});
+  const scrcpy = deviceClient.scrcpy({ encoderName });
   const toCapture = 100;
   let captured = 0;
 
   let ext = 'raw';
-  if (encoderName.includes('h264'))
-    ext = 'h264';
-  else if (encoderName.includes('avc'))
-    ext = 'avc';
-  
+  if (encoderName.includes('h264')) ext = 'h264';
+  else if (encoderName.includes('avc')) ext = 'avc';
+  scrcpy.on('config', (meta) => {
+    console.log(meta);
+  });
 
-  scrcpy.on('data', (pts, data) => {
+  scrcpy.on('frame', (data) => {
     captured++;
     const d = path.join(dest, `${captured.toString().padStart(3, '0')}.${ext}`);
-    fs.writeFileSync(d, data)
+    fs.writeFileSync(d, data.data)
+    if (data.keyframe)
+      console.log(`${d} is a Keyframe`)
     if (captured >= toCapture) {
       console.log(`${toCapture} frame captured. lat frame:${d}`)
       scrcpy.stop();
