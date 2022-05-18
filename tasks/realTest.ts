@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import adb, { DeviceClient, KeyCodes, Utils, MotionEvent } from '../src';
+import adb, { DeviceClient, KeyCodes, Utils, MotionEvent, Adb, Client } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
 import { KeyEvent } from '../src/adb/thirdparty/STFService/STFServiceModel';
@@ -7,6 +7,7 @@ import ThirdUtils from '../src/adb/thirdparty/ThirdUtils';
 import Util from '../src/adb/util';
 import fs from 'fs';
 import path from 'path';
+import pc from 'picocolors';
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -100,6 +101,26 @@ const testScrcpyswap = async (deviceClient: DeviceClient) => {
     console.log(`done`);
   } catch (e) {
     console.error('scrcpy failed', e);
+  } finally {
+    scrcpy.stop();
+  }
+}
+
+/** test the 2 ways to capture Error in atrcpy */
+const testScrcpyEncoder = async (deviceClient: DeviceClient) => {
+  const scrcpy = deviceClient.scrcpy({ encoderName: '_' });
+  try {
+    let nbError = 0;
+    scrcpy.on('error', (e) => { nbError++; /* get Error message line per line */ });
+    await scrcpy.start();
+    const error = await scrcpy.onFatal;
+    // full error message
+    // console.log(error);
+    const m = [...error.matchAll(/encoder '([^']+)'/g)].map(a => a[1]);
+    console.log(`Available Encoder are: ${m.map(pc.yellow).join(', ')}`);
+    // Available Encoder are: OMX.qcom.video.encoder.avc, c2.android.avc.encoder, OMX.google.h264.encoder
+  } catch (e) {
+    console.error('Unexpected exit:', e);
   } finally {
     scrcpy.stop();
   }
@@ -316,31 +337,33 @@ const testUiautomator = async (deviceClient: DeviceClient) => {
   console.log(result.toString('utf8'));
 }
 
-const main = async () => {
-  const adbClient = adb.createClient();
-  const devices = await adbClient.listDevices();
-
+const testTracker = async (adbClient: Client) => {
   const tracker = await adbClient.trackDevices()
   tracker.on('add', (device) => console.log('add Device ', device))
   tracker.on('remove', (device) => console.log('remove Device ', device))
   tracker.on('change', (device) => console.log('change Device ', device))
   tracker.on('offline', (device) => console.log('offline Device ', device))
   tracker.on('end', () => console.log('end Device'))
-
-  // if (!devices.length) {
-  //   console.error('Need at least one connected android device');
-  //   return;
-  // }
-
   tracker.end();
+}
 
+const main = async () => {
+  const adbClient = adb.createClient();
+  const devices = await adbClient.listDevices();
 
-  // const deviceClient = devices[0].getClient();
+  if (!devices.length) {
+    console.error('Need at least one connected android device');
+    return;
+  }
+
+  const deviceClient = devices[0].getClient();
+
+  // testScrcpyEncoder(deviceClient);
   // testScrcpy(deviceClient);
   // testUiautomator(deviceClient);
   // testScrcpyTextInput(deviceClient);
   // testScrcpyswap(deviceClient);
-  // testMinicap(deviceClient);
+  testMinicap(deviceClient);
   // mtestSTFService(deviceClient);
   // testService(deviceClient);
   // extractFramesStream(deviceClient);

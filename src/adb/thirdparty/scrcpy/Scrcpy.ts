@@ -30,7 +30,7 @@ let scrcpyServerVersion = 20;
  * enforce EventEmitter typing
  */
 interface IEmissions {
-  data: (pts: BigInt, data: Buffer) => void
+  data: (pts: bigint, data: Buffer) => void
   raw: (data: Buffer) => void
   error: (error: Error) => void
   disconnect: () => void
@@ -74,6 +74,9 @@ export default class Scrcpy extends EventEmitter {
   private setWidth: (width: number) => void;
   private setHeight: (height: number) => void;
 
+  private _onFatal: Promise<string>;
+  private setError: (error: string) => void;
+
   constructor(private client: DeviceClient, config = {} as Partial<ScrcpyOptions>) {
     super();
     this.config = {
@@ -99,6 +102,7 @@ export default class Scrcpy extends EventEmitter {
     this._name = new Promise<string>((resolve) => this.setName = resolve);
     this._width = new Promise<number>((resolve) => this.setWidth = resolve);
     this._height = new Promise<number>((resolve) => this.setHeight = resolve);
+    this._onFatal = new Promise<string>((resolve) => this.setError = resolve);
   }
 
   public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
@@ -109,6 +113,11 @@ export default class Scrcpy extends EventEmitter {
   get name(): Promise<string> { return this._name; }
   get width(): Promise<number> { return this._width; }
   get height(): Promise<number> { return this._height; }
+  /**
+   * Clever way to detect fatal process Error.
+   * return the Ending message.
+   */
+  get onFatal(): Promise<string> { return this._onFatal; }
 
   /**
    * emit scrcpyServer output as Error
@@ -117,21 +126,28 @@ export default class Scrcpy extends EventEmitter {
    */
   async throwsErrors(duplex: PromiseDuplex<Duplex>) {
     try {
+      const errors = [];
       for (; ;) {
         await Utils.waitforReadable(duplex);
         const data = await duplex.read();
         if (data) {
-          const msg = data.toString();
-          console.error('error', Error(msg));
-          // this.emit('error', Error(msg))
+          const msg = data.toString().trim();
+          errors.push(msg);
+          try {
+            this.emit('error', Error(msg));
+          } catch (e) {
+            // emit Error but to not want to Quit Yet
+          }
+        } else {
+          this.setError(errors.join('\n'));
+          break;
         }
       }
     } catch (e) {
-      // End
-      return;
+      //this.emit('error', e as Error);
+      //this.setError((e as Error).message);
     }
   }
-
 
   /**
    * Read a message from the contoler Duplex
@@ -220,11 +236,10 @@ export default class Scrcpy extends EventEmitter {
     }
 
     if (Utils.waitforReadable(this.scrcpyServer, this.config.tunnelDelay)) {
-      await this.scrcpyServer.read();
-      // const buffer = await this.scrcpyServer.read();
-      //const info = buffer.toString();
-      // console.log(info);
-      //throw Error()
+      const srvOut = await this.scrcpyServer.read();
+      const info = srvOut.toString();
+      if (!info.startsWith('[server] INFO: Device: '))
+        throw Error(`First line should be '[server] INFO: Device: Name (Version), reveived:${info}`);
     }
 
     // Wait 1 sec to forward to work
