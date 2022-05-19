@@ -1,7 +1,8 @@
 # CHANGELOG
 
-## v3.1.14
+## v3.1.14 (2022-05-19)
 * add scrcpy type export
+* export add screm configurration in frame events
 
 ## v3.1.13 (2022-05-18)
 * use scrcpy 1.24

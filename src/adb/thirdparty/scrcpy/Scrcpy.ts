@@ -43,6 +43,7 @@ export interface VideoStreamFramePacket {
   keyframe?: boolean | undefined;
   pts?: bigint | undefined;
   data: Uint8Array;
+  config?: H264Configuration;
 }
 
 /**
@@ -107,6 +108,8 @@ export default class Scrcpy extends EventEmitter {
 
   private _onFatal: Promise<string>;
   private setFatalError: (error: string) => void;
+
+  private lastConf?: H264Configuration;
 
   constructor(private client: DeviceClient, config = {} as Partial<ScrcpyOptions>) {
     super();
@@ -180,6 +183,12 @@ export default class Scrcpy extends EventEmitter {
       //this.emit('error', e as Error);
       //this.setError((e as Error).message);
     }
+  }
+  /**
+   * get last current video config
+   */
+  get videoConfig():  H264Configuration | undefined {
+    return this.lastConf;
   }
 
   /**
@@ -466,15 +475,17 @@ export default class Scrcpy extends EventEmitter {
             const cropBottom = frame_crop_bottom_offset * 2;
             const croppedWidth = encodedWidth - cropLeft - cropRight;
             const croppedHeight = encodedHeight - cropTop - cropBottom;
-            // header = streamChunk;
-            this.emit('config', { profileIndex, constraintSet, levelIndex, encodedWidth, encodedHeight,
-              cropLeft, cropRight, cropTop, cropBottom, croppedWidth, croppedHeight});
+
+            const videoConf: H264Configuration = { profileIndex, constraintSet, levelIndex, encodedWidth, encodedHeight,
+              cropLeft, cropRight, cropTop, cropBottom, croppedWidth, croppedHeight};
+            this.lastConf = videoConf;
+            this.emit('config', videoConf);
           } else {
             const keyframe = !!(pts & PACKET_FLAG_KEY_FRAME);
             if (keyframe) {
               pts &= ~PACKET_FLAG_KEY_FRAME;
             }
-            this.emit('frame', { keyframe, pts, data: streamChunk });
+            this.emit('frame', { keyframe, pts, data: streamChunk, config: this.lastConf });
           }
         } else {
           // large chunk.
