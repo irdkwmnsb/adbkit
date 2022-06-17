@@ -45,6 +45,7 @@ import Protocol from './protocol';
 import { Utils } from '..';
 import { DeviceClientOptions } from '../models/DeviceClientOptions';
 import ServiceCallCommand, { ParcelReader, ServiceCallArg } from './command/host-transport/serviceCall';
+import DeviceClientExtra from './DeviceClientExtra';
 
 const debug = d('adb:client');
 
@@ -777,5 +778,13 @@ export default class DeviceClient {
   public STFService(options?: Partial<STFServiceOptions>): STFService {
     const service = new STFService(this, options);
     return service;
+  }
+
+  #extra: DeviceClientExtra;
+  get extra(): DeviceClientExtra {
+    if (!this.#extra) {
+      this.#extra = new DeviceClientExtra(this);
+    }
+    return this.#extra;
   }
 }

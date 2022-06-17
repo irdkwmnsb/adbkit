@@ -320,6 +320,13 @@ const testRouting = async (deviceClient: DeviceClient) => {
   const routes4G = await deviceClient.ipRoute('show table rmnet_data2');
   const defaultWifi = routesWifi.find(r => r.dest === 'default')
   const default4G = routes4G.find(r => r.dest === 'default')
+  if (!defaultWifi) {
+    throw Error('no wifi route');
+  }
+  if (!default4G) {
+    throw Error('no 4g route');
+  }
+
   console.log(`default Wifi is: ${defaultWifi}`);
   console.log(`default   4G is: ${default4G}`);
   // double rules
@@ -373,7 +380,10 @@ const main = async () => {
   }
 
   const deviceClient = devices[0].getClient();
-
+  // await deviceClient.extra.usbTethering(true);
+  await deviceClient.extra.airPlainMode(true);
+  await deviceClient.extra.airPlainMode(false);
+  
   // await testScrcpyEncoder(deviceClient);
   // await testScrcpy(deviceClient);
   // await testUiautomator(deviceClient);
@@ -382,9 +392,9 @@ const main = async () => {
   // await testMinicap(deviceClient);
   // await mtestSTFService(deviceClient);
   // await testService(deviceClient);
-  await extractFramesStream(deviceClient, 'OMX.qcom.video.encoder.avc');
-  await extractFramesStream(deviceClient, 'c2.android.avc.encoder');
-  await extractFramesStream(deviceClient, 'OMX.google.h264.encoder');
+  // await extractFramesStream(deviceClient, 'OMX.qcom.video.encoder.avc');
+  // await extractFramesStream(deviceClient, 'c2.android.avc.encoder');
+  // await extractFramesStream(deviceClient, 'OMX.google.h264.encoder');
   // const bug = await deviceClient.execOut('ls', 'utf8');
   // const bug = await deviceClient.execOut('wm size', 'utf8');
   // const duplex = new PromiseDuplex(await deviceClient.exec('ls'));
