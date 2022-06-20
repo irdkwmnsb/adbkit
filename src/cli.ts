@@ -15,7 +15,6 @@ program.version(pkg.version);
 
 async function getClientDevice(serials: string[]): Promise<DeviceClient[]> {
   const adb = Adb.createClient();
-  console.log('serials', serials.length);
   if (!serials || !serials.length) {
     const devices: Device[] = await adb.listDevices();
     if (devices.length == 0) {
