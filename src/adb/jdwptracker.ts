@@ -52,8 +52,8 @@ export default class JdwpTracker extends EventEmitter {
   public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   async read(): Promise<JdwpTracker> {
-    const list = await this.command.parser.readValue();
-    const pids = list.toString().split('\n');
+    const list = await this.command.parser.readValue('utf8');
+    const pids = list.split('\n');
     const maybeEmpty = pids.pop();
     if (maybeEmpty) {
       pids.push(maybeEmpty);

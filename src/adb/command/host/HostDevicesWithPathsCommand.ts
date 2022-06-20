@@ -13,13 +13,12 @@ export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[
 
 
   public async _readDevices(): Promise<DeviceWithPath[]> {
-    const value = await this.parser.readValue();
+    const value = await this.parser.readValue('ascii');
     return this._parseDevices(value);
   }
 
-  private _parseDevices(value: Buffer): DeviceWithPath[] {
+  private _parseDevices(value: string): DeviceWithPath[] {
     return value
-      .toString('ascii')
       .split('\n')
       .filter((e) => e)
       .map((line: string) => {

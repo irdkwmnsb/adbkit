@@ -307,14 +307,14 @@ describe('Parser', () => {
             const parser = new Parser(stream);
             stream.write('foo bar\nzip zap\npip pop');
             const buf = await parser.readLine()
-            expect(buf.toString()).to.equal('foo bar');
+            expect(buf).to.equal('foo bar');
         });
         it('should strip trailing \\r', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('foo bar\r\n');
             const buf = await parser.readLine()
-            expect(buf.toString()).to.equal('foo bar');
+            expect(buf).to.equal('foo bar');
             return true;
         });
         it('should reject with Parser.PrematureEOFError if stream ends before a line is found', async () => {

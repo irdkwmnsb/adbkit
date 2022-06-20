@@ -30,8 +30,8 @@ describe('Sync', () => {
     let deviceList: Device[] | null = null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const forEachSyncDevice = (iterator: (sync: Sync) => any): Promise<any> => {
-        assert(deviceList.length > 0, 'At least one connected Android device is required');
-        const promises = deviceList.map(async (device) => {
+        assert(deviceList!.length > 0, 'At least one connected Android device is required');
+        const promises = deviceList!.map(async (device) => {
             const sync = await client
                 .getDevice(device.id)
                 .syncService();

@@ -44,16 +44,21 @@ export default class Parser {
     // empty
   }
 
-  public async end(): Promise<boolean> {
+  /**
+   * read and drop all remaining data in stream
+   * @returns 
+   */
+  public async end(): Promise<true> {
     if (this.ended) {
       return true;
     }
+    const stream = this.stream;
     let tryRead: () => void;
     let errorListener: (error: Error) => void;
     let endListener: () => void;
-    return new Promise<boolean>((resolve, reject) => {
+    return new Promise<true>((resolve, reject) => {
       tryRead = () => {
-        while (this.stream.read()) {
+        while (stream.read()) {
           // read and drop
         }
       };
@@ -62,15 +67,15 @@ export default class Parser {
         this.ended = true;
         return resolve(true);
       };
-      this.stream.on('readable', tryRead);
-      this.stream.on('error', errorListener);
-      this.stream.on('end', endListener);
-      this.stream.read(0);
-      this.stream.end();
+      stream.on('readable', tryRead);
+      stream.on('error', errorListener);
+      stream.on('end', endListener);
+      stream.read(0);
+      stream.end();
     }).finally(() => {
-      this.stream.removeListener('readable', tryRead);
-      this.stream.removeListener('error', errorListener);
-      this.stream.removeListener('end', endListener);
+      stream.removeListener('readable', tryRead);
+      stream.removeListener('error', errorListener);
+      stream.removeListener('end', endListener);
     })
   }
   /**
@@ -82,6 +87,7 @@ export default class Parser {
 
   public async readAll(): Promise<Buffer> {
     let all = Buffer.alloc(0);
+    const stream = this.stream;
 
     let tryRead: () => void;
     let errorListener: (error: Error) => void;
@@ -90,7 +96,7 @@ export default class Parser {
     return new Promise<Buffer>((resolve, reject) => {
       tryRead = () => {
         let chunk: Buffer;
-        while ((chunk = this.stream.read())) {
+        while ((chunk = stream.read())) {
           all = Buffer.concat([all, chunk]);
         }
         if (this.ended) {
@@ -104,14 +110,14 @@ export default class Parser {
         this.ended = true;
         resolve(all);
       };
-      this.stream.on('readable', tryRead);
-      this.stream.on('error', errorListener);
-      this.stream.on('end', endListener);
+      stream.on('readable', tryRead);
+      stream.on('error', errorListener);
+      stream.on('end', endListener);
       tryRead();
     }).finally(() => {
-      this.stream.removeListener('readable', tryRead);
-      this.stream.removeListener('error', errorListener);
-      this.stream.removeListener('end', endListener);
+      stream.removeListener('readable', tryRead);
+      stream.removeListener('error', errorListener);
+      stream.removeListener('end', endListener);
     })
   }
 
@@ -161,27 +167,47 @@ export default class Parser {
     });
   }
 
+  /**
+   * pipe howMany bytes to targetStream
+   * @param howMany bytes to transfer
+   * @param targetStream destination stream
+   * @returns Promise that resolves when all bytes are transferred
+   */
   public async readByteFlow(howMany: number, targetStream: Duplex): Promise<void> {
     let tryRead: () => void;
     let errorListener: (error: Error) => void;
     let endListener: () => void;
-    return new Promise<void>((resolve, reject) => {
+    const stream = this.stream;
+    // TODO add cancellable
+    // const controller = new AbortController();
+
+    const promise = new Promise<void>((resolve, reject) => {
       tryRead = () => {
         if (howMany) {
           let chunk: Buffer;
+          // Read timeout
+          // stream = addAbortSignal(controller.signal, this.stream);
+          // const tm = setTimeout(() => controller.abort(), 10_000); // set a timeout
+
           // Try to get the exact amount we need first. If unsuccessful, take
           // whatever is available, which will be less than the needed amount.
-          while ((chunk = this.stream.read(howMany) || this.stream.read())) {
+          while ((chunk = stream.read(howMany) || stream.read())) {
             howMany -= chunk.length;
+            // TODO fix missing backpressuring handling
             targetStream.write(chunk);
             if (howMany === 0) {
+              // clearTimeout(tm)
               return resolve();
             }
           }
           if (this.ended) {
+            // TODO add cancellable
+            //clearTimeout(tm)
             return reject(new Parser.PrematureEOFError(howMany, this.lastMessage));
           }
         } else {
+          // TODO add cancellable
+          // clearTimeout(tm)
           return resolve();
         }
       };
@@ -192,21 +218,26 @@ export default class Parser {
       errorListener = (err) => {
         return reject(err);
       };
-      this.stream.on('readable', tryRead);
-      this.stream.on('error', errorListener);
-      this.stream.on('end', endListener);
+      stream.on('readable', tryRead);
+      stream.on('error', errorListener);
+      stream.on('end', endListener);
       tryRead();
     }).finally(() => {
-      this.stream.removeListener('readable', tryRead);
-      this.stream.removeListener('error', errorListener);
-      this.stream.removeListener('end', endListener);
+      stream.removeListener('readable', tryRead);
+      stream.removeListener('error', errorListener);
+      stream.removeListener('end', endListener);
     });
+    // TODO add cancellable
+    // (promise as any).cancel = () => {
+    //   controller.abort();
+    // }
+    return promise;
   }
 
   public async readError(): Promise<never> {
     let error = 'unknown Error';
     try {
-      error = (await this.readValue()).toString();
+      error = await this.readValue('utf8');
     } catch (e) {
       // keep localy generated error
       if (e instanceof FailError) {
@@ -220,48 +251,63 @@ export default class Parser {
     throw new Parser.FailError(error, this.lastMessage);
   }
 
-  public async readValue(): Promise<Buffer> {
+  /**
+   * @returns read a 4-ASCII digits length-prefixed data block
+   */
+  public async readValue(): Promise<Buffer>;
+  public async readValue(encoding: BufferEncoding): Promise<string>;
+  public async readValue(encoding?: BufferEncoding): Promise<Buffer | string> {
     const value = await this.readAscii(4);
     const length = Protocol.decodeLength(value);
-    return await this.readBytes(length);
+    const buf = await this.readBytes(length);
+    if (encoding) {
+      return buf.toString(encoding);
+    }
+    return buf;
   }
 
-  public readUntil(code: number): Promise<Buffer> {
+  /**
+   * read stream byte per byte until a delimiter is found
+   * @param code delimiter
+   * @returns buffer wothout delimiter
+   */
+  public async readUntil(code: number): Promise<Buffer> {
     let skipped = Buffer.alloc(0);
-    const read = async (): Promise<Buffer> => {
+    for (;;) {
       const chunk = await this.readBytes(1);
       if (chunk[0] === code) {
         return skipped;
       } else {
         skipped = Buffer.concat([skipped, chunk]);
-        return read();
       }
-    };
-    return read();
+    }
   }
 
   async searchLine(re: RegExp): Promise<RegExpExecArray> {
-    const line = await this.readLine();
-    const match = re.exec(line.toString());
-    if (match) {
-      return match;
-    } else {
-      return this.searchLine(re);
+    for (;;) {
+      const line = await this.readLine();
+      const match = re.exec(line);
+      if (match) {
+        return match;
+      }
     }
   }
 
-  public async readLine(): Promise<Buffer> {
+  /**
+   * read socket until \r\n
+   * @returns 
+   */
+  public async readLine(encoding?: BufferEncoding): Promise<string> {
+    // read until \n
     const line = await this.readUntil(10);
-    // '\n'
+    // drop tailing \r if present
     if (line[line.length - 1] === 13) {
-      // '\r'
-      return line.slice(0, -1);
+      return line.slice(0, -1).toString(encoding);
     } else {
-      return line;
+      return line.toString(encoding);
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public unexpected(data: string, expected: string): Promise<never> {
     return Promise.reject(new Parser.UnexpectedDataError(data, expected, this.lastMessage));
   }

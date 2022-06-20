@@ -7,8 +7,8 @@ export default class HostVersionCommand extends Command<number> {
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.OKAY:
-        const value = await this.parser.readValue();
-        return this._parseVersion(value.toString());
+        const value = await this.parser.readValue('utf8');
+        return this._parseVersion(value);
       case Protocol.FAIL:
         return this.parser.readError();
       default:

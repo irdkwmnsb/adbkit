@@ -5,13 +5,13 @@ export default class ListReversesCommand extends Command<Reverse[]> {
   async execute(): Promise<Reverse[]> {
     await this._send('reverse:list-forward');
     await this.readOKAY();
-    const value = await this.parser.readValue()
+    const value = await this.parser.readValue('utf8')
     return this._parseReverses(value);
   }
 
-  private _parseReverses(value: Buffer): Reverse[] {
+  private _parseReverses(value: string): Reverse[] {
     const reverses: Reverse[] = [];
-    const ref = value.toString().split('\n');
+    const ref = value.split('\n');
     for (let i = 0, len = ref.length; i < len; i++) {
       const reverse = ref[i];
       if (reverse) {

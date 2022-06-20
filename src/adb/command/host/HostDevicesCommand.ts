@@ -12,13 +12,12 @@ export default class HostDevicesCommand extends Command<Device[]> {
 
   // copyed to HostTrackDevicesCommand.ts
   public async _readDevices(): Promise<Device[]> {
-    const value = await this.parser.readValue();
+    const value = await this.parser.readValue('ascii');
     return this._parseDevices(value);
   }
 
-  _parseDevices(value: Buffer): Device[] {
+  _parseDevices(value: string): Device[] {
     return value
-      .toString('ascii')
       .split('\n')
       .filter((e) => e)
       .map((line: string) => {

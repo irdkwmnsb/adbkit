@@ -47,4 +47,16 @@ describe('DisconnectCommand', () => {
             expect((err as Error).message).to.eql('No such device 192.168.2.2:5555');
         }
     });
+    it('should resolve with the new device id if disconnected', async () => {
+        const conn = new MockConnection();
+        const cmd = new HostDisconnectCommand(conn as Connection);
+        setImmediate(function () {
+            conn.getSocket().causeRead(Protocol.OKAY);
+            conn.getSocket().causeRead(Protocol.encodeData('disconnected 192.168.2.2:5555'));
+            return conn.getSocket().causeEnd();
+        });
+        
+        const val = await cmd.execute('192.168.2.2', 5555)
+        expect(val).to.be.equal('192.168.2.2:5555');
+    }); 
 });
