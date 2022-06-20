@@ -11,6 +11,7 @@ import PullTransfer from './sync/pulltransfer';
 import Connection from './connection';
 import { Readable } from 'stream';
 import Stats2 from './sync/stats2';
+import Entry2 from './sync/entry2';
 
 const TEMP_PATH = '/data/local/tmp';
 const DEFAULT_CHMOD = 0o644;
@@ -102,7 +103,7 @@ export default class Sync extends EventEmitter {
         }
       }
       case Protocol.STA2: {
-        const stat = await this.parser.readBytes(68);
+        const stat = await this.parser.readBytes(68); // IQQIIIIQqqq https://daeken.svbtle.com/arbitrary-file-write-by-adb-pull
         const error = stat.readUInt32LE(0);
         const dev = stat.readBigUint64LE(4);
         const ino = stat.readBigUint64LE(12);
@@ -127,13 +128,19 @@ export default class Sync extends EventEmitter {
     }
   }
 
-  public async readdir(path: string): Promise<Entry[]> {
+  public async readdir(path: string): Promise<Entry[]>;
+  public async readdir(path: string, v2: false): Promise<Entry[]>;
+  public async readdir(path: string, v2: true): Promise<Entry2[]>;
+  public async readdir(path: string, v2?: boolean): Promise<Array<Entry2|Entry>> {
     const files: Entry[] = [];
-    await this.sendCommandWithArg(Protocol.LIST, path);
+    if (v2)
+      await this.sendCommandWithArg(Protocol.LIS2, path);
+    else
+      await this.sendCommandWithArg(Protocol.LIST, path);
     for (; ;) {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
-        case Protocol.DENT:
+        case Protocol.DENT: {
           const stat = await this.parser.readBytes(16);
           const mode = stat.readUInt32LE(0);
           const size = stat.readUInt32LE(4);
@@ -146,6 +153,29 @@ export default class Sync extends EventEmitter {
             files.push(new Entry(nameString, mode, size, mtime));
           }
           continue;
+        }
+        case Protocol.DNT2: {
+          const stat = await this.parser.readBytes(72); // IQQIIIIQqqqI // https://daeken.svbtle.com/arbitrary-file-write-by-adb-pull
+          const error = stat.readUInt32LE(0);
+          const dev = stat.readBigUint64LE(4);
+          const ino = stat.readBigUint64LE(12);
+          const mode = stat.readUInt32LE(20);
+          const nlink = stat.readUInt32LE(24);
+          const uid = stat.readUInt32LE(28);
+          const gid = stat.readUInt32LE(32);
+          const size = stat.readBigUint64LE(36);
+          const atime = stat.readBigUint64LE(44);
+          const mtime = stat.readBigUint64LE(52);
+          const ctime = stat.readBigUint64LE(60);
+          const namelen = stat.readUInt32LE(68); // I
+          const name = await this.parser.readBytes(namelen);
+          const nameString = name.toString();
+          // Skip '.' and '..' to match Node's fs.readdir().
+          if (!(nameString === '.' || nameString === '..')) {
+            files.push(new Entry2(nameString, mode, Number(size), Number(mtime), error, Number(dev), Number(ino), nlink, uid, gid, Number(atime), Number(ctime)));
+          }
+          continue;
+        }
         case Protocol.DONE:
           await this.parser.readBytes(16)
           return files;

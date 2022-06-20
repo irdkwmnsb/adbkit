@@ -705,6 +705,21 @@ export default class DeviceClient {
   }
 
   /**
+   * A convenience shortcut for `sync.readdir2()`, mainly for one-off use cases. The connection cannot be reused, resulting in poorer performance over multiple calls. However, the Sync client will be closed automatically for you, so that's one less thing to worry about.
+   *
+   * @param path See `sync.readdir()` for details.
+   * @returns Files Lists
+   */
+  public async readdir2(path: string): Promise<Entry[]> {
+    const sync = await this.syncService();
+    try {
+      return await sync.readdir(path, true);
+    } finally {
+      sync.end();
+    }
+  }
+
+  /**
    * A convenience shortcut for `sync.pull()`, mainly for one-off use cases. The connection cannot be reused, resulting in poorer performance over multiple calls. However, the Sync client will be closed automatically for you, so that's one less thing to worry about.
    *
    * @param path See `sync.pull()` for details.

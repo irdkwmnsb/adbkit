@@ -10,6 +10,7 @@ export default class Protocol {
   public static LIST = 'LIST';
   public static LIS2 = 'LIS2';
   public static DENT = 'DENT';
+  public static DNT2 = 'DNT2';
   public static RECV = 'RECV';
   public static DATA = 'DATA';
   public static DONE = 'DONE';
