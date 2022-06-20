@@ -10,6 +10,7 @@ import PushTransfer from './sync/pushtransfer';
 import PullTransfer from './sync/pulltransfer';
 import Connection from './connection';
 import { Readable } from 'stream';
+import Stats2 from './sync/stats2';
 
 const TEMP_PATH = '/data/local/tmp';
 const DEFAULT_CHMOD = 0o644;
@@ -25,7 +26,7 @@ export interface ENOENT extends Error {
 /**
  * enforce EventEmitter typing
  */
- interface IEmissions {
+interface IEmissions {
   error: (data: Error) => void
 }
 
@@ -52,11 +53,17 @@ export default class Sync extends EventEmitter {
   public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
   public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
-  public async stat(path: string): Promise<Stats> {
-    await this.sendCommandWithArg(Protocol.STAT, path);
+  public async stat(path: string): Promise<Stats>;
+  public async stat(path: string, v2: false): Promise<Stats>;
+  public async stat(path: string, v2: true): Promise<Stats2>;
+  public async stat(path: string, v2?: boolean): Promise<Stats | Stats2> {
+    if (v2)
+      await this.sendCommandWithArg(Protocol.STA2, path);
+    else
+      await this.sendCommandWithArg(Protocol.STAT, path);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
-      case Protocol.STAT:
+      case Protocol.STAT: {
         const stat = await this.parser.readBytes(12);
         const mode = stat.readUInt32LE(0);
         const size = stat.readUInt32LE(4);
@@ -66,6 +73,26 @@ export default class Sync extends EventEmitter {
         } else {
           return new Stats(mode, size, mtime);
         }
+      }
+      case Protocol.STA2: {
+        const stat = await this.parser.readBytes(68);
+        const error = stat.readUInt32LE(0);
+        const dev = stat.readBigUint64LE(4);
+        const ino = stat.readBigUint64LE(12);
+        const mode = stat.readUInt32LE(20);
+        const nlink = stat.readUInt32LE(24);
+        const uid = stat.readUInt32LE(28);
+        const gid = stat.readUInt32LE(32);
+        const size = stat.readBigUint64LE(36);
+        const atime = stat.readBigUint64LE(44);
+        const mtime = stat.readBigUint64LE(52);
+        const ctime = stat.readBigUint64LE(60);
+        if (mode === 0) {
+          return this.enoent(path);
+        } else {
+          return new Stats2(mode, Number(size), Number(mtime), error, Number(dev), Number(ino), nlink, uid, gid, Number(atime), Number(ctime));
+        }
+      }
       case Protocol.FAIL:
         return this.readError();
       default:

@@ -40,7 +40,7 @@ const testScrcpy = async (deviceClient: DeviceClient) => {
   scrcpy.on('frame', ({pts, data}) => {
     nbPkg++;
     trData += data.length;
-    const asFloat = parseFloat(pts.toString())
+    const asFloat = parseFloat((pts||0).toString())
     const sec = asFloat / 1000000;
     console.log(`[${sec.toFixed(1)}] Data:  ${fmtSize(data.length)}`)
   });
@@ -380,10 +380,13 @@ const main = async () => {
   }
 
   const deviceClient = devices[0].getClient();
+  //const ret1 = await deviceClient.stat('/');
+  //console.log(ret1);
+  //const ret2 = await deviceClient.stat2('/');
+  //console.log(ret2);
   // await deviceClient.extra.usbTethering(true);
-  await deviceClient.extra.airPlainMode(true);
-  await deviceClient.extra.airPlainMode(false);
-  
+  // await deviceClient.extra.airPlainMode(true);
+  // await deviceClient.extra.airPlainMode(false);
   // await testScrcpyEncoder(deviceClient);
   // await testScrcpy(deviceClient);
   // await testUiautomator(deviceClient);

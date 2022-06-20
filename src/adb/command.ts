@@ -11,7 +11,7 @@ const RE_ESCAPE = /([$`\\!"])/g;
 
 export default abstract class Command<T> {
   public parser: Parser;
-  public readonly options: { sudo: boolean };
+  public readonly options: Partial<DeviceClientOptions>;
   private lastCmd: string;
 
   get lastCommand(): string {

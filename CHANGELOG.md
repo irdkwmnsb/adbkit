@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v3.1.17
+* add deviceClient.stat2()
+
 ## v3.1.16 (2022-06-22)
 * add some extra function
 * add abdkit functions

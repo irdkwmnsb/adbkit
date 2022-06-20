@@ -6,7 +6,9 @@ export default class Protocol {
   public static OKAY = 'OKAY';
   public static FAIL = 'FAIL';
   public static STAT = 'STAT';
+  public static STA2 = 'STA2';
   public static LIST = 'LIST';
+  public static LIS2 = 'LIS2';
   public static DENT = 'DENT';
   public static RECV = 'RECV';
   public static DATA = 'DATA';
@@ -14,16 +16,18 @@ export default class Protocol {
   public static SEND = 'SEND';
   public static QUIT = 'QUIT';
 
-  public static bOKAY = Buffer.from('OKAY');
-  public static bFAIL = Buffer.from('FAIL');
-  public static bSTAT = Buffer.from('STAT');
-  public static bLIST = Buffer.from('LIST');
-  public static bDENT = Buffer.from('DENT');
-  public static bRECV = Buffer.from('RECV');
-  public static bDATA = Buffer.from('DATA');
-  public static bDONE = Buffer.from('DONE');
-  public static bSEND = Buffer.from('SEND');
-  public static bQUIT = Buffer.from('QUIT');
+  public static bOKAY = Buffer.from(Protocol.OKAY);
+  public static bFAIL = Buffer.from(Protocol.FAIL);
+  public static bSTAT = Buffer.from(Protocol.STAT);
+  public static bSTA2 = Buffer.from(Protocol.STA2);
+  public static bLIST = Buffer.from(Protocol.LIST);
+  public static bLIS2 = Buffer.from(Protocol.LIS2);
+  public static bDENT = Buffer.from(Protocol.DENT);
+  public static bRECV = Buffer.from(Protocol.RECV);
+  public static bDATA = Buffer.from(Protocol.DATA);
+  public static bDONE = Buffer.from(Protocol.DONE);
+  public static bSEND = Buffer.from(Protocol.SEND);
+  public static bQUIT = Buffer.from(Protocol.QUIT);
 
   /**
    * parse a 4 char string

@@ -1140,3 +1140,4 @@ Copyright © The OpenSTF Project. All Rights Reserved.
 [imagemagick]: http://www.imagemagick.org/
 [adbkit-logcat]: https://npmjs.org/package/adbkit-logcat
 [adbkit-monkey]: https://npmjs.org/package/adbkit-monkey
+[@yume-chan/adb](https://www.npmjs.com/package/@yume-chan/adb) a browser adb implementation

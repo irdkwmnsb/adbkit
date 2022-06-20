@@ -46,6 +46,7 @@ import { Utils } from '..';
 import { DeviceClientOptions } from '../models/DeviceClientOptions';
 import ServiceCallCommand, { ParcelReader, ServiceCallArg } from './command/host-transport/serviceCall';
 import DeviceClientExtra from './DeviceClientExtra';
+import Stats2 from './sync/stats2';
 
 const debug = d('adb:client');
 
@@ -53,10 +54,10 @@ const NoUserOptionError = (err: Error) => err.message.indexOf('--user') !== -1;
 
 export default class DeviceClient {
   private options: DeviceClientOptions;
-  
+
   constructor(public readonly client: Client, public readonly serial: string, options?: Partial<DeviceClientOptions>) {
     options = options || {};
-    const sudo =  options.sudo || false;
+    const sudo = options.sudo || false;
     this.options = { sudo };
   }
 
@@ -64,7 +65,7 @@ export default class DeviceClient {
     if (this.options.sudo)
       return this;
     else
-      return new DeviceClient(this.client, this.serial, {...this.options, sudo: true})
+      return new DeviceClient(this.client, this.serial, { ...this.options, sudo: true })
   }
   /**
    * Gets the serial number of the device identified by the given serial number. With our API this doesn't really make much sense, but it has been implemented for completeness. _FYI: in the raw ADB protocol you can specify a device in other ways, too._
@@ -664,6 +665,25 @@ export default class DeviceClient {
     const sync = await this.syncService();
     try {
       return await sync.stat(path);
+    } finally {
+      sync.end();
+    }
+  }
+
+  /**
+     * Retrieves information about the given path.
+     *
+     * @param path The path.
+     * 
+     * @returns An [`fs.Stats`][node-fs-stats] instance. While the `stats.is*` methods are available, only the following properties are supported:
+        -   **mode** The raw mode.
+        -   **size** The file size.
+        -   **mtime** The time of last modification as a `Date`.
+     */
+  public async stat2(path: string): Promise<Stats2> {
+    const sync = await this.syncService();
+    try {
+      return await sync.stat(path, true);
     } finally {
       sync.end();
     }
