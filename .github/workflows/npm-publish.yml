@@ -1,0 +1,50 @@
+name: publish on npmjs
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - "src/**"
+      - "test/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "tsconfig.json"
+      - ".github/workflows/test.yml"
+  pull_request:
+    branches: [ "master" ]
+    paths:
+      - "src/**"
+      - "test/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "tsconfig.json"
+      - ".github/workflows/test.yml"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - run: sudo apt-get install -y android-tools-adb
+    - uses: actions/checkout@v3
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 6.32.23
+    - name: Use Node.js 16
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        registry-url: https://registry.npmjs.org/
+        cache: 'pnpm'
+    - name: run pnpm install
+      run: pnpm install --frozen-lockfile
+    - run: pnpm run build
+    #- run: pnpm publish
+    #  env:
+    #    NODE_AUTH_TOKEN: ${{secrets.npm_token}}
