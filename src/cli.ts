@@ -151,4 +151,31 @@ program
     }
   });
 
+
+for (const type of ['bluetooth', 'data', 'wifi'] as const) {
+  program
+    .command(`${type}-off [serial]`)
+    .description('Disable bluetooth.')
+    .action(async (serial?: string) => {
+      const device = await getClientDevice(serial);
+      if (await device.extra.setSvc(type, false)) {
+        console.log(`${type} disabled`);
+      } else {
+        console.log(`failed or ${type} already disabled`);
+      }
+    });
+
+  program
+    .command(`${type}-on [serial]`)
+    .description('Enable bluetooth.')
+    .action(async (serial?: string) => {
+      const device = await getClientDevice(serial);
+      if (await device.extra.setSvc(type, true)) {
+        console.log('Bluetooth enabled');
+      } else {
+        console.log('failed or already enabled');
+      }
+    });
+}
+
 program.parse(process.argv);

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v3.1.16 (2022-06-22)
+* add some extra function
+* add abdkit functions
+* fix french phone support
+
 ## v3.1.15 (2022-06-22)
 * improve stream usage
 * fix https://github.com/DeviceFarmer/adbkit/pull/302
