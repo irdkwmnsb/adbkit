@@ -44,7 +44,8 @@ describe('Sync', () => {
         });
         return Promise.all(promises);
     };
-    before(async () => {
+    before(async function () {
+        this.timeout(10000);
         client = Adb.createClient();
         const devices = await client.listDevices();
         deviceList = devices;
