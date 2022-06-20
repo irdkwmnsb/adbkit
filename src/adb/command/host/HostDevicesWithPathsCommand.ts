@@ -22,7 +22,11 @@ export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[
       .split('\n')
       .filter((e) => e)
       .map((line: string) => {
-        const [id, type, path, product, model, device, transportId] = line.split(/\s+/);
+        // eslint-disable-next-line prefer-const
+        let [id, type, path, product, model, device, transportId] = line.split(/\s+/);
+        model = model.replace('model:', '');
+        product = product.replace('product:', '');
+        transportId = transportId.replace('transport_id:', '');
         return {
           id,
           type: type as DeviceType,

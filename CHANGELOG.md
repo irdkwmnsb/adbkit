@@ -3,7 +3,8 @@
 ## v3.1.15 (2022-06-22)
 * improve stream usage
 * fix https://github.com/DeviceFarmer/adbkit/pull/302
-
+* improve: https://github.com/compoundradius/adbkit/issues/1
+* 
 ## v3.1.14 (2022-05-19)
 * add scrcpy type export
 * export add screm configurration in frame events
