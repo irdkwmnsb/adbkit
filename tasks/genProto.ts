@@ -1,6 +1,6 @@
-import { EOL } from 'node:os';
-import fs from 'node:fs';
-import path from 'node:path';
+import { EOL } from 'os';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Gent Typescript interface from protobuf.

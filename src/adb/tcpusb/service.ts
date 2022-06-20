@@ -1,5 +1,5 @@
 import d from 'debug';
-import EventEmitter from 'node:events';
+import EventEmitter from 'events';
 import Packet from './packet';
 import Protocol from '../protocol';
 import Client from '../client';

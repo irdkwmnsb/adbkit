@@ -1,9 +1,9 @@
-import EventEmitter from 'node:events';
+import EventEmitter from 'events';
 import PromiseDuplex from 'promise-duplex';
 import Debug from 'debug';
 import DeviceClient from '../../DeviceClient';
 import Util from '../../util';
-import { Duplex } from 'node:stream';
+import { Duplex } from 'stream';
 import { MotionEvent, Orientation, ControlMessage } from './ScrcpyConst';
 import { KeyCodes, Utils } from '../../..';
 import { Point, ScrcpyOptions } from './ScrcpyModel';

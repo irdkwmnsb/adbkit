@@ -1,5 +1,5 @@
 import Parser from './parser';
-import EventEmitter from 'node:events';
+import EventEmitter from 'events';
 import Device from '../models/Device';
 import HostDevicesCommand from './command/host/HostDevicesCommand';
 import HostDevicesWithPathsCommand from './command/host/HostDevicesWithPathsCommand';

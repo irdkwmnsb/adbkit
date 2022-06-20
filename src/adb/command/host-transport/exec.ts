@@ -1,5 +1,5 @@
 import Command from '../../command';
-import { Duplex } from 'node:stream';
+import { Duplex } from 'stream';
 import WithToString from '../../../models/WithToString';
 
 export default class ExecCommand extends Command<Duplex> {

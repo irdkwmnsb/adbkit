@@ -1,7 +1,7 @@
-import https from 'node:https';
-import fs from 'node:fs';
-import path from 'node:path';
-import { EOL } from 'node:os';
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
+import { EOL } from 'os';
 
 const repo_path = '/aosp-mirror/platform_frameworks_base/master';
 const original = {

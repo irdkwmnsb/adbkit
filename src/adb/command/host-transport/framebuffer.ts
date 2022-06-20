@@ -1,8 +1,8 @@
-import { spawn } from 'node:child_process';
+import { spawn } from 'child_process';
 import d from 'debug';
 import RgbTransform from '../../framebuffer/rgbtransform';
 import Command from '../../command';
-import { Readable } from 'node:stream';
+import { Readable } from 'stream';
 import FramebufferMeta, { ColorFormat } from '../../../models/FramebufferMeta';
 import FramebufferStreamWithMeta from '../../../models/FramebufferStreamWithMeta';
 

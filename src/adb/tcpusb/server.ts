@@ -1,6 +1,6 @@
-import Net from 'node:net';
+import Net from 'net';
 import Socket from './socket';
-import EventEmitter from 'node:events';
+import EventEmitter from 'events';
 import Client from '../client';
 import SocketOptions from '../../models/SocketOptions';
 

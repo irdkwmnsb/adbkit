@@ -1,4 +1,4 @@
-import { Stream } from 'node:stream';
+import { Stream } from 'stream';
 
 export default class PullTransfer extends Stream.PassThrough {
   public stats = {

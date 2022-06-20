@@ -1,7 +1,7 @@
-import { exec, ExecOptions, ExecException } from 'node:child_process';
-import path from 'node:path';
-import fs from 'node:fs';
-import { ChildProcess } from 'node:child_process';
+import { exec, ExecOptions, ExecException } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import { ChildProcess } from 'child_process';
 
 function execPromise(command: string, options: { encoding: BufferEncoding } & ExecOptions): Promise<{ stdout: string, stderr: string, exitCode: number }> {
   return new Promise((resolve, reject) => {

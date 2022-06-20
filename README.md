@@ -100,7 +100,7 @@ const test = async () => {
 
 ```typescript
 import Bluebird from 'bluebird';
-import fs from 'node:fs';
+import fs from 'fs';
 import Adb from '@u4/adbkit';
 const client = Adb.createClient();
 
@@ -496,7 +496,7 @@ This example requires the [request](https://www.npmjs.org/package/request) modul
 ```typescript
 import Adb from '@u4/adbkit';
 import request from 'request';
-import { Readable } from 'node:stream';
+import { Readable } from 'stream';
 
 const client = Adb.createClient();
 

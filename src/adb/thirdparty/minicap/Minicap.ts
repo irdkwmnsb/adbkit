@@ -1,8 +1,8 @@
-import { Duplex, EventEmitter } from 'node:stream';
+import { Duplex, EventEmitter } from 'stream';
 import DeviceClient from '../../DeviceClient';
 import PromiseDuplex from 'promise-duplex';
 import Debug from 'debug';
-import net from 'node:net';
+import net from 'net';
 import ThirdUtils from "../ThirdUtils";
 import { Utils } from "../../..";
 import PromiseSocket from "promise-socket";

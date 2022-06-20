@@ -1,7 +1,7 @@
 import LineTransform from '../../linetransform';
 import Parser from '../../parser';
 import Command from '../../command';
-import { Duplex } from 'node:stream';
+import { Duplex } from 'stream';
 
 export default class ScreencapCommand extends Command<Duplex> {
   async execute(): Promise<Duplex> {

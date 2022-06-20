@@ -3,7 +3,7 @@
  */
 
 import PromiseDuplex from "promise-duplex";
-import { Duplex } from 'node:stream';
+import { Duplex } from 'stream';
 import { Utils } from "../..";
 import path from "node:path";
 import DeviceClient from "../DeviceClient";

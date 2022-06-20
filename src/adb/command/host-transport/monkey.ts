@@ -1,6 +1,6 @@
 import Connection from '../../connection';
 import Command from '../../command';
-import { Duplex } from 'node:stream';
+import { Duplex } from 'stream';
 import Utils from '../../../adb/util';
 import { DeviceClientOptions } from '../../../models/DeviceClientOptions';
 

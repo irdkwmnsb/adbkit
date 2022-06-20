@@ -1,6 +1,6 @@
-import fs from 'node:fs';
-import Path from 'node:path';
-import EventEmitter from 'node:events';
+import fs from 'fs';
+import Path from 'path';
+import EventEmitter from 'events';
 import d from 'debug';
 import Parser from './parser';
 import Protocol from './protocol';
@@ -9,7 +9,7 @@ import Entry from './sync/entry';
 import PushTransfer from './sync/pushtransfer';
 import PullTransfer from './sync/pulltransfer';
 import Connection from './connection';
-import { Readable } from 'node:stream';
+import { Readable } from 'stream';
 
 const TEMP_PATH = '/data/local/tmp';
 const DEFAULT_CHMOD = 0o644;

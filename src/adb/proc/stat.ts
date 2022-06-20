@@ -1,4 +1,4 @@
-import EventEmitter from 'node:events';
+import EventEmitter from 'events';
 import Parser from '../parser';
 import Sync from '../sync';
 import { CpuStats, Loads } from '../../models/CpuStats';
