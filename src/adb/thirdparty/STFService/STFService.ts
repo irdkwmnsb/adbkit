@@ -1,14 +1,14 @@
-import fs from "node:fs";
-import DeviceClient from "../../DeviceClient";
-import { Utils } from "../../..";
-import PromiseDuplex from "promise-duplex";
-import { Duplex, EventEmitter } from "node:stream";
-import ThirdUtils from "../ThirdUtils";
-import * as STF from "./STFServiceModel";
+import fs from 'fs';
+import DeviceClient from '../../DeviceClient';
+import { Utils } from '../../..';
+import PromiseDuplex from 'promise-duplex';
+import { Duplex, EventEmitter } from 'stream';
+import ThirdUtils from '../ThirdUtils';
+import * as STF from './STFServiceModel';
 // import * as STFAg from "./STFAgentModel";
-import { Reader } from "protobufjs";
-import STFServiceBuf from "./STFServiceBuf";
-import Util from "../../util";
+import { Reader } from 'protobufjs';
+import STFServiceBuf from './STFServiceBuf';
+import Util from '../../util';
 
 interface IEmissions {
   airplaneMode: (data: STF.AirplaneModeEvent) => void

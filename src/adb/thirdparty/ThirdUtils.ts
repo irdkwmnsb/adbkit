@@ -2,11 +2,11 @@
  * utils only used by third party
  */
 
-import PromiseDuplex from "promise-duplex";
+import PromiseDuplex from 'promise-duplex';
 import { Duplex } from 'stream';
-import { Utils } from "../..";
-import path from "node:path";
-import DeviceClient from "../DeviceClient";
+import { Utils } from '../..';
+import path from 'path';
+import DeviceClient from '../DeviceClient';
 
 export default class ThirdUtils {
   /**
