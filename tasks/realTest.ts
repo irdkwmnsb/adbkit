@@ -380,10 +380,10 @@ const main = async () => {
   }
 
   const deviceClient = devices[0].getClient();
-  //const ret1 = await deviceClient.stat('/');
-  //console.log(ret1);
-  //const ret2 = await deviceClient.stat2('/');
-  //console.log(ret2);
+  // const ret1 = await deviceClient.stat('/');
+  // console.log(ret1);
+  // const ret2 = await deviceClient.stat2('/');
+  // console.log(ret2);
   // await deviceClient.extra.usbTethering(true);
   // await deviceClient.extra.airPlainMode(true);
   // await deviceClient.extra.airPlainMode(false);
