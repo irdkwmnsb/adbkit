@@ -1,4 +1,3 @@
-/* eslint-disable no-async-promise-executor */
 import fs from 'fs';
 import { program } from 'commander';
 import forge from 'node-forge';
@@ -8,6 +7,7 @@ import PacketReader from './adb/tcpusb/packetreader';
 import path from 'path';
 import Device from './models/Device';
 import DeviceClient from './adb/DeviceClient';
+import Util from './adb/util';
 
 const pkg: { version: string } = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), { encoding: 'utf-8' }));
 
@@ -15,6 +15,7 @@ program.version(pkg.version);
 
 async function getClientDevice(serials: string[]): Promise<DeviceClient[]> {
   const adb = Adb.createClient();
+  console.log('serials', serials.length);
   if (!serials || !serials.length) {
     const devices: Device[] = await adb.listDevices();
     if (devices.length == 0) {
@@ -86,13 +87,14 @@ program
 
 
 program
-  .command('usb-tethering-on [...serials]')
+  .command('usb-tethering-on [serials...]')
   .description('Enable USB tethering.')
-  .action(async (...serials: string[]) => {
+  .action(async (serials: string[]) => {
     const devices = await getClientDevice(serials);
     const process = async (device: DeviceClient) => {
       if (await device.extra.usbTethering(true)) {
         console.log(`[${device.serial}] tethering enabled`);
+        await Util.delay(100)
         await device.extra.back();
       } else {
         console.log(`[${device.serial}] failed or already enabled`);
@@ -102,13 +104,14 @@ program
   });
 
 program
-  .command('usb-tethering-off [...serials]')
+  .command('usb-tethering-off [serials...]')
   .description('Disable USB tethering.')
-  .action(async (...serials: string[]) => {
+  .action(async (serials: string[]) => {
     const devices = await getClientDevice(serials);
     const process = async (device: DeviceClient) => {
       if (await device.extra.usbTethering(false)) {
         console.log(`[${device.serial}] tethering enabled`);
+        await Util.delay(100)
         await device.extra.back();
       } else {
         console.log(`[${device.serial}] failed or already enabled`);
@@ -118,13 +121,14 @@ program
   });
 
 program
-  .command('airplane-mode-on [...serials]')
+  .command('airplane-mode-on [serials...]')
   .description('Enable airplane.')
-  .action(async (...serials: string[]) => {
+  .action(async (serials: string[]) => {
     const devices = await getClientDevice(serials);
     const process = async (device: DeviceClient) => {
       if (await device.extra.airPlainMode(true)) {
         console.log(`[${device.serial}] airplane enabled`);
+        await Util.delay(100)
         await device.extra.back();
       } else {
         console.log(`[${device.serial}] airplane or already enabled`);
@@ -134,13 +138,14 @@ program
   });
 
 program
-  .command('airplane-mode-off [...serials]')
+  .command('airplane-mode-off [serials...]')
   .description('Disable airplane.')
-  .action(async (...serials: string[]) => {
+  .action(async (serials: string[]) => {
     const devices = await getClientDevice(serials);
     const process = async (device: DeviceClient) => {
       if (await device.extra.airPlainMode(false)) {
         console.log(`[${device.serial}] airplane disabled`);
+        await Util.delay(100)
         await device.extra.back();
       } else {
         console.log(`[${device.serial}] airplane or already enabled`);
@@ -150,15 +155,16 @@ program
   });
 
 program
-  .command('airplane-mode-on-off [...serials]')
+  .command('airplane-mode-on-off [serials...]')
   .description('Enable then Disable airplane.')
-  .action(async (...serials: string[]) => {
+  .action(async (serials: string[]) => {
     const devices = await getClientDevice(serials);
     const process = async (device: DeviceClient) => {
       await device.extra.airPlainMode(true)
       await device.extra.back();
       if (await device.extra.airPlainMode(false)) {
         console.log(`[${device.serial}] airplane disabled`);
+        await Util.delay(100)
         await device.extra.back();
       } else {
         console.log(`[${device.serial}] airplane or already enabled`);
@@ -170,9 +176,9 @@ program
 
 for (const type of ['bluetooth', 'data', 'wifi'] as const) {
   program
-    .command(`${type}-off [...serials]`)
+    .command(`${type}-off [serials...]`)
     .description('Disable bluetooth.')
-    .action(async (...serials: string[]) => {
+    .action(async (serials: string[]) => {
       const devices = await getClientDevice(serials);
       const process = async (device: DeviceClient) => {
         if (await device.extra.setSvc(type, false)) {
@@ -185,9 +191,9 @@ for (const type of ['bluetooth', 'data', 'wifi'] as const) {
     });
 
   program
-    .command(`${type}-on [...serials]`)
+    .command(`${type}-on [serials...]`)
     .description('Enable bluetooth.')
-    .action(async (...serials: string[]) => {
+    .action(async (serials: string[]) => {
       const devices = await getClientDevice(serials);
       const process = async (device: DeviceClient) => {
         if (await device.extra.setSvc(type, true)) {

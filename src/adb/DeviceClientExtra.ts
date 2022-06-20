@@ -11,6 +11,7 @@ export default class DeviceClientExtra {
    * @param enable
    */
   async usbTethering(enable: boolean): Promise<boolean> {
+    await this.keyCode(KeyCodes.KEYCODE_WAKEUP);
     await this.deviceClient.startActivity({ component: 'com.android.settings/.TetherSettings', wait: true });
     const xml = await this.deviceClient.execOut('uiautomator dump /dev/tty', 'utf8');
     const doc = new DOMParser().parseFromString(xml)
@@ -42,6 +43,7 @@ export default class DeviceClientExtra {
    * @param enable
    */
   async airPlainMode(enable: boolean): Promise<boolean> {
+    await this.keyCode(KeyCodes.KEYCODE_WAKEUP);
     await this.deviceClient.startActivity({ action: 'android.settings.AIRPLANE_MODE_SETTINGS', wait: true });
     const xml = await this.deviceClient.execOut('uiautomator dump /dev/tty', 'utf8');
     const textFilter = (text: string) => text.toLowerCase();

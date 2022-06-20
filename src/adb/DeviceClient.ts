@@ -47,6 +47,7 @@ import { DeviceClientOptions } from '../models/DeviceClientOptions';
 import ServiceCallCommand, { ParcelReader, ServiceCallArg } from './command/host-transport/serviceCall';
 import DeviceClientExtra from './DeviceClientExtra';
 import Stats2 from './sync/stats2';
+import Entry2 from './sync/entry2';
 
 const debug = d('adb:client');
 
@@ -710,7 +711,7 @@ export default class DeviceClient {
    * @param path See `sync.readdir()` for details.
    * @returns Files Lists
    */
-  public async readdir2(path: string): Promise<Entry[]> {
+  public async readdir2(path: string): Promise<Entry2[]> {
     const sync = await this.syncService();
     try {
       return await sync.readdir(path, true);
