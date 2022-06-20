@@ -41,6 +41,7 @@ class BitReader {
   }
 
   public next(): number {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const value = (this.buffer[this.bytePosition]! >> (7 - this.bitPosition)) & 1;
     this.bitPosition += 1;
     if (this.bitPosition === 8) {
