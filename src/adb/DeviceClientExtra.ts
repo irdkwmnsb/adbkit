@@ -1,6 +1,7 @@
 import DeviceClient from "./DeviceClient";
 import xpath from 'xpath';
 import { DOMParser } from 'xmldom';
+import { KeyCodes } from "./keycode";
 
 export default class DeviceClientExtra {
   constructor(private deviceClient: DeviceClient) { }
@@ -20,7 +21,7 @@ export default class DeviceClientExtra {
     if (!switch_widget.length)
       throw Error('can not find android.widget.Switch linked to USB label');
     const [checkBox] = switch_widget;
-    console.log(checkBox.toString());
+    // console.log(checkBox.toString());
     const checked = checkBox.getAttribute('checked') === 'true';
     const bounds = checkBox.getAttribute('bounds');
     if (checked === enable) {
@@ -49,12 +50,16 @@ export default class DeviceClientExtra {
     const nodes = xpath.select('//*[contains(@text,"mode")]/../..', doc) as Element[]
     if (!nodes.length)
       throw Error('can not find mode labeled node');
-    console.log(nodes[0].toString());
+    // console.log('mode in');
+    // console.log(nodes[0].toString());
+    // console.log('----------------');
     const switch_widget = xpath.select('./*/node[@class="android.widget.Switch"]', nodes[0]) as Element[];
     if (!switch_widget.length)
       throw Error('can not find android.widget.Switch linked to USB label');
     const [checkBox] = switch_widget;
-    console.log(checkBox.toString());
+    // console.log('checkBox:');
+    // console.log(checkBox.toString());
+    // console.log('----------------');
     const checked = checkBox.getAttribute('checked') === 'true';
     const bounds = checkBox.getAttribute('bounds');
     if (checked === enable) {
@@ -63,10 +68,21 @@ export default class DeviceClientExtra {
     const m = bounds.match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/)
     if (!m)
       throw Error('failed to parse Switch bounds');
-    const [, x1, y1, x2, y2] = m;
-    await this.deviceClient.exec('input tap ' + x1 + ' ' + y1);
+    const [, x1, y1 ] = m; // , x2, y2
+    await this.tap(x1, y1);
     return true;
   }
 
+  async tap(x1: string, y1: string): Promise<string> {
+    return this.deviceClient.execOut(`input tap ${x1} ${y1}`, 'utf8');
+  }
+
+  async keyCode(key: KeyCodes): Promise<string> {
+    return this.deviceClient.execOut(`input keyevent ${key}`, 'utf8');
+  }
+
+  async back(): Promise<string> {
+    return this.keyCode(KeyCodes.KEYCODE_BACK);
+  }
 
 }
