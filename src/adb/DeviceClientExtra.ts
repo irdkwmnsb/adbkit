@@ -2,6 +2,7 @@ import DeviceClient from "./DeviceClient";
 import xpath from 'xpath';
 import { DOMParser } from 'xmldom';
 import { KeyCodes } from "./keycode";
+import { Utils } from "..";
 
 export default class DeviceClientExtra {
   constructor(private deviceClient: DeviceClient) { }
@@ -42,7 +43,8 @@ export default class DeviceClientExtra {
    * Depends of phone language.
    * @param enable
    */
-  async airPlainMode(enable: boolean): Promise<boolean> {
+  async airPlainMode(enable: boolean, twiceMs?: number): Promise<boolean> {
+    // wake screen
     await this.keyCode(KeyCodes.KEYCODE_WAKEUP);
     await this.deviceClient.startActivity({ action: 'android.settings.AIRPLANE_MODE_SETTINGS', wait: true });
     const xml = await this.deviceClient.execOut('uiautomator dump /dev/tty', 'utf8');
@@ -53,16 +55,10 @@ export default class DeviceClientExtra {
     const nodes = xpath.select('//*[contains(@text,"mode")]/../..', doc) as Element[]
     if (!nodes.length)
       throw Error('can not find mode labeled node');
-    // console.log('mode in');
-    // console.log(nodes[0].toString());
-    // console.log('----------------');
     const switch_widget = xpath.select(textFilter('./*/node[@class="android.widget.Switch"]'), nodes[0]) as Element[];
     if (!switch_widget.length)
       throw Error('can not find android.widget.Switch linked to USB label');
     const [checkBox] = switch_widget;
-    // console.log('checkBox:');
-    // console.log(checkBox.toString());
-    // console.log('----------------');
     const checked = checkBox.getAttribute('checked') === 'true';
     const bounds = checkBox.getAttribute('bounds');
     if (checked === enable) {
@@ -73,6 +69,10 @@ export default class DeviceClientExtra {
       throw Error('failed to parse Switch bounds');
     const [, x1, y1] = m; // , x2, y2
     await this.tap(x1, y1);
+    if (twiceMs) {
+      await Utils.delay(twiceMs);
+      await this.tap(x1, y1);
+    }
     return true;
   }
 

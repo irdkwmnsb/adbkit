@@ -1,6 +1,6 @@
 {
     "name": "@u4/adbkit",
-    "version": "3.1.17",
+    "version": "3.1.18",
     "description": "A Typescript client for the Android Debug Bridge.",
     "keywords": [
         "adb",
@@ -71,8 +71,8 @@
         "@types/sinon": "^10.0.11",
         "@types/sinon-chai": "^3.2.8",
         "@types/xmldom": "^0.1.31",
-        "@typescript-eslint/eslint-plugin": "^5.28.0",
-        "@typescript-eslint/parser": "^5.28.0",
+        "@typescript-eslint/eslint-plugin": "^5.29.0",
+        "@typescript-eslint/parser": "^5.29.0",
         "bench": "~0.3.6",
         "chai": "~4.3.6",
         "eslint": "^8.18.0",

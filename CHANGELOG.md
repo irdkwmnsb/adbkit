@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v3.1.18 (2022-06-23)
+* improve adbKit CLI
+
 ## v3.1.17 (2022-06-22)
 * add deviceClient.stat2()
 * add deviceClient.readdir2()
