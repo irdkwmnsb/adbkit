@@ -10,8 +10,8 @@ import PushTransfer from './sync/pushtransfer';
 import PullTransfer from './sync/pulltransfer';
 import Connection from './connection';
 import { Readable } from 'stream';
-import Stats2 from './sync/stats2';
-import Entry2 from './sync/entry2';
+import Stats64 from './sync/stats64';
+import Entry64 from './sync/entry64';
 
 const TEMP_PATH = '/data/local/tmp';
 const DEFAULT_CHMOD = 0o644;
@@ -81,14 +81,8 @@ export default class Sync extends EventEmitter {
   public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
   public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
-  public async stat(path: string): Promise<Stats>;
-  public async stat(path: string, v2: false): Promise<Stats>;
-  public async stat(path: string, v2: true): Promise<Stats2>;
-  public async stat(path: string, v2?: boolean): Promise<Stats | Stats2> {
-    if (v2)
-      await this.sendCommandWithArg(Protocol.STA2, path);
-    else
-      await this.sendCommandWithArg(Protocol.STAT, path);
+  public async stat(path: string): Promise<Stats> {
+    await this.sendCommandWithArg(Protocol.STAT, path);
     const reply = await this.parser.readAscii(4);
     switch (reply) {
       case Protocol.STAT: {
@@ -102,23 +96,34 @@ export default class Sync extends EventEmitter {
           return new Stats(mode, size, mtime);
         }
       }
+      case Protocol.FAIL:
+        return this.readError();
+      default:
+        return this.parser.unexpected(reply, 'STAT or FAIL');
+    }
+  }
+
+  public async stat64(path: string): Promise<Stats64> {
+    await this.sendCommandWithArg(Protocol.STA2, path);
+    const reply = await this.parser.readAscii(4);
+    switch (reply) {
       case Protocol.STA2: {
         const stat = await this.parser.readBytes(68); // IQQIIIIQqqq https://daeken.svbtle.com/arbitrary-file-write-by-adb-pull
         const error = stat.readUInt32LE(0);
         const dev = stat.readBigUint64LE(4);
         const ino = stat.readBigUint64LE(12);
         const mode = stat.readUInt32LE(20);
-        const nlink = stat.readUInt32LE(24);
-        const uid = stat.readUInt32LE(28);
-        const gid = stat.readUInt32LE(32);
+        const nlink = BigInt(stat.readUInt32LE(24));
+        const uid = BigInt(stat.readUInt32LE(28));
+        const gid = BigInt(stat.readUInt32LE(32));
         const size = stat.readBigUint64LE(36);
-        const atime = stat.readBigUint64LE(44);
-        const mtime = stat.readBigUint64LE(52);
-        const ctime = stat.readBigUint64LE(60);
+        const atime = stat.readBigUint64LE(44) * 1000000n;
+        const mtime = stat.readBigUint64LE(52) * 1000000n;
+        const ctime = stat.readBigUint64LE(60) * 1000000n;
         if (mode === 0) {
           return this.enoent(path);
         } else {
-          return new Stats2(mode, Number(size), Number(mtime), error, Number(dev), Number(ino), nlink, uid, gid, Number(atime), Number(ctime));
+          return new Stats64(error, dev, ino, BigInt(mode), nlink, uid, gid, size, atime, mtime, ctime);
         }
       }
       case Protocol.FAIL:
@@ -128,15 +133,9 @@ export default class Sync extends EventEmitter {
     }
   }
 
-  public async readdir(path: string): Promise<Entry[]>;
-  public async readdir(path: string, v2: false): Promise<Entry[]>;
-  public async readdir(path: string, v2: true): Promise<Entry2[]>;
-  public async readdir(path: string, v2?: boolean): Promise<Array<Entry2|Entry>> {
+  public async readdir(path: string): Promise<Array<Entry>> {
     const files: Entry[] = [];
-    if (v2)
-      await this.sendCommandWithArg(Protocol.LIS2, path);
-    else
-      await this.sendCommandWithArg(Protocol.LIST, path);
+    await this.sendCommandWithArg(Protocol.LIST, path);
     for (; ;) {
       const reply = await this.parser.readAscii(4);
       switch (reply) {
@@ -154,25 +153,42 @@ export default class Sync extends EventEmitter {
           }
           continue;
         }
+        case Protocol.DONE:
+          await this.parser.readBytes(16)
+          return files;
+        case Protocol.FAIL:
+          return this.readError();
+        default:
+          return this.parser.unexpected(reply, 'DENT, DONE or FAIL');
+      }
+    }
+  }
+
+  public async readdir64(path: string, v2?: boolean): Promise<Array<Entry64>> {
+    const files: Entry64[] = [];
+    await this.sendCommandWithArg(Protocol.LIS2, path);
+    for (; ;) {
+      const reply = await this.parser.readAscii(4);
+      switch (reply) {
         case Protocol.DNT2: {
           const stat = await this.parser.readBytes(72); // IQQIIIIQqqqI // https://daeken.svbtle.com/arbitrary-file-write-by-adb-pull
           const error = stat.readUInt32LE(0);
           const dev = stat.readBigUint64LE(4);
           const ino = stat.readBigUint64LE(12);
           const mode = stat.readUInt32LE(20);
-          const nlink = stat.readUInt32LE(24);
-          const uid = stat.readUInt32LE(28);
-          const gid = stat.readUInt32LE(32);
+          const nlink = BigInt(stat.readUInt32LE(24));
+          const uid = BigInt(stat.readUInt32LE(28));
+          const gid = BigInt(stat.readUInt32LE(32));
           const size = stat.readBigUint64LE(36);
-          const atime = stat.readBigUint64LE(44);
-          const mtime = stat.readBigUint64LE(52);
-          const ctime = stat.readBigUint64LE(60);
+          const atime = stat.readBigUint64LE(44) * 1000000n;
+          const mtime = stat.readBigUint64LE(52) * 1000000n;
+          const ctime = stat.readBigUint64LE(60) * 1000000n;
           const namelen = stat.readUInt32LE(68); // I
           const name = await this.parser.readBytes(namelen);
           const nameString = name.toString();
           // Skip '.' and '..' to match Node's fs.readdir().
           if (!(nameString === '.' || nameString === '..')) {
-            files.push(new Entry2(nameString, mode, Number(size), Number(mtime), error, Number(dev), Number(ino), nlink, uid, gid, Number(atime), Number(ctime)));
+            files.push(new Entry64(nameString, error, dev, ino, BigInt(mode), nlink, uid, gid, size, atime, mtime, ctime));
           }
           continue;
         }
@@ -186,6 +202,8 @@ export default class Sync extends EventEmitter {
       }
     }
   }
+
+
 
   public async push(contents: string | Readable, path: string, mode?: number): Promise<PushTransfer> {
     if (typeof contents === 'string') {

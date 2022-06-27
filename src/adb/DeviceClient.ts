@@ -46,8 +46,8 @@ import { Utils } from '..';
 import { DeviceClientOptions } from '../models/DeviceClientOptions';
 import ServiceCallCommand, { ParcelReader, ServiceCallArg } from './command/host-transport/serviceCall';
 import DeviceClientExtra from './DeviceClientExtra';
-import Stats2 from './sync/stats2';
-import Entry2 from './sync/entry2';
+import Stats64 from './sync/stats64';
+import Entry64 from './sync/entry64';
 
 const debug = d('adb:client');
 
@@ -681,10 +681,10 @@ export default class DeviceClient {
         -   **size** The file size.
         -   **mtime** The time of last modification as a `Date`.
      */
-  public async stat2(path: string): Promise<Stats2> {
+  public async stat64(path: string): Promise<Stats64> {
     const sync = await this.syncService();
     try {
-      return await sync.stat(path, true);
+      return await sync.stat64(path);
     } finally {
       sync.end();
     }
@@ -711,10 +711,10 @@ export default class DeviceClient {
    * @param path See `sync.readdir()` for details.
    * @returns Files Lists
    */
-  public async readdir2(path: string): Promise<Entry2[]> {
+  public async readdir64(path: string): Promise<Entry64[]> {
     const sync = await this.syncService();
     try {
-      return await sync.readdir(path, true);
+      return await sync.readdir64(path);
     } finally {
       sync.end();
     }

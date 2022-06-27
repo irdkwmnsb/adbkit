@@ -382,10 +382,12 @@ const main = async () => {
   const deviceClient = devices[0].getClient();
   // const ret1 = await deviceClient.stat('/');
   // console.log(ret1);
-  // const ret2 = await deviceClient.stat2('/');
-  // console.log(ret2);
-  // const ret2 = await deviceClient.readdir2('/');
-  // console.log(ret2);
+  // const ret2 = await deviceClient.stat64('/system');
+  // console.log(ret2.ctime);
+  // console.log(ret2.isDirectory());
+
+  // const list = await deviceClient.readdir64('/');
+  // console.log(list.map(a=>a.toString()).join('\n'));
   // await deviceClient.extra.usbTethering(true);
   // await deviceClient.extra.airPlainMode(true);
   // await deviceClient.extra.airPlainMode(false);
