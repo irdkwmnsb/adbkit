@@ -2,7 +2,10 @@
 
 ## v3.1.20
 * add DevicePackage
-
+* replace getDHCPIpAddress(iface) => string by getIpAddress(iface) => string[]
+* improve TS doc for StartServiceOptions
+* dump deps versions
+ 
 ## v3.1.19
 * replace stat2 by stat64
 * replace readdir2 by readdir64

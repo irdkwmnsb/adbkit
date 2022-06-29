@@ -25,35 +25,36 @@ export type ExtraValue = number | string | boolean | ExtraObject;
 
 export default interface StartServiceOptions {
   /**
-   * The user to run as. Not set by default. If the option is unsupported by the device, an attempt will be made to run the same command again without the user option.
+   * The user to run as. Not set by default. If the option is unsupported by the device,
+   * an attempt will be made to run the same command again without the user option.
    */
   user?: number;
   /**
-   * The action.
+   * The action. (the -a parameter)
    */
   action?: string;
   /**
-   * The data URI, if any.
+   * The data URI, if any. (the -d parameter)
    */
   data?: string;
   /**
-   * The mime type, if any.
+   * The mime type, if any. (the -rt parameter)
    */
   mimeType?: string;
   /**
-   * The category. For multiple categories, pass an `Array`.
+   * The category. For multiple categories, pass an `Array`. (the -c parameter)
    */
   category?: string | string[];
   /**
-   * The component.
+   * The component. (the -n parameter)
    */
   component?: string;
   /**
-   * Numeric flags.
+   * Numeric flags. (the -f parameter)
    */
   flags?: number | number[];
   /**
-   * Any extra data.
+   * Any extra data. (the --e parameter)
    */
   extras?: Extra[] | ExtraObject;
 }

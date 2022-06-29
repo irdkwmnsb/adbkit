@@ -196,19 +196,17 @@ export default class DeviceClient {
   }
 
   /**
-   * Attemps to retrieve the IP address of the device. Roughly analogous to `adb shell getprop dhcp.<iface>.ipaddress`.
-   *
+   * Attemps to retrieve the IP addresses of the device. using `ip addr show` command.
+   * 
    * @param [iface] The network interface. Defaults to `'wlan0'`.
    *
-   * @returns The IP address as a `String`.
+   * @returns The IP addresses as string[] starting with IPv4 then IPv6.
    */
-  public async getDHCPIpAddress(iface = 'wlan0'): Promise<string> {
-    const properties = await this.getProperties();
-    const ip = properties[`dhcp.${iface}.ipaddress`];
-    if (ip) {
-      return ip;
-    }
-    throw Error(`Unable to find ipaddress for '${iface}'`);
+  public async getIpAddress(iface = 'wlan0'): Promise<string[]> {
+    const ipData = await this.execOut(`ip addr show ${iface}`, 'utf-8');
+    const ipV4 = [...ipData.matchAll(/inet ([\d]+\.[\d]+\.[\d]+\.[\d]+)\/\d+/g)].map(m=>m[1])
+    const ipV6 = [...ipData.matchAll(/inet6 ([0-9a-f:]+)\/\d+/g)].map(m=>m[1])
+    return [ ...ipV4, ...ipV6 ];
   }
 
   /**
