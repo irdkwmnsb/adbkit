@@ -48,6 +48,7 @@ import ServiceCallCommand, { ParcelReader, ServiceCallArg } from './command/host
 import DeviceClientExtra from './DeviceClientExtra';
 import Stats64 from './sync/stats64';
 import Entry64 from './sync/entry64';
+import DevicePackage from './DevicePackage';
 
 const debug = d('adb:client');
 
@@ -822,5 +823,16 @@ export default class DeviceClient {
       this.#extra = new DeviceClientExtra(this);
     }
     return this.#extra;
+  }
+
+  public async listPackages(options?: {thirdparty?: boolean}) {
+    options = options || {};
+    let cmd = 'pm list packages'
+    if (options.thirdparty) {
+      cmd += ' -3';
+    }
+    const list = await this.execOut(cmd, 'utf-8');
+    const packages = [...list.matchAll(/package:([\w\d.]+)/g)];
+    return packages.map(m => new DevicePackage(this, m[1]));
   }
 }

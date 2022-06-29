@@ -380,6 +380,17 @@ const main = async () => {
   }
 
   const deviceClient = devices[0].getClient();
+
+  let pkgs = await deviceClient.listPackages();
+  pkgs = pkgs.filter(p => p.name.endsWith('.chrome'))
+  if (pkgs.length) {
+    console.log(`Pkg: ${pkgs[0].name}`);
+    const info = await pkgs[0].getInfo();
+    console.log(`versionName: ${info.versionName}`);
+    console.log(`dataDir: ${info.dataDir}`);
+    console.log(`primaryCpuAbi: ${info.primaryCpuAbi}`);
+    console.log(`lastUpdateTime: ${info.lastUpdateTime}`);
+  }
   // const ret1 = await deviceClient.stat('/');
   // console.log(ret1);
   // const ret2 = await deviceClient.stat64('/system');

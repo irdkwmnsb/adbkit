@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v3.1.20
+* add DevicePackage
+
 ## v3.1.19
 * replace stat2 by stat64
 * replace readdir2 by readdir64
