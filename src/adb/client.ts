@@ -61,7 +61,13 @@ export default class Client extends EventEmitter {
     return new HostVersionCommand(conn).execute();
   }
 
-  public async connect(host: string, port = 5555): Promise<string> {
+  /**
+   * connect with a TCP connection
+   * @param host IP / hostname with optional :port
+   * @param port port of 555 by default
+   * @returns true is a new conmnetion is etablish, or false if already connected.
+   */
+  public async connect(host: string, port = 5555): Promise<boolean> {
     if (host.indexOf(':') !== -1) {
       const [h, portString] = host.split(':', 2);
       host = h;

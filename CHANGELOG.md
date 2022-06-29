@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v
+* change connect() method, now return a boolean
+
 ## v3.1.19 (2022-06-29)
 * replace stat2 by stat64
 * replace readdir2 by readdir64

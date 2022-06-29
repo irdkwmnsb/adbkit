@@ -6,13 +6,16 @@ import Command from '../../command';
 // "already connected to 192.168.2.2:5555"
 const RE_OK = /connected to|already connected/;
 
-export default class HostConnectCommand extends Command<string> {
-  async execute(host: string, port: number): Promise<string> {
+export default class HostConnectCommand extends Command<boolean> {
+  async execute(host: string, port: number): Promise<boolean> {
     await this._send(`host:connect:${host}:${port}`);
     await this.readOKAY();
     const value = await this.parser.readValue('utf8');
     if (RE_OK.test(value)) {
-      return `${host}:${port}`;
+      if (value.includes("already connected"))
+        return false;
+      else
+        return true;
     } else {
       throw new Error(value);
     }

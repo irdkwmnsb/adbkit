@@ -28,7 +28,7 @@ describe('ConnectCommand', () => {
             return conn.getSocket().causeEnd();
         });
         const val = await cmd.execute('192.168.2.2', 5555);
-        expect(val).to.be.equal('192.168.2.2:5555');
+        expect(val).to.be.equal(true);
     });
     it('should resolve with the new device id if already connected', async () => {
         const conn = new MockConnection();
@@ -39,7 +39,7 @@ describe('ConnectCommand', () => {
             return conn.getSocket().causeEnd();
         });
         const val = await cmd.execute('192.168.2.2', 5555);
-        expect(val).to.be.equal('192.168.2.2:5555');
+        expect(val).to.be.equal(false);
     });
     it('should reject with error if unable to connect', async () => {
         const conn = new MockConnection();
