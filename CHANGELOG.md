@@ -1,14 +1,12 @@
 # CHANGELOG
 
-## v3.1.20
+## v3.1.19 (2022-06-29)
+* replace stat2 by stat64
+* replace readdir2 by readdir64
 * add DevicePackage
 * replace getDHCPIpAddress(iface) => string by getIpAddress(iface) => string[]
 * improve TS doc for StartServiceOptions
 * dump deps versions
- 
-## v3.1.19
-* replace stat2 by stat64
-* replace readdir2 by readdir64
 
 ## v3.1.18 (2022-06-23)
 * improve adbKit CLI
