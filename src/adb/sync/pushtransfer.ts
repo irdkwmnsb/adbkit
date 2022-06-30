@@ -3,13 +3,25 @@ import EventEmitter from 'events';
 /**
  * enforce EventEmitter typing
  */
- interface IEmissions {
+interface IEmissions {
+  /**
+   * Emitted on error.
+   */
   end: () => void
   cancel: () => void
-  progress: (stats: { bytesTransferred: number}) => void
+  /**
+   * **(stats)** Emitted when a chunk has been flushed to the ADB connection.
+   * @param stats An object with the following stats about the transfer:
+   */
+  progress: (stats: { /** The number of bytes transferred so far. */ bytesTransferred: number }) => void
+  /**
+   * Emitted when the transfer has successfully completed.
+   */
   error: (data: Error) => void
 }
-
+/**
+ * A simple EventEmitter, mainly for keeping track of the progress.
+ */
 export default class PushTransfer extends EventEmitter {
   private stack: number[] = [];
   public stats = {
@@ -21,6 +33,10 @@ export default class PushTransfer extends EventEmitter {
   public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
   public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
+  /**
+   * Cancels the transfer by ending both the stream that is being pushed and the sync connection. This will most likely end up creating a broken file on your device. **Use at your own risk.** Also note that you must create a new sync connection if you wish to continue using the sync service.
+   * @returns The pushTransfer instance.
+   */
   public cancel(): boolean {
     return this.emit('cancel');
   }

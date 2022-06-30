@@ -3,13 +3,16 @@ import EventEmitter from 'events';
 import Parser from './parser';
 import Command from './command';
 
+/**
+ * An object with the following properties always present:
+ */
 interface JdwpTrackerChangeSet {
   /**
-   * array of pid
+   * An array of pids that were removed. Empty if none.
    */
   removed: string[];
   /**
-   * array of pid
+   * An array of pids that were added. Empty if none.
    */
   added: string[];
 }
@@ -18,10 +21,27 @@ interface JdwpTrackerChangeSet {
  * enforce EventEmitter typing
  */
  interface IEmissions {
+  /**
+   * Emitted when the underlying connection ends.
+   */
   end: () => void
+  /**
+   * **(pid)** Emitted when a JDWP process becomes unavailable, once per pid.
+   */
   remove: (pid: string) => void
+  /**
+   * **(pid)** Emitted when a new JDWP process becomes available, once per pid.
+   */
   add: (pid: string) => void
+  /**
+   * All changes in a single event.
+   * @param changeSet An object with the following properties always present:
+   * @param newList All currently active pids (including pids from previous runs).
+   */
   changeSet: (changeSet: JdwpTrackerChangeSet, newList: string[]) => void
+  /**
+   * **(err)** Emitted if there's an error.
+   */
   error: (err: Error) => void
 }
 

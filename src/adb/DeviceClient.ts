@@ -70,6 +70,7 @@ export default class DeviceClient {
     else
       return new DeviceClient(this.client, this.serial, { ...this.options, sudo: true })
   }
+
   /**
    * Gets the serial number of the device identified by the given serial number. With our API this doesn't really make much sense, but it has been implemented for completeness. _FYI: in the raw ADB protocol you can specify a device in other ways, too._
    *
@@ -110,13 +111,7 @@ export default class DeviceClient {
 
   /**
    * Retrieves the features of the device identified by the given serial number. This is analogous to `adb shell pm list features`. Useful for checking whether hardware features such as NFC are available (you'd check for `'android.hardware.nfc'`).
-   * @param [flags] Flags to pass to the `pm list packages` command to filter the list
-   * ```
-   * -d: filter to only show disabled packages
-   * -e: filter to only show enabled packages
-   * -s: filter to only show system packages
-   * -3: filter to only show third party packages
-   * ```
+
    * @returns An object of device features. Each key corresponds to a device feature, with the value being either `true` for a boolean feature, or the feature value as a string (e.g. `'0x20000'` for `reqGlEsVersion`).
    */
   public async getFeatures(): Promise<Features> {
@@ -127,7 +122,11 @@ export default class DeviceClient {
   /**
    * Retrieves the list of packages present on the device. This is analogous to `adb shell pm list packages`. If you just want to see if something's installed, consider using `client.isInstalled()` instead.
    *
-   * @param flags TODO
+   * @param flags Flags to pass to the `pm list packages` command to filter the list
+   * -d: filter to only show disabled packages
+   * -e: filter to only show enabled packages
+   * -s: filter to only show system packages
+   * -3: filter to only show third party packages
    * @returns An object of device features. Each key corresponds to a device feature, with the value being either `true` for a boolean feature, or the feature value as a string (e.g. `'0x20000'` for `reqGlEsVersion`)
    */
   public async getPackages(flags?: string): Promise<string[]> {
@@ -291,8 +290,9 @@ export default class DeviceClient {
    * -   `localreserved:<unix domain socket name>`
    * -   `localfilesystem:<unix domain socket name>`
    * @param local A string representing the local endpoint on the ADB host. At time of writing, can be any value accepted by the `remote` argument.
+   * @return true
    */
-  public async reverse(remote: string, local: string): Promise<boolean> {
+  public async reverse(remote: string, local: string): Promise<true> {
     const transport = await this.transport();
     return new hostCmd.ReverseCommand(transport).execute(remote, local);
   }
@@ -330,6 +330,50 @@ export default class DeviceClient {
    * @param command The shell command to execute. When `String`, the command is run as-is. When `Array`, the elements will be rudimentarily escaped (for convenience, not security) and joined to form a command.
    *
    * @returns A readable stream (`Socket` actually) containing the progressive `stdout` of the command. Use with `adb.util.readAll` to get a readable String from it.
+   * @example
+   * // Read the output of an instantaneous command
+   * import Adb from '@u4/adbkit';
+   *
+   * try {
+   *   const client = Adb.createClient();
+   *   const devices = await client.listDevices();
+   *   for (const device of devices) {
+   *       const stream = await device.getClient().shell('echo $RANDOM');
+   *       // Use the readAll() utility to read all the content without
+   *       // having to deal with the readable stream. `output` will be a Buffer
+   *       // containing all the output.
+   *       const output = await adb.util.readAll(stream);
+   *       console.log('[%s] %s', device.id, output.toString().trim());
+   *   }
+   *   console.log('Done.');
+   * } catch(err) {
+   *   console.error('Something went wrong:', err.stack);
+   * }
+   * @example
+   * // Progressively read the output of a long-running command and terminate it
+   * 
+   * import Adb from '@u4/adbkit';
+   * 
+   * const client = Adb.createClient();
+   * const devices = await client.listDevices()
+   * for (const device of devices) {
+   *   // logcat just for illustration, prefer client.openLogcat in real use 
+   *   const conn = await device.getClient().shell('logcat')
+   *   let line = 0
+   *   conn.on('data', function(data) {
+   *     // here `ps` on the device shows the running logcat process
+   *     console.log(data.toString())
+   *     line += 1
+   *     // close the stream and the running process
+   *     // on the device will be gone, gracefully
+   *     if (line > 100) conn.end()
+   *   });
+   *   conn.on('close', function() {
+   *     // here `ps` on the device shows the logcat process is gone
+   *     console.log('100 lines read already, bye')
+   *   })
+   *  }
+   * console.log('Done.')
    */
   public async shell(command: string | ArrayLike<WithToString>): Promise<Duplex> {
     const transport = await this.transport();
@@ -585,6 +629,25 @@ export default class DeviceClient {
    *
    * @param apk When `String`, interpreted as a path to an APK file. When [`Stream`][node-stream], installs directly from the stream, which must be a valid APK.
    * @returns true
+   * @example
+   * // This example requires the [request](https://www.npmjs.org/package/request) module. It also doesn't do any error handling (404 responses, timeouts, invalid URLs etc).
+   * import Adb from '@u4/adbkit';
+   * import request from 'request';
+   * import { Readable } from 'stream';
+   * 
+   * const client = Adb.createClient();
+   * 
+   * const test = async () => {
+   *   // The request module implements old-style streams, so we have to wrap it.
+   *   try {
+   *     // request is deprecated
+   *     const device = client.getClient('<serial>');
+   *     await device.install(new Readable().wrap(request('http://example.org/app.apk') as any) as any)
+   *     console.log('Installed')
+   *   } catch (err) {
+   *     console.error('Something went wrong:', err.stack)
+   *   }
+   * }
    */
   public async install(apk: string | ReadStream): Promise<boolean> {
     const temp = Sync.temp(typeof apk === 'string' ? apk : '_stream.apk');
@@ -684,15 +747,15 @@ export default class DeviceClient {
   }
 
   /**
-     * Retrieves information about the given path.
-     *
-     * @param path The path.
-     * 
-     * @returns An [`fs.Stats`][node-fs-stats] instance. While the `stats.is*` methods are available, only the following properties are supported:
-        -   **mode** The raw mode.
-        -   **size** The file size.
-        -   **mtime** The time of last modification as a `Date`.
-     */
+    * A convenience shortcut for `sync.stat()`, mainly for one-off use cases. The connection cannot be reused, resulting in poorer performance over multiple calls. However, the Sync client will be closed automatically for you, so that's one less thing to worry about.
+    *
+    * @param path The path.
+    * 
+    * @returns An [`fs.Stats`][node-fs-stats] instance. While the `stats.is*` methods are available, only the following properties are supported:
+    *  -   **mode** The raw mode.
+    *  -   **size** The file size.
+    *  -   **mtime** The time of last modification as a `Date`.
+    */
   public async stat(path: string): Promise<Stats> {
     const sync = await this.syncService();
     try {
@@ -703,14 +766,14 @@ export default class DeviceClient {
   }
 
   /**
-     * Retrieves information about the given path.
+    * A convenience shortcut for `sync.stat64()`, mainly for one-off use cases. The connection cannot be reused, resulting in poorer performance over multiple calls. However, the Sync client will be closed automatically for you, so that's one less thing to worry about.
      *
      * @param path The path.
      * 
      * @returns An [`fs.Stats`][node-fs-stats] instance. While the `stats.is*` methods are available, only the following properties are supported:
-        -   **mode** The raw mode.
-        -   **size** The file size.
-        -   **mtime** The time of last modification as a `Date`.
+     *  -   **mode** The raw mode.
+     *  -   **size** The file size.
+     *  -   **mtime** The time of last modification as a `Date`.
      */
   public async stat64(path: string): Promise<Stats64> {
     const sync = await this.syncService();

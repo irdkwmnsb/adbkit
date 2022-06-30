@@ -1,10 +1,17 @@
 import { Stream } from 'stream';
 
+/**
+ * `PullTransfer` is a [`Stream`][node-stream]. Use [`fs.createWriteStream()`][node-fs] to pipe the stream to a file if necessary.
+ */
 export default class PullTransfer extends Stream.PassThrough {
   public stats = {
     bytesTransferred: 0,
   };
 
+  /**
+   * Cancels the transfer by ending the connection. Can be useful for reading endless streams of data, such as `/dev/urandom` or `/dev/zero`, perhaps for benchmarking use. Note that you must create a new sync connection if you wish to continue using the sync service.
+   * @returns The pullTransfer instance.
+   */
   public cancel(): boolean {
     return this.emit('cancel');
   }

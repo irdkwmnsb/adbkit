@@ -1,6 +1,7 @@
 # CHANGELOG
 
-## v
+## v4
+* new Documetation
 * change connect() method, now return a boolean
 
 ## v3.1.19 (2022-06-29)

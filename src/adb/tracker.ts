@@ -10,16 +10,33 @@ import { HostTrackDevicesCommand } from './command/host';
  * enforce EventEmitter typing
  */
 interface IEmissions {
+  /**
+   * Emitted when the underlying connection ends.
+   */
   end: () => void
-
+  /**
+   * **(device)** Emitted when a new device is connected, once per device. See `client.listDevices()` for details on the device object.
+   */
   add: (device: Device) => void
+  /**
+   * **(device)** Emitted when a device is unplugged, once per device. This does not include `offline` devices, those devices are connected but unavailable to ADB. See `client.listDevices()` for details on the device object.
+   */
   remove: (device: Device) => void
 
   offline: (device: Device) => void
   online: (device: Device) => void
 
+  /**
+   * **(device)** Emitted when the `type` property of a device changes, once per device. The current value of `type` is the new value. This event usually occurs the type changes from `'device'` to `'offline'` or the other way around. See `client.listDevices()` for details on the device object and the `'offline'` type.
+   */
   change: (newDevice: Device, oldDevice: Device) => void
+  /**
+   * **(changes)** Emitted once for all changes reported by ADB in a single run. Multiple changes can occur when, for example, a USB hub is connected/unplugged and the device list changes quickly. If you wish to process all changes at once, use this event instead of the once-per-device ones. Keep in mind that the other events will still be emitted, though.
+   */
   changeSet: (changeSet: TrackerChangeSet) => void
+  /**
+   * **(err)** Emitted if there's an error.
+   */
   error: (data: Error) => void
 }
 
@@ -81,7 +98,7 @@ export default class Tracker extends EventEmitter {
    */
   public update(newList: Device[]): this {
     let changeSet: TrackerChangeSet | undefined;
-    if (this.listenerCount('changeSet')) changeSet = { removed: [], changed: [], added: []};
+    if (this.listenerCount('changeSet')) changeSet = { removed: [], changed: [], added: [] };
 
     const newMap = new Map<string, Device>();
     for (const device of newList) {

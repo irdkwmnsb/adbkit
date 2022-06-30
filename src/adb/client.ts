@@ -72,8 +72,13 @@ export default class Client extends EventEmitter {
    * @param port Optional. The target port. Defaults to `5555`
    * @returns true is a new connetion is etablish, or false if already connected.
    * @example
+   * // switch to TCP mode and set up a forward for Chrome devtools
    * import Adb from '@u4/adbkit';
    * const client = Adb.createClient();
+   * // Note: be careful with using `client.listDevices()` together with `client.tcpip()`
+   * // and other similar methods that modify the connection with ADB. You might have the
+   * // same device twice in your device list (i.e. one device connected via both USB and
+   * // TCP), which can cause havoc if run simultaneously.
    * 
    * const test = async () => {
    *     try {
@@ -109,6 +114,12 @@ export default class Client extends EventEmitter {
     return new HostConnectCommand(conn).execute(host, port);
   }
 
+  /**
+   * Disconnects from the given device, which should have been connected via `client.connect()` or just `adb connect <host>:<port>`.
+   * @param host The target host. Can also contain the port, in which case the port argument is not used and can be skipped. In other words you can just put the `id` you got from `client.connect()` here and it will be fine.
+   * @param port Optional. The target port. Defaults to `5555`.
+   * @returns The disconnected device ID. Will no longer be usable as a `serial` in other commands until you've connected again.
+   */
   public async disconnect(host: string, port = 5555): Promise<DeviceClient> {
     if (host.indexOf(':') !== -1) {
       const [h, portString] = host.split(':', 2);
@@ -124,14 +135,18 @@ export default class Client extends EventEmitter {
   }
 
   /**
-   * list connected device
-   * @returns list of device serial number + types
+   * Gets the list of currently connected devices and emulators.
+   * @returns An array of device objects. The device objects are plain JavaScript objects with two properties: `id` and `type`.
    */
   public async listDevices(): Promise<Device[]> {
     const conn = await this.connection();
     return new HostDevicesCommand(conn).execute();
   }
 
+  /**
+   * Like `client.listDevices()`, but includes the "path" of every device.
+   * @returns An array of device objects.
+   */
   public async listDevicesWithPaths(): Promise<DeviceWithPath[]> {
     const conn = await this.connection();
     return new HostDevicesWithPathsCommand(conn).execute();
@@ -139,19 +154,28 @@ export default class Client extends EventEmitter {
 
   /**
    * Gets a device tracker. Events will be emitted when devices are added, removed, or their type changes (i.e. to/from `offline`). Note that the same events will be emitted for the initially connected devices also, so that you don't need to use both `client.listDevices()` and `client.trackDevices()`.
+   * 
    * Note that as the tracker will keep a connection open, you must call `tracker.end()` if you wish to stop tracking devices.
    */
-
   public async trackDevices(): Promise<Tracker> {
     const conn = await this.connection();
     return new HostTrackDevicesCommand(conn).execute();
   }
 
+  /**
+   * This kills the ADB server. Note that the next connection will attempt to start the server again when it's unable to connect
+   * @returns true
+   */
   public async kill(): Promise<boolean> {
     const conn = await this.connection();
     return new HostKillCommand(conn).execute();
   }
 
+  /**
+   * Get as DeviceClient attached to a device
+   * @param serial device serial number
+   * @returns DeviceClient attached to a device
+   */
   public getDevice(serial: string): DeviceClient {
     return new DeviceClient(this, serial);
   }
