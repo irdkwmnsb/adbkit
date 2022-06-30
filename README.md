@@ -32,200 +32,40 @@ npm install --save @u4/adbkit
 
 We use [debug][node-debug], and our debug namespace is `adb`. Some of the dependencies may provide debug output of their own. To see the debug output, set the `DEBUG` environment variable. For example, run your program with `DEBUG=adb:* node app.js`.
 
-### Examples
-
-The examples may be a bit verbose, but that's because we're trying to keep them as close to real-life code as possible, with flow control and error handling taken care of.
-
-#### List devices withPath
+### Getting started sample
 
 ```typescript
-import Adb from '@u4/adbkit';
-const client = Adb.createClient();
-const devices = client.listDevicesWithPaths();
-devices.then((devices) => {
-    devices.forEach(function (d) {
-        console.log('id: ' + d.id);
-        console.log('type: ' + d.type);
-        console.log('model ' + d.model);
-        console.log('path: ' + d.path);
-        console.log('product: ' + d.product);
-        console.log('transportId: ' + d.transportId + '\n');
-    });
-});
+import adb, { DeviceClient, KeyCodes, Client } from '../src';
+const main = async () => {
+  const adbClient = adb.createClient();
+  const devices = await adbClient.listDevices();
+  if (!devices.length) {
+    console.error('Need at least one connected android device');
+    return;
+  }
+  // deviceClient is a DeviceClient
+  const deviceClient = devices[0].getClient();
+  // your device is ready to use
+  // check all DeviceClient functions
+  // print Hello Word in a shell and get the echo back
+  const hello = await deviceClient.execOut('echo Hello Word', 'utf8');
+  console.log(hello)
+}
 ```
 
-#### Checking for NFC support
-
-```typescript
-import Adb from '@u4/adbkit';
-
-const client = Adb.createClient();
-
-const test = async () => {
-    try {
-        const devices = await client.listDevices();
-        const supportedDevices: string[] = [];
-        for (const device of devices) {
-            const client = device.client();
-            const features = await client.getFeatures(device.id);
-            if (features['android.hardware.nfc'])
-                supportedDevices.push(device.serial);
-        }
-        console.log('The following devices support NFC:', supportedDevices);
-    } catch (err) {
-        console.error('Something went wrong:', err.stack);
-    }
-};
-```
-
-#### Installing an APK
-
-```typescript
-import Adb from '@u4/adbkit';
-
-const client = Adb.createClient();
-const apk = 'vendor/app.apk';
-
-const test = async () => {
-    try {
-        const devices = await client.listDevices();
-        for (const device of devices) {
-            await device.getClient().install(apk);
-            console.log(`Installed ${apk} on all connected devices`);
-        }
-    } catch (err) {
-        console.error('Something went wrong:', err.stack);
-    }
-};
-```
-
-#### Tracking devices
-
-```typescript
-import Adb from '@u4/adbkit';
-
-const client = Adb.createClient();
-const test = async () => {
-    try {
-        const tracker = await client.trackDevices();
-        tracker.on('add', (device) => console.log('Device %s was plugged in', device.id));
-        tracker.on('remove', (device) => console.log('Device %s was unplugged', device.id));
-        tracker.on('end', () => console.log('Tracking stopped'));
-    } catch (err) {
-        console.error('Something went wrong:', err.stack);
-    }
-};
-```
-
-#### Pulling a file from all connected devices
-
-```typescript
-import Bluebird from 'bluebird';
-import fs from 'fs';
-import Adb from '@u4/adbkit';
-const client = Adb.createClient();
-
-const test = async () => {
-    try {
-        const devices = await client.listDevices();
-        await Bluebird.map(devices, async (device) => {
-            const transfer = await client.pull(device.id, '/system/build.prop');
-            const fn = `/tmp/${device.id}.build.prop`;
-            await new Bluebird((resolve, reject) => {
-                transfer.on('progress', (stats) =>
-                    console.log(`[${device.id}] Pulled ${stats.bytesTransferred} bytes so far`),
-                );
-                transfer.on('end', () => {
-                    console.log(`[${device.id}] Pull complete`);
-                    resolve(device.id);
-                });
-                transfer.on('error', reject);
-                transfer.pipe(fs.createWriteStream(fn));
-            });
-        });
-        console.log('Done pulling /system/build.prop from all connected devices');
-    } catch (err) {
-        console.error('Something went wrong:', err.stack);
-    }
-};
-```
-
-#### Pushing a file to all connected devices
-
-```typescript
-import Bluebird from 'bluebird';
-import Adb from '@u4/adbkit';
-const client = Adb.createClient();
-
-const test = async () => {
-    try {
-        const devices = await client.listDevices();
-        await Bluebird.map(devices, async (device) => {
-            const transfer = await client.push(device.id, 'temp/foo.txt', '/data/local/tmp/foo.txt');
-            await new Bluebird(function (resolve, reject) {
-                transfer.on('progress', (stats) =>
-                    console.log(`[${device.id}] Pushed ${stats.bytesTransferred} bytes so far`),
-                );
-                transfer.on('end', () => {
-                    console.log('[${device.id}] Push complete');
-                    resolve();
-                });
-                transfer.on('error', reject);
-            });
-        });
-        console.log('Done pushing foo.txt to all connected devices');
-    } catch (err) {
-        console.error('Something went wrong:', err.stack);
-    }
-};
-```
-
-#### List files in a folder
-
-```typescript
-import Bluebird from 'bluebird';
-import Adb from '@u4/adbkit';
-const client = Adb.createClient();
-
-const test = async () => {
-    try {
-        const devices = await client.listDevices();
-        await Bluebird.map(devices, async (device) => {
-            const files = await client.readdir(device.id, '/sdcard');
-            // Synchronous, so we don't have to care about returning at the
-            // right time
-            files.forEach((file) => {
-                if (file.isFile()) {
-                    console.log(`[${device.id}] Found file "${file.name}"`);
-                }
-            });
-        });
-        console.log('Done checking /sdcard files on connected devices');
-    } catch (err) {
-        console.error('Something went wrong:', err.stack);
-    }
-};
-```
-
-## ADB
-
-### adb.createClient(\[options])
-
-Creates a client instance with the provided options. Note that this will not automatically establish a connection, it will only be done when necessary.
-
-*   **options** An object compatible with [Net.connect][net-connect]'s options:
-    *   **port** The port where the ADB server is listening. Defaults to `5037`.
-    *   **host** The host of the ADB server. Defaults to `'127.0.0.1'`.
-    *   **bin** As the sole exception, this option provides the path to the `adb` binary, used for starting the server locally if initial connection fails. Defaults to `'adb'`.
-*   Returns: The client instance.
+## APIs
 
 ### adb
 
-see [docs/adb.md](https://github.com/UrielCh/adbkit/blob/master/docs/adb.md)
+The main class, contains a client provider and some utils: [docs/adb.md](https://github.com/UrielCh/adbkit/blob/master/docs/adb.md)
 
 ### Client
 
-see [docs/Client.md](https://github.com/UrielCh/adbkit/blob/master/docs/Client.md)
+Adb client allow you to list / track devices: [docs/Client.md](https://github.com/UrielCh/adbkit/blob/master/docs/Client.md)
+
+### DeviceClient
+
+Client object attached to a single devices: [docs/DeviceClient.md](https://github.com/UrielCh/adbkit/blob/master/docs/DeviceClient.md)
 
 ### Sync
 
@@ -235,7 +75,7 @@ see [docs/Sync.md](https://github.com/UrielCh/adbkit/blob/master/docs/Sync.md)
 
 see [docs/PushTransfer.md](https://github.com/UrielCh/adbkit/blob/master/docs/PushTransfer.md)
 
-# Incompatible changes in version 3.x
+## Incompatible changes in version 3.x
 
 - Previously, adbKit was based on Bluebird, It's now based on native Promise some Bluebird Promise cannelation is not compatible with ES6 Promises.
 - v4 is Object oriented functions taking a serial as first parameter had been moved to DeviceClient
@@ -255,8 +95,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## License
 
 See [LICENSE](LICENSE).
-
-Copyright © The OpenSTF Project. All Rights Reserved.
 
 [nodejs]: http://nodejs.org/
 

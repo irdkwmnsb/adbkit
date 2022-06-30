@@ -84,6 +84,22 @@ export default class DeviceClient {
   /**
    * Gets the device path of the device identified by the given serial number.
    * @returns The device path. This corresponds to the device path in `client.listDevicesWithPaths()`.
+   * 
+   * @example
+   * // List devices withPath
+   * import Adb from '@u4/adbkit';
+   * const client = Adb.createClient();
+   * const devices = client.listDevicesWithPaths();
+   * devices.then((devices) => {
+   *     devices.forEach(function (d) {
+   *         console.log('id: ' + d.id);
+   *         console.log('type: ' + d.type);
+   *         console.log('model ' + d.model);
+   *         console.log('path: ' + d.path);
+   *         console.log('product: ' + d.product);
+   *         console.log('transportId: ' + d.transportId + '\n');
+   *     });
+   * });
    */
   public async getDevicePath(): Promise<DeviceWithPath['path']> {
     const conn = await this.connection();
@@ -111,8 +127,30 @@ export default class DeviceClient {
 
   /**
    * Retrieves the features of the device identified by the given serial number. This is analogous to `adb shell pm list features`. Useful for checking whether hardware features such as NFC are available (you'd check for `'android.hardware.nfc'`).
-
+   * 
    * @returns An object of device features. Each key corresponds to a device feature, with the value being either `true` for a boolean feature, or the feature value as a string (e.g. `'0x20000'` for `reqGlEsVersion`).
+   * 
+   * @example
+   * // Checking for NFC support
+   * import Adb from '@u4/adbkit';
+   * 
+   * const client = Adb.createClient();
+   * 
+   * const test = async () => {
+   *     try {
+   *         const devices = await client.listDevices();
+   *         const supportedDevices: string[] = [];
+   *         for (const device of devices) {
+   *             const client = device.client();
+   *             const features = await client.getFeatures(device.id);
+   *             if (features['android.hardware.nfc'])
+   *                 supportedDevices.push(device.serial);
+   *         }
+   *         console.log('The following devices support NFC:', supportedDevices);
+   *     } catch (err) {
+   *         console.error('Something went wrong:', err.stack);
+   *     }
+   * };
    */
   public async getFeatures(): Promise<Features> {
     const transport = await this.transport();
@@ -385,6 +423,10 @@ export default class DeviceClient {
     return new hostCmd.ExecCommand(transport, this.options).execute(command);
   }
 
+  /**
+   * execute a single shell command and get stdout responce as a buffer of a string.
+   * @param command the command to execute
+   */
   public async execOut(command: string | ArrayLike<WithToString>): Promise<Buffer>;
   public async execOut(command: string | ArrayLike<WithToString>, encoding: BufferEncoding): Promise<string>;
   public async execOut(command: string | ArrayLike<WithToString>, encoding?: BufferEncoding): Promise<string | Buffer> {
@@ -648,6 +690,24 @@ export default class DeviceClient {
    *     console.error('Something went wrong:', err.stack)
    *   }
    * }
+   * @example
+   * import Adb from '@u4/adbkit';
+   * 
+   * const client = Adb.createClient();
+   * const apk = 'vendor/app.apk';
+   * 
+   * const test = async () => {
+   *     try {
+   *         const devices = await client.listDevices();
+   *         for (const device of devices) {
+   *             await device.getClient().install(apk);
+   *             console.log(`Installed ${apk} on all connected devices`);
+   *         }
+   *     } catch (err) {
+   *         console.error('Something went wrong:', err.stack);
+   *     }
+   * };
+   * 
    */
   public async install(apk: string | ReadStream): Promise<boolean> {
     const temp = Sync.temp(typeof apk === 'string' ? apk : '_stream.apk');
@@ -789,6 +849,30 @@ export default class DeviceClient {
    *
    * @param path See `sync.readdir()` for details.
    * @returns Files Lists
+   * @example
+   *  // List files in a folder
+   * import Bluebird from 'bluebird';
+   * import Adb from '@u4/adbkit';
+   * const client = Adb.createClient();
+   * 
+   * const test = async () => {
+   *     try {
+   *         const devices = await client.listDevices();
+   *         await Bluebird.map(devices, async (device) => {
+   *             const files = await client.readdir(device.id, '/sdcard');
+   *             // Synchronous, so we don't have to care about returning at the
+   *             // right time
+   *             files.forEach((file) => {
+   *                 if (file.isFile()) {
+   *                     console.log(`[${device.id}] Found file "${file.name}"`);
+   *                 }
+   *             });
+   *         });
+   *         console.log('Done checking /sdcard files on connected devices');
+   *     } catch (err) {
+   *         console.error('Something went wrong:', err.stack);
+   *     }
+   * };
    */
   public async readdir(path: string): Promise<Entry[]> {
     const sync = await this.syncService();
@@ -820,6 +904,37 @@ export default class DeviceClient {
    * @param path See `sync.pull()` for details.
    *
    * @returns A `PullTransfer` instance.
+   * 
+   * @example
+   * // Pulling a file from all cofnnected devices
+   * import Bluebird from 'bluebird';
+   * import fs from 'fs';
+   * import Adb from '@u4/adbkit';
+   * const client = Adb.createClient();
+   * 
+   * const test = async () => {
+   *     try {
+   *         const devices = await client.listDevices();
+   *         await Bluebird.map(devices, async (device) => {
+   *             const transfer = await client.pull(device.id, '/system/build.prop');
+   *             const fn = `/tmp/${device.id}.build.prop`;
+   *             await new Bluebird((resolve, reject) => {
+   *                 transfer.on('progress', (stats) =>
+   *                     console.log(`[${device.id}] Pulled ${stats.bytesTransferred} bytes so far`),
+   *                 );
+   *                 transfer.on('end', () => {
+   *                     console.log(`[${device.id}] Pull complete`);
+   *                     resolve(device.id);
+   *                 });
+   *                 transfer.on('error', reject);
+   *                 transfer.pipe(fs.createWriteStream(fn));
+   *             });
+   *         });
+   *         console.log('Done pulling /system/build.prop from all connected devices');
+   *     } catch (err) {
+   *         console.error('Something went wrong:', err.stack);
+   *     }
+   * };
    */
   public async pull(path: string): Promise<PullTransfer> {
     const sync = await this.syncService();
@@ -834,6 +949,35 @@ export default class DeviceClient {
    * @param contents See `sync.push()` for details.
    * @param path See `sync.push()` for details.
    * @param mode See `sync.push()` for details.
+   * 
+   * @example
+   * 
+   * // Pushing a file to all connected devices
+   * import Bluebird from 'bluebird';
+   * import Adb from '@u4/adbkit';
+   * const client = Adb.createClient();
+   * 
+   * const test = async () => {
+   *     try {
+   *         const devices = await client.listDevices();
+   *         await Bluebird.map(devices, async (device) => {
+   *             const transfer = await client.push(device.id, 'temp/foo.txt', '/data/local/tmp/foo.txt');
+   *             await new Bluebird(function (resolve, reject) {
+   *                 transfer.on('progress', (stats) =>
+   *                     console.log(`[${device.id}] Pushed ${stats.bytesTransferred} bytes so far`),
+   *                 );
+   *                 transfer.on('end', () => {
+   *                     console.log('[${device.id}] Push complete');
+   *                     resolve();
+   *                 });
+   *                 transfer.on('error', reject);
+   *             });
+   *         });
+   *         console.log('Done pushing foo.txt to all connected devices');
+   *     } catch (err) {
+   *         console.error('Something went wrong:', err.stack);
+   *     }
+   * };
    */
   public async push(contents: string | ReadStream, path: string, mode?: number): Promise<PushTransfer> {
     const sync = await this.syncService();
@@ -911,6 +1055,10 @@ export default class DeviceClient {
   }
 
   #extra: DeviceClientExtra;
+  /**
+   * get extra fucntions
+   * @returns an DeviceClientExtra
+   */
   get extra(): DeviceClientExtra {
     if (!this.#extra) {
       this.#extra = new DeviceClientExtra(this);
@@ -918,7 +1066,12 @@ export default class DeviceClient {
     return this.#extra;
   }
 
-  public async listPackages(options?: {thirdparty?: boolean}) {
+  /**
+   * List package installed into the devices,
+   * @param options list all or only third party apps
+   * @returns an array of DevicePackage
+   */
+  public async listPackages(options?: {thirdparty?: boolean}): Promise<DevicePackage[]> {
     options = options || {};
     let cmd = 'pm list packages'
     if (options.thirdparty) {

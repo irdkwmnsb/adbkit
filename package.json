@@ -1,6 +1,6 @@
 {
     "name": "@u4/adbkit",
-    "version": "3.1.19",
+    "version": "4.0.0",
     "description": "A Typescript client for the Android Debug Bridge.",
     "keywords": [
         "adb",
@@ -19,7 +19,7 @@
     },
     "license": "Apache-2.0",
     "author": {
-        "name": "Device Farmer",
+        "name": "openstf",
         "email": "contact@openstf.io",
         "url": "https://urielch.github.io/"
     },
@@ -27,7 +27,7 @@
         {
             "name": "uriel chemouni",
             "email": "uchemouni@gmail.com",
-            "url": "https://urielch.github.io/urielch/"
+            "url": "https://urielch.github.io/"
         }
     ],
     "main": "./dist/index.js",

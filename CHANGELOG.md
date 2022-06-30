@@ -1,8 +1,9 @@
 # CHANGELOG
 
-## v4
+## v4 (2022-06-30)
 * new Documetation
 * change connect() method, now return a boolean
+* add DeviceClient.tryForwardTCP()
 
 ## v3.1.19 (2022-06-29)
 * replace stat2 by stat64

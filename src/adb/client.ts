@@ -156,6 +156,36 @@ export default class Client extends EventEmitter {
    * Gets a device tracker. Events will be emitted when devices are added, removed, or their type changes (i.e. to/from `offline`). Note that the same events will be emitted for the initially connected devices also, so that you don't need to use both `client.listDevices()` and `client.trackDevices()`.
    * 
    * Note that as the tracker will keep a connection open, you must call `tracker.end()` if you wish to stop tracking devices.
+   * @example
+   * // Tracking devices
+   * import Adb from '@u4/adbkit';
+   * 
+   * const client = Adb.createClient();
+   * const test = async () => {
+   *     try {
+   *         const tracker = await client.trackDevices();
+   *         tracker.on('add', (device) => console.log('Device %s was plugged in', device.id));
+   *         tracker.on('remove', (device) => console.log('Device %s was unplugged', device.id));
+   *         tracker.on('end', () => console.log('Tracking stopped'));
+   *     } catch (err) {
+   *         console.error('Something went wrong:', err.stack);
+   *     }
+   * };
+   * @example
+   * // Tracking devices avoiding offline devices
+   * import Adb from '@u4/adbkit';
+   * 
+   * const client = Adb.createClient();
+   * const test = async () => {
+   *     try {
+   *         const tracker = await client.trackDevices();
+   *         tracker.on('online', (device) => console.log('Device %s is online', device.id));
+   *         tracker.on('offline', (device) => console.log('Device %s is offline', device.id));
+   *         tracker.on('end', () => console.log('Tracking stopped'));
+   *     } catch (err) {
+   *         console.error('Something went wrong:', err.stack);
+   *     }
+   * };
    */
   public async trackDevices(): Promise<Tracker> {
     const conn = await this.connection();
