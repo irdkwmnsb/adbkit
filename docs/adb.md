@@ -45,7 +45,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### delay
 
-a delay promise
+A delay promise
 
 #### Parameters
 
@@ -66,7 +66,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### waitforText
 
-Wait for a spesific text in s Duplex
+Wait for a spesific text in the Duplex
 
 #### Parameters
 

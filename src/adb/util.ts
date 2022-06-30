@@ -7,6 +7,7 @@ import PromiseDuplex from 'promise-duplex';
 export default class Util {
   /**
    * Takes a [`Stream`][node-stream] and reads everything it outputs until the stream ends. Then it resolves with the collected output. Convenient with `client.shell()`.
+   * 
    * @param stream The [`Stream`][node-stream] to read.
    * @returns All the output as a [`Buffer`][node-buffer]. Use `output.toString('utf-8')` to get a readable string from it.
    */
@@ -25,7 +26,8 @@ export default class Util {
   }
 
   /**
-   * a delay promise
+   * A delay promise
+   * 
    * @param ms time to wait im ms
    * @returns void
    */
@@ -36,6 +38,7 @@ export default class Util {
   }
   /**
    * Promise waiter for a Duplex to be readable
+   * 
    * @param duplex a vanilla Duplex of a PromiseDuplex
    * @param timeout do not wait more than timeout
    * @returns is the true is duplex is readable
@@ -61,7 +64,8 @@ export default class Util {
   }
 
   /**
-   * Wait for a spesific text in s Duplex
+   * Wait for a spesific text in the Duplex
+   * 
    * @param duplex 
    * @param expected 
    * @param timeout 

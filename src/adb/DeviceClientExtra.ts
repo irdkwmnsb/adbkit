@@ -85,14 +85,30 @@ export default class DeviceClientExtra {
     return this.deviceClient.execOut(`svc ${type} ${action}`, 'utf8');
   }
 
+  /**
+   * Tap on screen
+   * @param x1 
+   * @param y1 
+   * @returns 
+   */
   async tap(x1: string, y1: string): Promise<string> {
     return this.deviceClient.execOut(`input tap ${x1} ${y1}`, 'utf8');
   }
 
+  /**
+   * Tap a keyCode
+   * @param x1 
+   * @param y1 
+   * @returns 
+   */
   async keyCode(key: KeyCodes): Promise<string> {
     return this.deviceClient.execOut(`input keyevent ${key}`, 'utf8');
   }
 
+  /**
+   * press the back button
+   * @returns 
+   */
   async back(): Promise<string> {
     return this.keyCode(KeyCodes.KEYCODE_BACK);
   }
