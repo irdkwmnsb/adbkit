@@ -1,6 +1,6 @@
 # client
 
-The ADB client List access and track abdroid device
+The ADB client List access and track android device
 
 ## API
 
@@ -8,21 +8,15 @@ The ADB client List access and track abdroid device
 
 ### IEmissions
 
-[src/adb/client.ts:24-26](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/client.ts#L24-L26 "Source code on GitHub")
-
 enforce EventEmitter typing
 
 ### version
-
-[src/adb/client.ts:64-67](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/client.ts#L64-L67 "Source code on GitHub")
 
 Queries the ADB server for its version. This is mainly useful for backwards-compatibility purposes.
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** The version of the ADB server.
 
 ### connect
-
-[src/adb/client.ts:104-115](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/client.ts#L104-L115 "Source code on GitHub")
 
 Connects to the given device, which must have its ADB daemon running in tcp mode (see `client.tcpip()`) and be accessible on the same network. Same as `adb connect <host>:<port>`.
 
@@ -68,8 +62,6 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### disconnect
 
-[src/adb/client.ts:123-135](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/client.ts#L123-L135 "Source code on GitHub")
-
 Disconnects from the given device, which should have been connected via `client.connect()` or just `adb connect <host>:<port>`.
 
 #### Parameters
@@ -81,15 +73,11 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### listDevices
 
-[src/adb/client.ts:141-144](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/client.ts#L141-L144 "Source code on GitHub")
-
 Gets the list of currently connected devices and emulators.
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Device>>** An array of device objects. The device objects are plain JavaScript objects with two properties: `id` and `type`.
 
 ### listDevicesWithPaths
-
-[src/adb/client.ts:150-153](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/client.ts#L150-L153 "Source code on GitHub")
 
 Like `client.listDevices()`, but includes the "path" of every device.
 
@@ -97,25 +85,55 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### trackDevices
 
-[src/adb/client.ts:160-163](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/client.ts#L160-L163 "Source code on GitHub")
-
 Gets a device tracker. Events will be emitted when devices are added, removed, or their type changes (i.e. to/from `offline`). Note that the same events will be emitted for the initially connected devices also, so that you don't need to use both `client.listDevices()` and `client.trackDevices()`.
 
 Note that as the tracker will keep a connection open, you must call `tracker.end()` if you wish to stop tracking devices.
 
+#### Examples
+
+```javascript
+// Tracking devices
+import Adb from '@u4/adbkit';
+
+const client = Adb.createClient();
+const test = async () => {
+    try {
+        const tracker = await client.trackDevices();
+        tracker.on('add', (device) => console.log('Device %s was plugged in', device.id));
+        tracker.on('remove', (device) => console.log('Device %s was unplugged', device.id));
+        tracker.on('end', () => console.log('Tracking stopped'));
+    } catch (err) {
+        console.error('Something went wrong:', err.stack);
+    }
+};
+```
+
+```javascript
+// Tracking devices avoiding offline devices
+import Adb from '@u4/adbkit';
+
+const client = Adb.createClient();
+const test = async () => {
+    try {
+        const tracker = await client.trackDevices();
+        tracker.on('online', (device) => console.log('Device %s is online', device.id));
+        tracker.on('offline', (device) => console.log('Device %s is offline', device.id));
+        tracker.on('end', () => console.log('Tracking stopped'));
+    } catch (err) {
+        console.error('Something went wrong:', err.stack);
+    }
+};
+```
+
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<Tracker>** 
 
 ### kill
-
-[src/adb/client.ts:169-172](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/client.ts#L169-L172 "Source code on GitHub")
 
 This kills the ADB server. Note that the next connection will attempt to start the server again when it's unable to connect
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)>** true
 
 ### getDevice
-
-[src/adb/client.ts:179-181](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/client.ts#L179-L181 "Source code on GitHub")
 
 Get as DeviceClient attached to a device
 
