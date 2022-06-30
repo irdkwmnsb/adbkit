@@ -40,7 +40,7 @@
         "clean": "rimraf dist",
         "keycode": "ts-node tasks/keycode.ts",
         "servicemap": "ts-node tasks/servicemap.ts",
-        "prepublish": "npm run clean && npm run compile && npm run docsUtil",
+        "prepublish": "npm run clean && npm run compile && npm run docs",
         "docs": "concurrently -m 1 npm:docs:*",
         "docs:Adb":     "documentation readme --quiet true --shallow --markdown-toc=false --readme-file docs/adb.md          --section API       ./src/adb.ts",
         "docs:Util":    "documentation readme --quiet true --shallow --markdown-toc=false --readme-file docs/adb.md          --section adb.util  ./src/adb/util.ts",
