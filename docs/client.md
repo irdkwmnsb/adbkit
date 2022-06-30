@@ -8,26 +8,62 @@ The ADB client List access and track abdroid device
 
 ### IEmissions
 
-[src/adb/client.ts:24-26](https://github.com/UrielCh/adbkit/blob/1e0f0f06a27d0249a71573547d771f3093d993a8/src/adb/client.ts#L24-L26 "Source code on GitHub")
+[src/adb/client.ts:24-26](https://github.com/UrielCh/adbkit/blob/c600e33fa9df18c5a4a474cddcac2ad1554a7921/src/adb/client.ts#L24-L26 "Source code on GitHub")
 
 enforce EventEmitter typing
 
+### version
+
+[src/adb/client.ts:64-67](https://github.com/UrielCh/adbkit/blob/c600e33fa9df18c5a4a474cddcac2ad1554a7921/src/adb/client.ts#L64-L67 "Source code on GitHub")
+
+Queries the ADB server for its version. This is mainly useful for backwards-compatibility purposes.
+
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** The version of the ADB server.
+
 ### connect
 
-[src/adb/client.ts:70-81](https://github.com/UrielCh/adbkit/blob/1e0f0f06a27d0249a71573547d771f3093d993a8/src/adb/client.ts#L70-L81 "Source code on GitHub")
+[src/adb/client.ts:99-110](https://github.com/UrielCh/adbkit/blob/c600e33fa9df18c5a4a474cddcac2ad1554a7921/src/adb/client.ts#L99-L110 "Source code on GitHub")
 
-connect with a TCP connection
+Connects to the given device, which must have its ADB daemon running in tcp mode (see `client.tcpip()`) and be accessible on the same network. Same as `adb connect <host>:<port>`.
 
 #### Parameters
 
-*   `host` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** IP / hostname with optional :port
-*   `port`  port of 555 by default (optional, default `5555`)
+*   `host` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The target host. Can also contain the port, in which case the port argument is not used and can be skipped.
+*   `port`  Optional. The target port. Defaults to `5555` (optional, default `5555`)
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)>** true is a new conmnetion is etablish, or false if already connected.
+#### Examples
+
+```javascript
+import Adb from '@u4/adbkit';
+const client = Adb.createClient();
+
+const test = async () => {
+    try {
+        const devices = await client.listDevices();
+        for (const device of devices) {
+            const device = client.getDevice(device.id);
+            const port = await device.tcpip();
+            // Switching to TCP mode causes ADB to lose the device for a
+            // moment, so let's just wait till we get it back.
+            await device.waitForDevice();
+            const ip = await device.getDHCPIpAddress();
+            const deviceTCP = await client.connect(ip, port);
+            // It can take a moment for the connection to happen.
+            await deviceTCP.waitForDevice();
+            await deviceTCP.forward('tcp:9222', 'localabstract:chrome_devtools_remote');
+            console.log(`Setup devtools on "${id}"`);
+        };
+    } catch (err) {
+        console.error('Something went wrong:', err.stack);
+    }
+};
+```
+
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)>** true is a new connetion is etablish, or false if already connected.
 
 ### listDevices
 
-[src/adb/client.ts:101-104](https://github.com/UrielCh/adbkit/blob/1e0f0f06a27d0249a71573547d771f3093d993a8/src/adb/client.ts#L101-L104 "Source code on GitHub")
+[src/adb/client.ts:130-133](https://github.com/UrielCh/adbkit/blob/c600e33fa9df18c5a4a474cddcac2ad1554a7921/src/adb/client.ts#L130-L133 "Source code on GitHub")
 
 list connected device
 
@@ -35,7 +71,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### trackDevices
 
-[src/adb/client.ts:116-119](https://github.com/UrielCh/adbkit/blob/1e0f0f06a27d0249a71573547d771f3093d993a8/src/adb/client.ts#L116-L119 "Source code on GitHub")
+[src/adb/client.ts:145-148](https://github.com/UrielCh/adbkit/blob/c600e33fa9df18c5a4a474cddcac2ad1554a7921/src/adb/client.ts#L145-L148 "Source code on GitHub")
 
 Gets a device tracker. Events will be emitted when devices are added, removed, or their type changes (i.e. to/from `offline`). Note that the same events will be emitted for the initially connected devices also, so that you don't need to use both `client.listDevices()` and `client.trackDevices()`.
 Note that as the tracker will keep a connection open, you must call `tracker.end()` if you wish to stop tracking devices.

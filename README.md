@@ -204,11 +204,9 @@ const test = async () => {
 };
 ```
 
-## API
+## ADB
 
-### ADB
-
-#### adb.createClient(\[options])
+### adb.createClient(\[options])
 
 Creates a client instance with the provided options. Note that this will not automatically establish a connection, it will only be done when necessary.
 
@@ -218,67 +216,33 @@ Creates a client instance with the provided options. Note that this will not aut
     *   **bin** As the sole exception, this option provides the path to the `adb` binary, used for starting the server locally if initial connection fails. Defaults to `'adb'`.
 *   Returns: The client instance.
 
-#### adb.util.parsePublicKey(androidKey)
+### .parsePublicKey(androidKey)
 
-Parses an Android-formatted mincrypt public key (e.g. `~/.android/adbkey.pub`).
+### adb.util
 
-*   **androidKey** The key String or [`Buffer`][node-buffer] to parse. Not a filename.
-*   **callback(err, output)** Optional. Use this or the returned `Promise`.
-    *   **err** `null` when successful, `Error` otherwise.
-    *   **key** The key as a [forge.pki](https://github.com/digitalbazaar/forge#rsa) public key. You may need [node-forge](https://github.com/digitalbazaar/forge) for complicated operations. Additionally the following properties are present:
-        *   **fingerprint** The key fingerprint, like it would display on a device. Note that this is different than the one you'd get from `forge.ssh.getPublicKeyFingerprint(key)`, because the device fingerprint is based on the original format.
-        *   **comment** The key comment, if any.
-*   Returns: `Promise`
-*   Resolves with: `key` (see callback)
-
-#### adb.util.readAll(stream)
-
-Takes a [`Stream`][node-stream] and reads everything it outputs until the stream ends. Then it resolves with the collected output. Convenient with `client.shell()`.
-
-*   **stream** The [`Stream`][node-stream] to read.
-*   **callback(err, output)** Optional. Use this or the returned `Promise`.
-    *   **err** `null` when successful, `Error` otherwise.
-    *   **output** All the output as a [`Buffer`][node-buffer]. Use `output.toString('utf-8')` to get a readable string from it.
-*   Returns: `Promise`
-*   Resolves with: `output` (see callback)
 
 ### Client
 
+see [docs/client.md](https://github.com/UrielCh/adbkit/blob/master/docs/client.md)
+
 #### client.version()
 
-Queries the ADB server for its version. This is mainly useful for backwards-compatibility purposes.
-
-*   **callback(err, version)** Optional. Use this or the returned `Promise`.
-    *   **err** `null` when successful, `Error` otherwise.
-    *   **version** The version of the ADB server.
-*   Returns: `Promise`
-*   Resolves with: `version` (see callback)
 
 #### client.connect(host\[, port])
 
-Connects to the given device, which must have its ADB daemon running in tcp mode (see `client.tcpip()`) and be accessible on the same network. Same as `adb connect <host>:<port>`.
-
-*   **host** The target host. Can also contain the port, in which case the port argument is not used and can be skipped.
-*   **port** Optional. The target port. Defaults to `5555`.
-*   **callback(err, id)** Optional. Use this or the returned `Promise`.
-    *   **err** `null` when successful, `Error` otherwise.
-    *   **id** The connected device ID. Can be used as `serial` in other commands.
-*   Returns: `Promise`
-*   Resolves with: `id` (see callback)
 
 ##### Example - switch to TCP mode and set up a forward for Chrome devtools
 
 Note: be careful with using `client.listDevices()` together with `client.tcpip()` and other similar methods that modify the connection with ADB. You might have the same device twice in your device list (i.e. one device connected via both USB and TCP), which can cause havoc if run simultaneously.
 
 ```typescript
-import Bluebird from 'bluebird';
 import Adb from '@u4/adbkit';
 const client = Adb.createClient();
 
 const test = async () => {
     try {
         const devices = await client.listDevices();
-        await Bluebird.map(devices, async (device) => {
+        for (const device of devices) {
             const device = client.getDevice(device.id);
             const port = await device.tcpip();
             // Switching to TCP mode causes ADB to lose the device for a
@@ -290,7 +254,7 @@ const test = async () => {
             await deviceTCP.waitForDevice();
             await deviceTCP.forward('tcp:9222', 'localabstract:chrome_devtools_remote');
             console.log(`Setup devtools on "${id}"`);
-        });
+        };
     } catch (err) {
         console.error('Something went wrong:', err.stack);
     }

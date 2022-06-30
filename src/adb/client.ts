@@ -56,16 +56,45 @@ export default class Client extends EventEmitter {
     return connection.connect();
   }
 
+  /**
+   * Queries the ADB server for its version. This is mainly useful for backwards-compatibility purposes.
+   * 
+   * @returns The version of the ADB server.
+   */
   public async version(): Promise<number> {
     const conn = await this.connection();
     return new HostVersionCommand(conn).execute();
   }
 
   /**
-   * connect with a TCP connection
-   * @param host IP / hostname with optional :port
-   * @param port port of 555 by default
-   * @returns true is a new conmnetion is etablish, or false if already connected.
+   * Connects to the given device, which must have its ADB daemon running in tcp mode (see `client.tcpip()`) and be accessible on the same network. Same as `adb connect <host>:<port>`.
+   * @param host The target host. Can also contain the port, in which case the port argument is not used and can be skipped.
+   * @param port Optional. The target port. Defaults to `5555`
+   * @returns true is a new connetion is etablish, or false if already connected.
+   * @example
+   * import Adb from '@u4/adbkit';
+   * const client = Adb.createClient();
+   * 
+   * const test = async () => {
+   *     try {
+   *         const devices = await client.listDevices();
+   *         for (const device of devices) {
+   *             const device = client.getDevice(device.id);
+   *             const port = await device.tcpip();
+   *             // Switching to TCP mode causes ADB to lose the device for a
+   *             // moment, so let's just wait till we get it back.
+   *             await device.waitForDevice();
+   *             const ip = await device.getDHCPIpAddress();
+   *             const deviceTCP = await client.connect(ip, port);
+   *             // It can take a moment for the connection to happen.
+   *             await deviceTCP.waitForDevice();
+   *             await deviceTCP.forward('tcp:9222', 'localabstract:chrome_devtools_remote');
+   *             console.log(`Setup devtools on "${id}"`);
+   *         };
+   *     } catch (err) {
+   *         console.error('Something went wrong:', err.stack);
+   *     }
+   * };
    */
   public async connect(host: string, port = 5555): Promise<boolean> {
     if (host.indexOf(':') !== -1) {
