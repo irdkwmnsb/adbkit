@@ -49,6 +49,7 @@ import DeviceClientExtra from './DeviceClientExtra';
 import Stats64 from './sync/stats64';
 import Entry64 from './sync/entry64';
 import DevicePackage from './DevicePackage';
+import getPort from 'get-port';
 
 const debug = d('adb:client');
 
@@ -226,6 +227,37 @@ export default class DeviceClient {
   public async forward(local: string, remote: string): Promise<boolean> {
     const conn = await this.connection();
     return new ForwardCommand(conn).execute(this.serial, local, remote);
+  }
+
+  /**
+   * Get a localTCP port connected to remote socket, this method will try to get the requested port, but if the port is already taken, will choose an other one.
+   * Note if a foward already existe to the same destination with a different port, no new foward will be create.
+   * @param preferedPort the TCP port you would like to get.
+   * @param remote A string representing the remote endpoint on the device. At time of writing, can be one of:
+   *   Any value accepted by the `local` argument
+   *   `jdwp:<process pid>`
+   * @returns the used port
+   */
+  public async tryForwardTCP(remote: string, preferedPort?: number): Promise<number> {
+    // const local =;
+    const fwds = await this.listForwards()
+    // const usedPort = fwds.filter(a => a.local === local);
+    const prev = fwds.filter(a => a.remote === remote && a.serial === this.serial);
+    if (prev.length) {
+      // already connected
+      return Number(prev[0].local.substring(4));
+    }
+
+    if (preferedPort)
+      try {
+        if (await this.forward(`tcp:${preferedPort}`, remote))
+          return preferedPort;
+      } catch (e) {
+        // need a new port
+      }
+    const freePort = await getPort();
+    await this.forward(`tcp:${freePort}`, remote)
+    return freePort;
   }
 
   /**
