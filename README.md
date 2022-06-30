@@ -57,7 +57,6 @@ devices.then((devices) => {
 #### Checking for NFC support
 
 ```typescript
-import Bluebird from 'bluebird';
 import Adb from '@u4/adbkit';
 
 const client = Adb.createClient();
@@ -65,10 +64,13 @@ const client = Adb.createClient();
 const test = async () => {
     try {
         const devices = await client.listDevices();
-        const supportedDevices = await Bluebird.filter(devices, async (device) => {
+        const supportedDevices: string[] = [];
+        for (const device of devices) {
+            const client = device.client();
             const features = await client.getFeatures(device.id);
-            return features['android.hardware.nfc'];
-        });
+            if (features['android.hardware.nfc'])
+                supportedDevices.push(device.serial);
+        }
         console.log('The following devices support NFC:', supportedDevices);
     } catch (err) {
         console.error('Something went wrong:', err.stack);
@@ -79,7 +81,6 @@ const test = async () => {
 #### Installing an APK
 
 ```typescript
-import Bluebird from 'bluebird';
 import Adb from '@u4/adbkit';
 
 const client = Adb.createClient();
@@ -88,8 +89,10 @@ const apk = 'vendor/app.apk';
 const test = async () => {
     try {
         const devices = await client.listDevices();
-        await Bluebird.map(devices, (device) => client.install(device.id, apk));
-        console.log(`Installed ${apk} on all connected devices`);
+        for (const device of devices) {
+            await device.getClient().install(apk);
+            console.log(`Installed ${apk} on all connected devices`);
+        }
     } catch (err) {
         console.error('Something went wrong:', err.stack);
     }
@@ -220,11 +223,6 @@ Creates a client instance with the provided options. Note that this will not aut
 
 see [docs/adb.md](https://github.com/UrielCh/adbkit/blob/master/docs/adb.md)
 
-
-### adb.util
-
-see [docs/Client.md](https://github.com/UrielCh/adbkit/blob/master/docs/Util.md)
-
 ### Client
 
 see [docs/Client.md](https://github.com/UrielCh/adbkit/blob/master/docs/Client.md)
@@ -237,22 +235,6 @@ see [docs/Sync.md](https://github.com/UrielCh/adbkit/blob/master/docs/Sync.md)
 
 see [docs/PushTransfer.md](https://github.com/UrielCh/adbkit/blob/master/docs/PushTransfer.md)
 
-### PullTransfer
-
-see [docs/PullTransfer.md](https://github.com/UrielCh/adbkit/blob/master/docs/PullTransfer.md)
-
-`PullTransfer` is a [`Stream`][node-stream]. Use [`fs.createWriteStream()`][node-fs] to pipe the stream to a file if necessary.
-
-List of events:
-
-*   **progress** **(stats)** Emitted when a new chunk is received.
-    *   **stats** An object with the following stats about the transfer:
-        *   **bytesTransferred** The number of bytes transferred so far.
-*   **error** **(err)** Emitted on error.
-    *   **err** An `Error`.
-*   **end** Emitted when the transfer has successfully completed.
-
-
 # Incompatible changes in version 3.x
 
 - Previously, adbKit was based on Bluebird, It's now based on native Promise some Bluebird Promise cannelation is not compatible with ES6 Promises.
@@ -261,7 +243,7 @@ List of events:
 ## More information
 
 *   [Android Debug Bridge][adb-site]
-    *   [SERVICES.TXT][adb-services] (ADB socket protocol)
+   *   [SERVICES.TXT][adb-services] (ADB socket protocol)
 *   [Android ADB Protocols][adb-protocols] (a blog post explaining the protocol)
 *   [adb.js][adb-js] (another Node.js ADB implementation)
 *   [ADB Chrome extension][chrome-adb]

@@ -12,6 +12,11 @@ export interface Options {
 export default class Adb {
   static util = util;
 
+  /**
+   * Create an Adb client
+   * @param options customise your adb client
+   * @returns a client
+   */
   public static createClient(options: Options = {}): Client {
     const opts: ClientOptions = {
       bin: options.bin,

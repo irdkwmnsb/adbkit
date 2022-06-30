@@ -8,7 +8,7 @@ DeviceClient is linked to an devices.
 
 ### getSerialNo
 
-[src/adb/DeviceClient.ts:79-82](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L79-L82 "Source code on GitHub")
+[src/adb/DeviceClient.ts:79-82](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L79-L82 "Source code on GitHub")
 
 Gets the serial number of the device identified by the given serial number. With our API this doesn't really make much sense, but it has been implemented for completeness. *FYI: in the raw ADB protocol you can specify a device in other ways, too.*
 
@@ -16,7 +16,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### getDevicePath
 
-[src/adb/DeviceClient.ts:88-91](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L88-L91 "Source code on GitHub")
+[src/adb/DeviceClient.ts:88-91](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L88-L91 "Source code on GitHub")
 
 Gets the device path of the device identified by the given serial number.
 
@@ -24,7 +24,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### getState
 
-[src/adb/DeviceClient.ts:97-100](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L97-L100 "Source code on GitHub")
+[src/adb/DeviceClient.ts:97-100](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L97-L100 "Source code on GitHub")
 
 Gets the state of the device identified by the given serial number.
 
@@ -32,7 +32,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### getProperties
 
-[src/adb/DeviceClient.ts:107-110](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L107-L110 "Source code on GitHub")
+[src/adb/DeviceClient.ts:107-110](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L107-L110 "Source code on GitHub")
 
 Retrieves the properties of the device identified by the given serial number. This is analogous to `adb shell getprop`.
 
@@ -40,7 +40,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### getFeatures
 
-[src/adb/DeviceClient.ts:117-120](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L117-L120 "Source code on GitHub")
+[src/adb/DeviceClient.ts:117-120](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L117-L120 "Source code on GitHub")
 
 Retrieves the features of the device identified by the given serial number. This is analogous to `adb shell pm list features`. Useful for checking whether hardware features such as NFC are available (you'd check for `'android.hardware.nfc'`).
 
@@ -48,7 +48,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### getPackages
 
-[src/adb/DeviceClient.ts:132-135](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L132-L135 "Source code on GitHub")
+[src/adb/DeviceClient.ts:132-135](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L132-L135 "Source code on GitHub")
 
 Retrieves the list of packages present on the device. This is analogous to `adb shell pm list packages`. If you just want to see if something's installed, consider using `client.isInstalled()` instead.
 
@@ -64,7 +64,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### getPs
 
-[src/adb/DeviceClient.ts:143-146](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L143-L146 "Source code on GitHub")
+[src/adb/DeviceClient.ts:143-146](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L143-L146 "Source code on GitHub")
 
 Retrieves the list of running Process
 
@@ -76,7 +76,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### ipRoute
 
-[src/adb/DeviceClient.ts:153-156](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L153-L156 "Source code on GitHub")
+[src/adb/DeviceClient.ts:153-156](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L153-L156 "Source code on GitHub")
 
 call ip route command
 
@@ -88,7 +88,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### ipRule
 
-[src/adb/DeviceClient.ts:163-166](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L163-L166 "Source code on GitHub")
+[src/adb/DeviceClient.ts:163-166](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L163-L166 "Source code on GitHub")
 
 call ip rule command
 
@@ -100,7 +100,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### getServices
 
-[src/adb/DeviceClient.ts:173-176](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L173-L176 "Source code on GitHub")
+[src/adb/DeviceClient.ts:173-176](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L173-L176 "Source code on GitHub")
 
 Retrieves the list of available services
 
@@ -108,7 +108,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### checkService
 
-[src/adb/DeviceClient.ts:183-186](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L183-L186 "Source code on GitHub")
+[src/adb/DeviceClient.ts:183-186](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L183-L186 "Source code on GitHub")
 
 Retrieves the list of available services
 
@@ -120,7 +120,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### callServiceRaw
 
-[src/adb/DeviceClient.ts:193-196](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L193-L196 "Source code on GitHub")
+[src/adb/DeviceClient.ts:193-196](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L193-L196 "Source code on GitHub")
 
 exec a service call command and return Parcel responce Data as a Buffer
 
@@ -134,7 +134,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### getIpAddress
 
-[src/adb/DeviceClient.ts:205-210](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L205-L210 "Source code on GitHub")
+[src/adb/DeviceClient.ts:205-210](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L205-L210 "Source code on GitHub")
 
 Attemps to retrieve the IP addresses of the device. using `ip addr show` command.
 
@@ -146,7 +146,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### forward
 
-[src/adb/DeviceClient.ts:226-229](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L226-L229 "Source code on GitHub")
+[src/adb/DeviceClient.ts:226-229](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L226-L229 "Source code on GitHub")
 
 Forwards socket connections from the ADB server host (local) to the device (remote). This is analogous to `adb forward <local> <remote>`. It's important to note that if you are connected to a remote ADB server, the forward will be created on that host.
 
@@ -165,7 +165,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### tryForwardTCP
 
-[src/adb/DeviceClient.ts:240-260](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L240-L260 "Source code on GitHub")
+[src/adb/DeviceClient.ts:240-260](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L240-L260 "Source code on GitHub")
 
 Get a localTCP port connected to remote socket, this method will try to get the requested port, but if the port is already taken, will choose an other one.
 Note if a foward already existe to the same destination with a different port, no new foward will be create.
@@ -181,7 +181,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### removeForward
 
-[src/adb/DeviceClient.ts:267-270](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L267-L270 "Source code on GitHub")
+[src/adb/DeviceClient.ts:267-270](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L267-L270 "Source code on GitHub")
 
 Remove the port forward at ADB server host (local). This is analogous to adb forward --remove <local>. It's important to note that if you are connected to a remote ADB server, the forward on that host will be removed.
 
@@ -193,7 +193,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### listForwards
 
-[src/adb/DeviceClient.ts:280-283](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L280-L283 "Source code on GitHub")
+[src/adb/DeviceClient.ts:280-283](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L280-L283 "Source code on GitHub")
 
 Lists forwarded connections on the device. This is analogous to `adb forward --list`.
 
@@ -203,7 +203,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### reverse
 
-[src/adb/DeviceClient.ts:295-298](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L295-L298 "Source code on GitHub")
+[src/adb/DeviceClient.ts:295-298](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L295-L298 "Source code on GitHub")
 
 Reverses socket connections from the device (remote) to the ADB server host (local). This is analogous to `adb reverse <remote> <local>`. It's important to note that if you are connected to a remote ADB server, the reverse will be created on that host.
 
@@ -219,7 +219,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### listReverses
 
-[src/adb/DeviceClient.ts:306-309](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L306-L309 "Source code on GitHub")
+[src/adb/DeviceClient.ts:306-309](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L306-L309 "Source code on GitHub")
 
 Lists forwarded connections on the device. This is analogous to `adb reverse --list`.
 
@@ -228,7 +228,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### transport
 
-[src/adb/DeviceClient.ts:321-325](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L321-L325 "Source code on GitHub")
+[src/adb/DeviceClient.ts:321-325](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L321-L325 "Source code on GitHub")
 
 return a new connextion to the current Host devices
 
@@ -236,7 +236,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### shell
 
-[src/adb/DeviceClient.ts:355-358](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L355-L358 "Source code on GitHub")
+[src/adb/DeviceClient.ts:378-381](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L378-L381 "Source code on GitHub")
 
 Runs a shell command on the device. Note that you'll be limited to the permissions of the `shell` user, which ADB uses.
 
@@ -268,14 +268,37 @@ try {
 ```
 
 ```javascript
-example 2
+// Progressively read the output of a long-running command and terminate it
+
+import Adb from '@u4/adbkit';
+
+const client = Adb.createClient();
+const devices = await client.listDevices()
+for (const device of devices) {
+  // logcat just for illustration, prefer client.openLogcat in real use 
+  const conn = await device.getClient().shell('logcat')
+  let line = 0
+  conn.on('data', function(data) {
+    // here `ps` on the device shows the running logcat process
+    console.log(data.toString())
+    line += 1
+    // close the stream and the running process
+    // on the device will be gone, gracefully
+    if (line > 100) conn.end()
+  });
+  conn.on('close', function() {
+    // here `ps` on the device shows the logcat process is gone
+    console.log('100 lines read already, bye')
+  })
+ }
+console.log('Done.')
 ```
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<Duplex>** A readable stream (`Socket` actually) containing the progressive `stdout` of the command. Use with `adb.util.readAll` to get a readable String from it.
 
 ### reboot
 
-[src/adb/DeviceClient.ts:380-383](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L380-L383 "Source code on GitHub")
+[src/adb/DeviceClient.ts:403-406](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L403-L406 "Source code on GitHub")
 
 Puts the device into root mode which may be needed by certain shell commands. A remount is generally required after a successful root call. **Note that this will only work if your device supports this feature. Production devices almost never do.**
 
@@ -287,7 +310,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### remount
 
-[src/adb/DeviceClient.ts:390-393](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L390-L393 "Source code on GitHub")
+[src/adb/DeviceClient.ts:413-416](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L413-L416 "Source code on GitHub")
 
 Attempts to remount the `/system` partition in read-write mode. This will usually only work on emulators and developer devices.
 
@@ -295,7 +318,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### root
 
-[src/adb/DeviceClient.ts:400-403](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L400-L403 "Source code on GitHub")
+[src/adb/DeviceClient.ts:423-426](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L423-L426 "Source code on GitHub")
 
 Puts the device into root mode which may be needed by certain shell commands. A remount is generally required after a successful root call. **Note that this will only work if your device supports this feature. Production devices almost never do.**
 
@@ -303,7 +326,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### trackJdwp
 
-[src/adb/DeviceClient.ts:421-424](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L421-L424 "Source code on GitHub")
+[src/adb/DeviceClient.ts:444-447](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L444-L447 "Source code on GitHub")
 
 Starts a JDWP tracker for the given device.
 
@@ -319,7 +342,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### framebuffer
 
-[src/adb/DeviceClient.ts:435-438](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L435-L438 "Source code on GitHub")
+[src/adb/DeviceClient.ts:458-461](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L458-L461 "Source code on GitHub")
 
 Fetches the current **raw** framebuffer (i.e. what is visible on the screen) from the device, and optionally converts it into something more usable by using \[GraphicsMagick]\[graphicsmagick]'s `gm` command, which must be available in `$PATH` if conversion is desired. Note that we don't bother supporting really old framebuffer formats such as RGB\_565. If for some mysterious reason you happen to run into a `>=2.3` device that uses RGB\_565, let us know.
 
@@ -333,7 +356,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### screencap
 
-[src/adb/DeviceClient.ts:449-457](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L449-L457 "Source code on GitHub")
+[src/adb/DeviceClient.ts:472-480](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L472-L480 "Source code on GitHub")
 
 Takes a screenshot in PNG format using the built-in `screencap` utility. This is analogous to `adb shell screencap -p`. Sadly, the utility is not available on most Android `<=2.3` devices, but a silent fallback to the `client.framebuffer()` command in PNG mode is attempted, so you should have its dependencies installed just in case.
 
@@ -345,7 +368,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### openLocal
 
-[src/adb/DeviceClient.ts:466-469](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L466-L469 "Source code on GitHub")
+[src/adb/DeviceClient.ts:489-492](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L489-L492 "Source code on GitHub")
 
 Opens a direct connection to a unix domain socket in the given path.
 
@@ -357,7 +380,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### openLocal2
 
-[src/adb/DeviceClient.ts:474-486](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L474-L486 "Source code on GitHub")
+[src/adb/DeviceClient.ts:497-509](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L497-L509 "Source code on GitHub")
 
 Testing only
 
@@ -369,7 +392,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### openLog
 
-[src/adb/DeviceClient.ts:495-498](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L495-L498 "Source code on GitHub")
+[src/adb/DeviceClient.ts:518-521](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L518-L521 "Source code on GitHub")
 
 Opens a direct connection to a binary log file, providing access to the raw log data. Note that it is usually much more convenient to use the `client.openLogcat()` method, described separately.
 
@@ -381,7 +404,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### openTcp
 
-[src/adb/DeviceClient.ts:508-511](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L508-L511 "Source code on GitHub")
+[src/adb/DeviceClient.ts:531-534](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L531-L534 "Source code on GitHub")
 
 Opens a direct TCP connection to a port on the device, without any port forwarding required.
 
@@ -394,7 +417,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### openMonkey
 
-[src/adb/DeviceClient.ts:522-546](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L522-L546 "Source code on GitHub")
+[src/adb/DeviceClient.ts:545-569](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L545-L569 "Source code on GitHub")
 
 Starts the built-in `monkey` utility on the device, connects to it using `client.openTcp()` and hands the connection to \[adbkit-monkey]\[adbkit-monkey], a pure Node.js Monkey client. This allows you to create touch and key events, among other things.
 
@@ -408,7 +431,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### openLogcat
 
-[src/adb/DeviceClient.ts:558-562](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L558-L562 "Source code on GitHub")
+[src/adb/DeviceClient.ts:581-585](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L581-L585 "Source code on GitHub")
 
 Calls the `logcat` utility on the device and hands off the connection to \[adbkit-logcat]\[adbkit-logcat], a pure Node.js Logcat client. This is analogous to `adb logcat -B`, but the event stream will be parsed for you and a separate event will be emitted for every log entry, allowing for easy processing.
 
@@ -422,7 +445,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### openProcStat
 
-[src/adb/DeviceClient.ts:585-588](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L585-L588 "Source code on GitHub")
+[src/adb/DeviceClient.ts:608-611](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L608-L611 "Source code on GitHub")
 
 Tracks `/proc/stat` and emits useful information, such as CPU load.
 A single sync service instance is used to download the `/proc/stat` file for processing.
@@ -444,7 +467,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### clear
 
-[src/adb/DeviceClient.ts:597-600](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L597-L600 "Source code on GitHub")
+[src/adb/DeviceClient.ts:620-623](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L620-L623 "Source code on GitHub")
 
 Deletes all data associated with a package from the device. This is roughly analogous to `adb shell pm clear <pkg>`.
 
@@ -456,7 +479,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### install
 
-[src/adb/DeviceClient.ts:629-635](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L629-L635 "Source code on GitHub")
+[src/adb/DeviceClient.ts:652-658](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L652-L658 "Source code on GitHub")
 
 Installs the APK on the device, replacing any previously installed version. This is roughly analogous to `adb install -r <apk>`.
 
@@ -493,7 +516,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### installRemote
 
-[src/adb/DeviceClient.ts:645-653](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L645-L653 "Source code on GitHub")
+[src/adb/DeviceClient.ts:668-676](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L668-L676 "Source code on GitHub")
 
 Installs an APK file which must already be located on the device file system, and replaces any previously installed version. Useful if you've previously pushed the file to the device for some reason (perhaps to have direct access to `client.push()`'s transfer stats). This is roughly analogous to `adb shell pm install -r <apk>` followed by `adb shell rm -f <apk>`.
 
@@ -507,7 +530,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### uninstall
 
-[src/adb/DeviceClient.ts:661-664](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L661-L664 "Source code on GitHub")
+[src/adb/DeviceClient.ts:684-687](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L684-L687 "Source code on GitHub")
 
 Uninstalls the package from the device. This is roughly analogous to `adb uninstall <pkg>`.
 
@@ -519,7 +542,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### isInstalled
 
-[src/adb/DeviceClient.ts:673-676](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L673-L676 "Source code on GitHub")
+[src/adb/DeviceClient.ts:696-699](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L696-L699 "Source code on GitHub")
 
 Tells you if the specific package is installed or not. This is analogous to `adb shell pm path <pkg>` and some output parsing.
 
@@ -531,7 +554,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### startActivity
 
-[src/adb/DeviceClient.ts:683-694](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L683-L694 "Source code on GitHub")
+[src/adb/DeviceClient.ts:706-717](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L706-L717 "Source code on GitHub")
 
 Starts the configured activity on the device. Roughly analogous to `adb shell am start <options>`.
 
@@ -543,7 +566,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### startService
 
-[src/adb/DeviceClient.ts:700-714](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L700-L714 "Source code on GitHub")
+[src/adb/DeviceClient.ts:723-737](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L723-L737 "Source code on GitHub")
 
 Starts the configured service on the device. Roughly analogous to `adb shell am startservice <options>`.
 
@@ -555,7 +578,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### syncService
 
-[src/adb/DeviceClient.ts:721-724](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L721-L724 "Source code on GitHub")
+[src/adb/DeviceClient.ts:744-747](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L744-L747 "Source code on GitHub")
 
 Establishes a new Sync connection that can be used to push and pull files. This method provides the most freedom and the best performance for repeated use, but can be a bit cumbersome to use. For simple use cases, consider using `client.stat()`, `client.push()` and `client.pull()`.
 
@@ -563,9 +586,9 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### stat
 
-[src/adb/DeviceClient.ts:736-743](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L736-L743 "Source code on GitHub")
+[src/adb/DeviceClient.ts:759-766](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L759-L766 "Source code on GitHub")
 
-Retrieves information about the given path.
+A convenience shortcut for `sync.stat()`, mainly for one-off use cases. The connection cannot be reused, resulting in poorer performance over multiple calls. However, the Sync client will be closed automatically for you, so that's one less thing to worry about.
 
 #### Parameters
 
@@ -577,9 +600,9 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### stat64
 
-[src/adb/DeviceClient.ts:755-762](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L755-L762 "Source code on GitHub")
+[src/adb/DeviceClient.ts:778-785](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L778-L785 "Source code on GitHub")
 
-Retrieves information about the given path.
+A convenience shortcut for `sync.stat64()`, mainly for one-off use cases. The connection cannot be reused, resulting in poorer performance over multiple calls. However, the Sync client will be closed automatically for you, so that's one less thing to worry about.
 
 #### Parameters
 
@@ -591,7 +614,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### readdir
 
-[src/adb/DeviceClient.ts:770-777](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L770-L777 "Source code on GitHub")
+[src/adb/DeviceClient.ts:793-800](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L793-L800 "Source code on GitHub")
 
 A convenience shortcut for `sync.readdir()`, mainly for one-off use cases. The connection cannot be reused, resulting in poorer performance over multiple calls. However, the Sync client will be closed automatically for you, so that's one less thing to worry about.
 
@@ -603,7 +626,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### readdir64
 
-[src/adb/DeviceClient.ts:785-792](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L785-L792 "Source code on GitHub")
+[src/adb/DeviceClient.ts:808-815](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L808-L815 "Source code on GitHub")
 
 A convenience shortcut for `sync.readdir2()`, mainly for one-off use cases. The connection cannot be reused, resulting in poorer performance over multiple calls. However, the Sync client will be closed automatically for you, so that's one less thing to worry about.
 
@@ -615,7 +638,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### pull
 
-[src/adb/DeviceClient.ts:801-806](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L801-L806 "Source code on GitHub")
+[src/adb/DeviceClient.ts:824-829](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L824-L829 "Source code on GitHub")
 
 A convenience shortcut for `sync.pull()`, mainly for one-off use cases. The connection cannot be reused, resulting in poorer performance over multiple calls. However, the Sync client will be closed automatically for you, so that's one less thing to worry about.
 
@@ -627,7 +650,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### push
 
-[src/adb/DeviceClient.ts:815-820](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L815-L820 "Source code on GitHub")
+[src/adb/DeviceClient.ts:838-843](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L838-L843 "Source code on GitHub")
 
 A convenience shortcut for `sync.push()`, mainly for one-off use cases. The connection cannot be reused, resulting in poorer performance over multiple calls. However, the Sync client will be closed automatically for you, so that's one less thing to worry about.
 
@@ -641,7 +664,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### tcpip
 
-[src/adb/DeviceClient.ts:828-831](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L828-L831 "Source code on GitHub")
+[src/adb/DeviceClient.ts:851-854](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L851-L854 "Source code on GitHub")
 
 Puts the device's ADB daemon into tcp mode, allowing you to use `adb connect` or `client.connect()` to connect to it. Note that the device will still be visible to ADB as a regular USB-connected device until you unplug it. Same as `adb tcpip <port>`.
 
@@ -653,7 +676,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### usb
 
-[src/adb/DeviceClient.ts:838-841](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L838-L841 "Source code on GitHub")
+[src/adb/DeviceClient.ts:861-864](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L861-L864 "Source code on GitHub")
 
 Puts the device's ADB daemon back into USB mode. Reverses `client.tcpip()`. Same as `adb usb`.
 
@@ -661,7 +684,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### waitBootComplete
 
-[src/adb/DeviceClient.ts:848-851](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L848-L851 "Source code on GitHub")
+[src/adb/DeviceClient.ts:871-874](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L871-L874 "Source code on GitHub")
 
 Waits until the device has finished booting. Note that the device must already be seen by ADB. This is roughly analogous to periodically checking `adb shell getprop sys.boot_completed`.
 
@@ -669,7 +692,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### waitForDevice
 
-[src/adb/DeviceClient.ts:858-861](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L858-L861 "Source code on GitHub")
+[src/adb/DeviceClient.ts:881-884](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L881-L884 "Source code on GitHub")
 
 Waits until ADB can see the device. Note that you must know the serial in advance. Other than that, works like `adb -s serial wait-for-device`. If you're planning on reacting to random devices being plugged in and out, consider using `client.trackDevices()` instead.
 
@@ -677,7 +700,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### scrcpy
 
-[src/adb/DeviceClient.ts:867-870](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L867-L870 "Source code on GitHub")
+[src/adb/DeviceClient.ts:890-893](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L890-L893 "Source code on GitHub")
 
 prepare a Scrcpy server
 this server must be started with the start() method
@@ -690,7 +713,7 @@ Returns **Scrcpy**
 
 ### minicap
 
-[src/adb/DeviceClient.ts:876-879](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L876-L879 "Source code on GitHub")
+[src/adb/DeviceClient.ts:899-902](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L899-L902 "Source code on GitHub")
 
 prepare a minicap server
 this server must be started with the start() method
@@ -703,7 +726,7 @@ Returns **Minicap**
 
 ### STFService
 
-[src/adb/DeviceClient.ts:885-888](https://github.com/UrielCh/adbkit/blob/2c0c608b95db04b63a7f94ca35153a52f49368fd/src/adb/DeviceClient.ts#L885-L888 "Source code on GitHub")
+[src/adb/DeviceClient.ts:908-911](https://github.com/UrielCh/adbkit/blob/3098b75fc9cef48aa8c63a441fa79a4ff1f796eb/src/adb/DeviceClient.ts#L908-L911 "Source code on GitHub")
 
 prepare a STFService and STFagent
 this server must be started with the start() method
