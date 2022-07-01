@@ -13,27 +13,35 @@
 <li><a href="../modules.html">@u4/adbkit</a></li>
 <li><a href="Adb.html">Adb</a></li></ul>
 <h1>Variable Adb<code class="tsd-tag ts-flagConst">Const</code> </h1></div>
-<div class="tsd-signature">Adb<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>createClient<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Options</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="../classes/Client.html" class="tsd-signature-type" data-tsd-kind="Class">Client</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">; </span>util<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">typeof </span><a href="../classes/Utils.html" class="tsd-signature-type" data-tsd-kind="Class">Utils</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = ...</span></div>
+<div class="tsd-signature">Adb<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>createClient<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/AdbOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">AdbOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="../classes/Client.html" class="tsd-signature-type" data-tsd-kind="Class">Client</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">; </span>util<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">typeof </span><a href="../classes/Utils.html" class="tsd-signature-type" data-tsd-kind="Class">Utils</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = ...</span></div>
+<div class="tsd-comment tsd-typography"><p>Keep</p>
+
+<h3>U4</h3><p>/adbkit v3.x old adb export</p>
+</div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter">
-<h5>create<wbr/>Client<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Options</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="../classes/Client.html" class="tsd-signature-type" data-tsd-kind="Class">Client</a><span class="tsd-signature-symbol">)</span></h5>
+<h5>create<wbr/>Client<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/AdbOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">AdbOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="../classes/Client.html" class="tsd-signature-type" data-tsd-kind="Class">Client</a><span class="tsd-signature-symbol">)</span></h5>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
 <ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-literal">
-<li class="tsd-signature" id="__type.__type-1.__type-2"><span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Options</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/Client.html" class="tsd-signature-type" data-tsd-kind="Class">Client</a></li></ul>
+<li class="tsd-signature" id="__type.__type-1.__type-2"><span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/AdbOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">AdbOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/Client.html" class="tsd-signature-type" data-tsd-kind="Class">Client</a></li></ul>
 <ul class="tsd-descriptions">
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Creates a client instance with the provided options. Note that this will not automatically establish a connection, it will only be done when necessary.</p>
 
 <h3>Returns</h3><p>The client instance.</p>
+
+<h3>Example</h3><p>Function you should import and call first</p>
+<pre><code class="language-ts"><span class="hl-1">import</span><span class="hl-0"> { </span><span class="hl-2">createClient</span><span class="hl-0"> } </span><span class="hl-2">fronm</span><span class="hl-0"> @</span><span class="hl-2">u4</span><span class="hl-0">/</span><span class="hl-2">adbkit</span><br/><br/><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-2">client</span><span class="hl-0"> = </span><span class="hl-2">createClient</span><span class="hl-0">();</span>
+</code></pre>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>options: <span class="tsd-signature-type">Options</span><span class="tsd-signature-symbol"> = {}</span></h5>
+<h5>options: <a href="../interfaces/AdbOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">AdbOptions</a><span class="tsd-signature-symbol"> = ...</span></h5>
 <div class="tsd-comment tsd-typography"><p>An object compatible with [Net.connect][net-connect]&#39;s options:
 <strong>port</strong> The port where the ADB server is listening. Defaults to <code>5037</code>.
 <strong>host</strong> The host of the ADB server. Defaults to <code>&#39;127.0.0.1&#39;</code>.
@@ -43,7 +51,7 @@
 <li class="tsd-parameter">
 <h5>util<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">typeof </span><a href="../classes/Utils.html" class="tsd-signature-type" data-tsd-kind="Class">Utils</a></h5></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/UrielCh/adbkit/blob/ebf3674/src/index.ts#L45">src/index.ts:45</a></li></ul></aside></div>
+<li>Defined in <a href="https://github.com/UrielCh/adbkit/blob/c49bffd/src/index.ts#L55">src/index.ts:55</a></li></ul></aside></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -76,7 +84,9 @@
 <li class="tsd-kind-enum"><a href="../enums/Orientation.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8-path"></use><use href="#icon-8-text"></use></svg>Orientation</a></li>
 <li class="tsd-kind-enum"><a href="../enums/SurfaceControl.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8-path"></use><use href="#icon-8-text"></use></svg>Surface<wbr/>Control</a></li>
 <li class="tsd-kind-class"><a href="../classes/Client.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-class)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-128-path"></rect><path d="M11.898 16.1201C11.098 16.1201 10.466 15.8961 10.002 15.4481C9.53803 15.0001 9.30603 14.3841 9.30603 13.6001V9.64012C9.30603 8.85612 9.53803 8.24012 10.002 7.79212C10.466 7.34412 11.098 7.12012 11.898 7.12012C12.682 7.12012 13.306 7.34812 13.77 7.80412C14.234 8.25212 14.466 8.86412 14.466 9.64012H13.386C13.386 9.14412 13.254 8.76412 12.99 8.50012C12.734 8.22812 12.37 8.09212 11.898 8.09212C11.426 8.09212 11.054 8.22412 10.782 8.48812C10.518 8.75212 10.386 9.13212 10.386 9.62812V13.6001C10.386 14.0961 10.518 14.4801 10.782 14.7521C11.054 15.0161 11.426 15.1481 11.898 15.1481C12.37 15.1481 12.734 15.0161 12.99 14.7521C13.254 14.4801 13.386 14.0961 13.386 13.6001H14.466C14.466 14.3761 14.234 14.9921 13.77 15.4481C13.306 15.8961 12.682 16.1201 11.898 16.1201Z" fill="var(--color-text)" id="icon-128-text"></path></svg>Client</a></li>
+<li class="tsd-kind-class"><a href="../classes/Connection.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Connection</a></li>
 <li class="tsd-kind-class"><a href="../classes/DeviceClient.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Device<wbr/>Client</a></li>
+<li class="tsd-kind-class"><a href="../classes/DeviceClientExtra.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Device<wbr/>Client<wbr/>Extra</a></li>
 <li class="tsd-kind-class"><a href="../classes/Minicap.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Minicap</a></li>
 <li class="tsd-kind-class"><a href="../classes/ParcelReader.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Parcel<wbr/>Reader</a></li>
 <li class="tsd-kind-class"><a href="../classes/Parser.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Parser</a></li>
@@ -84,8 +94,11 @@
 <li class="tsd-kind-class"><a href="../classes/Scrcpy.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Scrcpy</a></li>
 <li class="tsd-kind-class"><a href="../classes/ServiceCallCommand.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Service<wbr/>Call<wbr/>Command</a></li>
 <li class="tsd-kind-class"><a href="../classes/ShellCommand.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Shell<wbr/>Command</a></li>
+<li class="tsd-kind-class"><a href="../classes/TcpUsbServer.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Tcp<wbr/>Usb<wbr/>Server</a></li>
+<li class="tsd-kind-class"><a href="../classes/Tracker.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Tracker</a></li>
 <li class="tsd-kind-class"><a href="../classes/Utils.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Utils</a></li>
-<li class="tsd-kind-interface"><a href="../interfaces/ClientOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-256-path"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)" id="icon-256-text"></path></svg>Client<wbr/>Options</a></li>
+<li class="tsd-kind-interface"><a href="../interfaces/AdbOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-256-path"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)" id="icon-256-text"></path></svg>Adb<wbr/>Options</a></li>
+<li class="tsd-kind-interface"><a href="../interfaces/ClientOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Client<wbr/>Options</a></li>
 <li class="tsd-kind-interface"><a href="../interfaces/CpuStats.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Cpu<wbr/>Stats</a></li>
 <li class="tsd-kind-interface"><a href="../interfaces/Device.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Device</a></li>
 <li class="tsd-kind-interface"><a href="../interfaces/DeviceWithPath.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Device<wbr/>With<wbr/>Path</a></li>

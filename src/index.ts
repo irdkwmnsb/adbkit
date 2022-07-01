@@ -1,4 +1,4 @@
-export { createClient } from './adb';
+export { createClient, AdbOptions } from './adb';
 export { ClientOptions } from './models/ClientOptions';
 export { CpuStats, Loads } from './models/CpuStats';
 export { default as Device } from './models/Device';
@@ -19,7 +19,10 @@ export { default as Parser } from './adb/parser';
 export { default as Client } from './adb/client';
 export { default as DeviceClient } from './adb/DeviceClient';
 export { default as ShellCommand } from './adb/command/host-transport/shell';
-
+export { default as Connection } from './adb/connection';
+export { default as TcpUsbServer } from './adb/tcpusb/server';
+export { default as Tracker } from './adb/tracker';
+export { default as DeviceClientExtra } from './adb/DeviceClientExtra';
 // export android key enumeration
 export { KeyCodes } from './adb/keycode';
 
@@ -39,11 +42,21 @@ export { default as STFService, STFServiceOptions } from './adb/thirdparty/STFSe
 
 export { VideoStreamFramePacket, H264Configuration } from './adb/thirdparty/scrcpy/Scrcpy';
 
+/**
+ * main entry point
+ */
 import { createClient } from './adb';
+
 import { default as util } from './adb/util';
 
+/**
+ * Keep @u4/adbkit v3.x old adb export
+ */
 export const Adb = {
   util,
   createClient
 }
+/**
+ * Keep @u4/adbkit v3.x default export shape
+ */
 export default Adb;

@@ -3,7 +3,7 @@ import Client from './adb/client';
 // import util_ from './adb/util';
 import { ClientOptions } from './models/ClientOptions';
 
-export interface Options {
+export interface AdbOptions {
   /**
    * host to connect default is 127.0.0.1
    */
@@ -18,9 +18,6 @@ export interface Options {
   bin?: string;
 }
 
-// export default class Adb {
-// export const util = util_;
-
 /**
  * Creates a client instance with the provided options. Note that this will not automatically establish a connection, it will only be done when necessary.
  * @param options An object compatible with [Net.connect][net-connect]'s options:
@@ -29,8 +26,16 @@ export interface Options {
  * **bin** As the sole exception, this option provides the path to the `adb` binary, used for starting the server locally if initial connection fails. Defaults to `'adb'`.
  * 
  * @returns The client instance.
+ * @example
+ * Function you should import and call first
+ * ```ts
+ * import { createClient } fronm @u4/adbkit
+ * 
+ * const client = createClient();
+ * ```
+
  */
-export function createClient(options: Options = {}): Client {
+export function createClient(options: AdbOptions = { port: 5037 }): Client {
   const opts: ClientOptions = {
     bin: options.bin,
     host: options.host || process.env.ADB_HOST,
