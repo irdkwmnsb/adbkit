@@ -403,7 +403,7 @@ const main = async () => {
   // const list = await deviceClient.readdir64('/');
   // console.log(list.map(a=>a.toString()).join('\n'));
   // await deviceClient.extra.usbTethering(true);
-  // await deviceClient.extra.airPlainMode(true);
+  await deviceClient.extra.airPlainMode(false, 300);
   // await deviceClient.extra.airPlainMode(false);
   // await testScrcpyEncoder(deviceClient);
   // await testScrcpy(deviceClient);

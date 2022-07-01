@@ -8,7 +8,7 @@ export default class DeviceClientExtra {
   constructor(private deviceClient: DeviceClient) { }
   /**
    * rootless version of enable usb tethering
-   * Depends of phone language.
+   * Depends of phone language will fail with non latin language.
    * @param enable
    */
   async usbTethering(enable: boolean): Promise<boolean> {
@@ -39,9 +39,10 @@ export default class DeviceClientExtra {
   }
 
   /**
-   * rootless version of enable usb tethering
-   * Depends of phone language.
-   * @param enable
+   * rootless version of enable air plain mode
+   * Depends of phone language will fail with non latin language.
+   * @param enable expected final stat for airplain mode
+   * @param twiceMs if > 0 will switch airplan mode 2 time to match expected state
    */
   async airPlainMode(enable: boolean, twiceMs?: number): Promise<boolean> {
     // wake screen
@@ -54,22 +55,22 @@ export default class DeviceClientExtra {
     // "Airplane mode"
     const nodes = xpath.select('//*[contains(@text,"mode")]/../..', doc) as Element[]
     if (!nodes.length)
-      throw Error('can not find mode labeled node');
+      throw Error('can not find mode labeled node "mode avion" airPlainMode switch failed');
     const switch_widget = xpath.select(textFilter('./*/node[@class="android.widget.Switch"]'), nodes[0]) as Element[];
     if (!switch_widget.length)
-      throw Error('can not find android.widget.Switch linked to USB label');
+      throw Error('can not find android.widget.Switch linked to airPlainMode label');
     const [checkBox] = switch_widget;
     const checked = checkBox.getAttribute('checked') === 'true';
     const bounds = checkBox.getAttribute('bounds');
-    if (checked === enable) {
+    if (!twiceMs && checked === enable) {
       return false;
     }
     const m = bounds.match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/)
     if (!m)
-      throw Error('failed to parse Switch bounds');
+      throw Error('failed to parse Switch bounds airPlainMode switch failed');
     const [, x1, y1] = m; // , x2, y2
     await this.tap(x1, y1);
-    if (twiceMs) {
+    if (twiceMs && checked === !enable) {
       await Utils.delay(twiceMs);
       await this.tap(x1, y1);
     }

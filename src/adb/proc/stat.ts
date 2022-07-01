@@ -6,15 +6,15 @@ import { CpuStats, Loads } from '../../models/CpuStats';
 const RE_CPULINE = /^cpu[0-9]+ .*$/gm;
 const RE_COLSEP = / +/g;
 
-interface CpuStatsWithLine extends CpuStats {
+export interface CpuStatsWithLine extends CpuStats {
   line: string;
 }
 
-interface LoadsWithLine {
+export interface LoadsWithLine {
   [index: string]: CpuStatsWithLine;
 }
 
-type Stats = { cpus: LoadsWithLine };
+export type ProcStats = { cpus: LoadsWithLine };
 
 /**
  * enforce EventEmitter typing
@@ -26,7 +26,7 @@ type Stats = { cpus: LoadsWithLine };
 
 export default class ProcStat extends EventEmitter {
   public interval = 1000;
-  public stats: Stats;
+  public stats: ProcStats;
   private readonly _ignore: {[key: string]: string};
   private readonly _timer: NodeJS.Timeout;
 
@@ -54,7 +54,7 @@ export default class ProcStat extends EventEmitter {
     }
   }
 
-  public async update(): Promise<Stats> {
+  public async update(): Promise<ProcStats> {
     if (!this.sync) {
       throw Error('Closed');
     }
@@ -68,7 +68,7 @@ export default class ProcStat extends EventEmitter {
     }
   }
 
-  private _parse(out: string): Stats {
+  private _parse(out: string): ProcStats {
     let match: RegExpExecArray | null = null;
     let val: string;
     const stats = this._emptyStats();
@@ -104,7 +104,7 @@ export default class ProcStat extends EventEmitter {
     return this._set(stats);
   }
 
-  private _set(stats: Stats): Stats {
+  private _set(stats: ProcStats): ProcStats {
     const loads: Loads = {};
     let found = false;
     const ref = stats.cpus;

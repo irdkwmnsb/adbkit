@@ -2,7 +2,6 @@ import Command from '../../command';
 import Device, { DeviceType } from '../../../models/Device';
 import DeviceClient from '../../DeviceClient';
 
-
 export default class HostDevicesCommand extends Command<Device[]> {
   async execute(): Promise<Device[]> {
     await this._send('host:devices');

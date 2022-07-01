@@ -2,7 +2,7 @@ import EventEmitter from 'events';
 import Packet from './packet';
 import ReadableStream = NodeJS.ReadableStream;
 
-class ChecksumError extends Error {
+export class ChecksumError extends Error {
   constructor(public packet: Packet) {
     super();
     Object.setPrototypeOf(this, ChecksumError.prototype);
@@ -12,7 +12,7 @@ class ChecksumError extends Error {
   }
 }
 
-class MagicError extends Error {
+export class MagicError extends Error {
   constructor(public packet: Packet) {
     super();
     Object.setPrototypeOf(this, MagicError.prototype);

@@ -4,7 +4,7 @@ import ThirdUtils from '../ThirdUtils';
 import * as STF from './STFServiceModel';
 
 let singleton: Promise<STFServiceBuf> | null = null;
-type MyMessage<T extends object = object> = Message<T> & T;
+export type MyMessage<T extends object = object> = Message<T> & T;
 let root: Root;
 
 export default class STFServiceBuf {

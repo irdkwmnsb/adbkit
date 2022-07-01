@@ -159,7 +159,7 @@ program
   .action(async (serials: string[]) => {
     const devices = await getClientDevice(serials);
     const process = async (device: DeviceClient) => {
-      if (await device.extra.airPlainMode(true, 200)) {
+      if (await device.extra.airPlainMode(false, 200)) {
         console.log(`[${device.serial}] airplane on-off`);
         await Util.delay(100)
         await device.extra.back();

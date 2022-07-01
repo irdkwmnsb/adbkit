@@ -9,7 +9,7 @@ import PromiseSocket from "promise-socket";
 
 export interface MinicapOptions {
   /**
-   * {RealWidth}x{RealHeight}@{VirtualWidth}x{VirtualHeight}/{Orientation}
+   * dimention formated as `{RealWidth}x{RealHeight}@{VirtualWidth}x{VirtualHeight}/{Orientation}`
    */
   dimention: string;
 }

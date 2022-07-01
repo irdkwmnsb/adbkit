@@ -86,7 +86,8 @@ export default class Client extends EventEmitter {
    * @param port Optional. The target port. Defaults to `5555`
    * @returns true is a new connetion is etablish, or false if already connected.
    * @example
-   * // switch to TCP mode and set up a forward for Chrome devtools
+   * switch to TCP mode and set up a forward for Chrome devtools
+   * ```ts
    * import Adb from '@u4/adbkit';
    * const client = Adb.createClient();
    * // Note: be careful with using `client.listDevices()` together with `client.tcpip()`
@@ -114,6 +115,7 @@ export default class Client extends EventEmitter {
    *         console.error('Something went wrong:', err.stack);
    *     }
    * };
+   * ```
    */
   public async connect(host: string, port = 5555): Promise<boolean> {
     if (host.indexOf(':') !== -1) {
@@ -171,7 +173,8 @@ export default class Client extends EventEmitter {
    * 
    * Note that as the tracker will keep a connection open, you must call `tracker.end()` if you wish to stop tracking devices.
    * @example
-   * // Tracking devices
+   * Tracking devices
+   * ```ts
    * import Adb from '@u4/adbkit';
    * 
    * const client = Adb.createClient();
@@ -185,8 +188,10 @@ export default class Client extends EventEmitter {
    *         console.error('Something went wrong:', err.stack);
    *     }
    * };
+   * ```
    * @example
-   * // Tracking devices avoiding offline devices
+   * Tracking devices avoiding offline devices
+   * ```ts
    * import Adb from '@u4/adbkit';
    * 
    * const client = Adb.createClient();
@@ -200,6 +205,7 @@ export default class Client extends EventEmitter {
    *         console.error('Something went wrong:', err.stack);
    *     }
    * };
+   * ```
    */
   public async trackDevices(): Promise<Tracker> {
     const conn = await this.connection();

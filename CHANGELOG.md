@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.0.2 (2022-07-01)
+* improve Documetation
+* fix plain mode
+
 ## v4.0.1 (2022-07-01)
 * new Documetation
 

@@ -20,7 +20,7 @@ const AUTH_SIGNATURE = 2;
 const AUTH_RSAPUBLICKEY = 3;
 const TOKEN_LENGTH = 20;
 
-class AuthError extends Error {
+export class AuthError extends Error {
   constructor(message: string) {
     super(message);
     Object.setPrototypeOf(this, AuthError.prototype);
@@ -29,7 +29,7 @@ class AuthError extends Error {
   }
 }
 
-class UnauthorizedError extends Error {
+export class UnauthorizedError extends Error {
   constructor() {
     super('Unauthorized access');
     Object.setPrototypeOf(this, UnauthorizedError.prototype);

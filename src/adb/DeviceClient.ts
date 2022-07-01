@@ -966,8 +966,8 @@ export default class DeviceClient {
    * @param mode See `sync.push()` for details.
    * 
    * @example
-   * 
-   * // Pushing a file to all connected devices
+   * Pushing a file to all connected devices
+   * ```ts
    * import Bluebird from 'bluebird';
    * import Adb from '@u4/adbkit';
    * const client = Adb.createClient();
@@ -993,6 +993,7 @@ export default class DeviceClient {
    *         console.error('Something went wrong:', err.stack);
    *     }
    * };
+   * ```
    */
   public async push(contents: string | ReadStream, path: string, mode?: number): Promise<PushTransfer> {
     const sync = await this.syncService();

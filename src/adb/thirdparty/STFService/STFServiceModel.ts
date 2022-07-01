@@ -1,4 +1,5 @@
 // generarted by genProto.ts
+
 export enum MessageType {
   DO_IDENTIFY = 1,
   DO_KEYEVENT = 2,

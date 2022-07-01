@@ -8,7 +8,7 @@ import ReadableStream = NodeJS.ReadableStream;
 import Connection from '../connection';
 const debug = d('adb:tcpusb:service');
 
-class PrematurePacketError extends Error {
+export class PrematurePacketError extends Error {
   constructor(public packet: Packet) {
     super();
     Object.setPrototypeOf(this, PrematurePacketError.prototype);
@@ -18,7 +18,7 @@ class PrematurePacketError extends Error {
   }
 }
 
-class LateTransportError extends Error {
+export class LateTransportError extends Error {
   constructor() {
     super();
     Object.setPrototypeOf(this, LateTransportError.prototype);
