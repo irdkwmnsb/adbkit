@@ -64,5 +64,9 @@
         "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
         // "resolveJsonModule": true
     },
-    "include": [ "./src/**/*.ts" ]
+    "include": [ "./src/**/*.ts" ],
+    "typedocOptions": {
+        "entryPoints": [ "src/index.ts" ],
+        "out": "docs"
+    }
 }

@@ -35,9 +35,9 @@ We use [debug][node-debug], and our debug namespace is `adb`. Some of the depend
 ### Getting started sample
 
 ```typescript
-import adb, { DeviceClient, KeyCodes, Client } from '../src';
+import { createClient, DeviceClient, KeyCodes, Client } from '../src';
 const main = async () => {
-  const adbClient = adb.createClient();
+  const adbClient = createClient();
   const devices = await adbClient.listDevices();
   if (!devices.length) {
     console.error('Need at least one connected android device');
@@ -53,27 +53,7 @@ const main = async () => {
 }
 ```
 
-## APIs
-
-### adb
-
-The main class, contains a client provider and some utils: [docs/adb.md](https://github.com/UrielCh/adbkit/blob/master/docs/adb.md)
-
-### Client
-
-Adb client allow you to list / track devices: [docs/Client.md](https://github.com/UrielCh/adbkit/blob/master/docs/Client.md)
-
-### DeviceClient
-
-Client object attached to a single devices: [docs/DeviceClient.md](https://github.com/UrielCh/adbkit/blob/master/docs/DeviceClient.md)
-
-### Sync
-
-see [docs/Sync.md](https://github.com/UrielCh/adbkit/blob/master/docs/Sync.md)
-
-### PushTransfer
-
-see [docs/PushTransfer.md](https://github.com/UrielCh/adbkit/blob/master/docs/PushTransfer.md)
+[full documentaion is available here](https://urielch.github.io/adbkit/)
 
 ## Incompatible changes in version 3.x
 

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { program } from 'commander';
 import forge from 'node-forge';
-import Adb from './adb';
+import { createClient } from './adb';
 import Auth from './adb/auth';
 import PacketReader from './adb/tcpusb/packetreader';
 import path from 'path';
@@ -14,7 +14,7 @@ const pkg: { version: string } = JSON.parse(fs.readFileSync(path.join(__dirname,
 program.version(pkg.version);
 
 async function getClientDevice(serials: string[]): Promise<DeviceClient[]> {
-  const adb = Adb.createClient();
+  const adb = createClient();
   if (!serials || !serials.length) {
     const devices: Device[] = await adb.listDevices();
     if (devices.length == 0) {
@@ -66,7 +66,7 @@ program
   .option('-p, --port <port>', 'port number', (value: string) => String(value), '6174')
   .description('Provides an USB device over TCP using a translating proxy.')
   .action((serial: string, options: { port: string }) => {
-    const adb = Adb.createClient();
+    const adb = createClient();
     const server = adb
       .createTcpUsbBridge(serial, {
         auth: () => Promise.resolve(),

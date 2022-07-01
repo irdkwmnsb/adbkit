@@ -1,7 +1,5 @@
-export { default } from './adb';
-export { default as Adb } from './adb';
+export { createClient } from './adb';
 export { ClientOptions } from './models/ClientOptions';
-
 export { CpuStats, Loads } from './models/CpuStats';
 export { default as Device } from './models/Device';
 export { default as DeviceWithPath } from './models/DeviceWithPath';
@@ -40,3 +38,12 @@ export { default as Minicap, MinicapOptions } from './adb/thirdparty/minicap/Min
 export { default as STFService, STFServiceOptions } from './adb/thirdparty/STFService/STFService';
 
 export { VideoStreamFramePacket, H264Configuration } from './adb/thirdparty/scrcpy/Scrcpy';
+
+import { createClient } from './adb';
+import { default as util } from './adb/util';
+
+export const Adb = {
+  util,
+  createClient
+}
+export default Adb;
