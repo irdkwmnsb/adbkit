@@ -4,8 +4,17 @@ import util from './adb/util';
 import { ClientOptions } from './models/ClientOptions';
 
 export interface Options {
+  /**
+   * host to connect default is 127.0.0.1
+   */
   host?: string;
+  /**
+   * The port where the ADB server is listening. Defaults to `5037`.
+   */
   port?: number;
+  /**
+   * As the sole exception, this option provides the path to the `adb` binary, used for starting the server locally if initial connection fails. Defaults to `'adb'`.
+   */
   bin?: string;
 }
 

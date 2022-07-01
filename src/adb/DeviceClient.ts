@@ -86,7 +86,8 @@ export default class DeviceClient {
    * @returns The device path. This corresponds to the device path in `client.listDevicesWithPaths()`.
    * 
    * @example
-   * // List devices withPath
+   * List devices withPath
+   * ```ts
    * import Adb from '@u4/adbkit';
    * const client = Adb.createClient();
    * const devices = client.listDevicesWithPaths();
@@ -100,6 +101,7 @@ export default class DeviceClient {
    *         console.log('transportId: ' + d.transportId + '\n');
    *     });
    * });
+   * ```
    */
   public async getDevicePath(): Promise<DeviceWithPath['path']> {
     const conn = await this.connection();
@@ -131,7 +133,8 @@ export default class DeviceClient {
    * @returns An object of device features. Each key corresponds to a device feature, with the value being either `true` for a boolean feature, or the feature value as a string (e.g. `'0x20000'` for `reqGlEsVersion`).
    * 
    * @example
-   * // Checking for NFC support
+   * Checking for NFC support
+   * ```ts
    * import Adb from '@u4/adbkit';
    * 
    * const client = Adb.createClient();
@@ -151,6 +154,7 @@ export default class DeviceClient {
    *         console.error('Something went wrong:', err.stack);
    *     }
    * };
+   * ```
    */
   public async getFeatures(): Promise<Features> {
     const transport = await this.transport();
@@ -369,7 +373,8 @@ export default class DeviceClient {
    *
    * @returns A readable stream (`Socket` actually) containing the progressive `stdout` of the command. Use with `adb.util.readAll` to get a readable String from it.
    * @example
-   * // Read the output of an instantaneous command
+   * Read the output of an instantaneous command
+   * ```ts
    * import Adb from '@u4/adbkit';
    *
    * try {
@@ -387,9 +392,10 @@ export default class DeviceClient {
    * } catch(err) {
    *   console.error('Something went wrong:', err.stack);
    * }
+   * ```
    * @example
-   * // Progressively read the output of a long-running command and terminate it
-   * 
+   * Progressively read the output of a long-running command and terminate it
+   * ```ts
    * import Adb from '@u4/adbkit';
    * 
    * const client = Adb.createClient();
@@ -412,6 +418,7 @@ export default class DeviceClient {
    *   })
    *  }
    * console.log('Done.')
+   * ```
    */
   public async shell(command: string | ArrayLike<WithToString>): Promise<Duplex> {
     const transport = await this.transport();
@@ -672,7 +679,8 @@ export default class DeviceClient {
    * @param apk When `String`, interpreted as a path to an APK file. When [`Stream`][node-stream], installs directly from the stream, which must be a valid APK.
    * @returns true
    * @example
-   * // This example requires the [request](https://www.npmjs.org/package/request) module. It also doesn't do any error handling (404 responses, timeouts, invalid URLs etc).
+   * This example requires the [request](https://www.npmjs.org/package/request) module. It also doesn't do any error handling (404 responses, timeouts, invalid URLs etc).
+   * ```ts
    * import Adb from '@u4/adbkit';
    * import request from 'request';
    * import { Readable } from 'stream';
@@ -690,7 +698,10 @@ export default class DeviceClient {
    *     console.error('Something went wrong:', err.stack)
    *   }
    * }
+   * ```
    * @example
+   * Install an apk to all connected devices
+   * ```ts
    * import Adb from '@u4/adbkit';
    * 
    * const client = Adb.createClient();
@@ -707,7 +718,7 @@ export default class DeviceClient {
    *         console.error('Something went wrong:', err.stack);
    *     }
    * };
-   * 
+   * ```
    */
   public async install(apk: string | ReadStream): Promise<boolean> {
     const temp = Sync.temp(typeof apk === 'string' ? apk : '_stream.apk');
@@ -850,7 +861,8 @@ export default class DeviceClient {
    * @param path See `sync.readdir()` for details.
    * @returns Files Lists
    * @example
-   *  // List files in a folder
+   * List files in a folder
+   * ```ts
    * import Bluebird from 'bluebird';
    * import Adb from '@u4/adbkit';
    * const client = Adb.createClient();
@@ -873,6 +885,7 @@ export default class DeviceClient {
    *         console.error('Something went wrong:', err.stack);
    *     }
    * };
+   * ```
    */
   public async readdir(path: string): Promise<Entry[]> {
     const sync = await this.syncService();
@@ -906,7 +919,8 @@ export default class DeviceClient {
    * @returns A `PullTransfer` instance.
    * 
    * @example
-   * // Pulling a file from all cofnnected devices
+   * Pulling a file from all cofnnected devices
+   * ```ts
    * import Bluebird from 'bluebird';
    * import fs from 'fs';
    * import Adb from '@u4/adbkit';
@@ -935,6 +949,7 @@ export default class DeviceClient {
    *         console.error('Something went wrong:', err.stack);
    *     }
    * };
+   * ```
    */
   public async pull(path: string): Promise<PullTransfer> {
     const sync = await this.syncService();

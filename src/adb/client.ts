@@ -21,21 +21,35 @@ import DeviceClient from './DeviceClient';
 /**
  * enforce EventEmitter typing
  */
- interface IEmissions {
+interface IEmissions {
   error: (data: Error) => void
 }
 
 export default class Client extends EventEmitter {
   public readonly options: ClientOptions;
-  public readonly host: string;
-  public readonly port: number | string;
-  public readonly bin: string;
+
+  /**
+ * host to connect default is 127.0.0.1
+ */
+
+  public get host(): string {
+    return this.options.host;
+  }
+  /**
+   * The port where the ADB server is listening. Defaults to `5037`.
+   */
+  public get port(): number | string {
+    return this.options.port
+  }
+  /**
+   * As the sole exception, this option provides the path to the `adb` binary, used for starting the server locally if initial connection fails. Defaults to `'adb'`.
+   */
+  public get bin(): string {
+    return this.options.bin
+  }
 
   constructor({ host = '127.0.0.1', port = 5037, bin = 'adb' }: ClientOptions = { port: 5037 }) {
     super();
-    this.host = host;
-    this.port = port;
-    this.bin = bin;
     this.options = { host, port, bin };
   }
 
