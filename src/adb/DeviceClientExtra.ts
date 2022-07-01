@@ -70,7 +70,7 @@ export default class DeviceClientExtra {
       throw Error('failed to parse Switch bounds airPlainMode switch failed');
     const [, x1, y1] = m; // , x2, y2
     await this.tap(x1, y1);
-    if (twiceMs && checked === !enable) {
+    if (twiceMs && checked === enable) {
       await Utils.delay(twiceMs);
       await this.tap(x1, y1);
     }
