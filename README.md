@@ -35,7 +35,8 @@ We use [debug][node-debug], and our debug namespace is `adb`. Some of the depend
 ### Getting started sample
 
 ```typescript
-import { createClient, DeviceClient, KeyCodes, Client } from '../src';
+import { createClient } from '@u4/adbkit';
+
 const main = async () => {
   const adbClient = createClient();
   const devices = await adbClient.listDevices();
