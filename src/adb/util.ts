@@ -14,7 +14,6 @@ export default class Util {
   public static readAll(stream: Duplex): Promise<Buffer> {
     return new Parser(stream).readAll();
   }
-
   /**
    * Parses an Android-formatted mincrypt public key (e.g. `~/.android/adbkey.pub`).
    * 
@@ -72,7 +71,7 @@ export default class Util {
    * @returns 
    */
   public static async waitforText(duplex: PromiseDuplex<Duplex>, expected: string, timeout = 0): Promise<void> {
-    for (;;) {
+    for (; ;) {
       await this.waitforReadable(duplex, timeout);
       const buf = await duplex.read();
       const text = buf.toString();

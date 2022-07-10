@@ -203,4 +203,22 @@ for (const type of ['bluetooth', 'data', 'wifi'] as const) {
     });
 }
 
+
+program
+  .command('capture dest [serials...]')
+  .description('capture screen of one or many device as png.')
+  .action(async (dest: string, serials: string[]) => {
+    const devices = await getClientDevice(serials);
+    for (let i = 0; i < devices.length; i++) {
+      const device = devices[i];
+      let out = dest;
+      if (devices.length > 1) {
+        out = path.join(path.dirname(out), device.serial + '-' + path.basename(out));
+      }
+      const stream = await device.screencap();
+      const capture = await Util.readAll(stream);
+      fs.writeFileSync(dest, capture);
+    }
+  });
+
 program.parse(process.argv);
