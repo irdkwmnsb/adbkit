@@ -85,7 +85,7 @@ export default abstract class Command<T> {
       case Protocol.OKAY:
         return;
       case Protocol.FAIL:
-        return this.parser.readError();
+        throw await this.parser.readError();
       default:
         throw this.parser.unexpected(reply, 'OKAY or FAIL');
     }

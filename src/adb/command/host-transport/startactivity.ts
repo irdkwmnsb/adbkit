@@ -44,7 +44,7 @@ export default class StartActivityCommand extends Command<boolean> {
       this.parser.end();
     }
     // may be incorrect.
-    return this.parser.readError();
+    throw await this.parser.readError();
   }
 
   protected _intentArgs(options: StartActivityOptions): Array<string | number> {

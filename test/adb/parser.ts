@@ -5,15 +5,6 @@ Chai.use(simonChai);
 import Parser, { AdbFailError, AdbPrematureEOFError, AdbUnexpectedDataError } from '../../src/adb/parser';
 import Util from '../../src/adb/util';
 
-/**
- * 
- * @param promise native or bluebird Promise;
- */
-function bPromiseTest(promise: any) {
-    expect(promise).to.be.an.instanceOf(Promise);
-    return false;
-}
-
 describe('Parser', () => {
     describe('end()', () => {
         it('should end the stream and consume all remaining data', async () => {
@@ -26,14 +17,6 @@ describe('Parser', () => {
         });
     });
     describe('readAll()', () => {
-        it('should return a cancellable Promise', (done) => {
-            const stream = new Stream.PassThrough();
-            const parser = new Parser(stream);
-            const promise = parser.readAll();
-            if (!bPromiseTest(promise))
-                parser.end();
-            done();
-        });
         it('should read all remaining content until the stream ends', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -58,15 +41,6 @@ describe('Parser', () => {
         });
     });
     describe('readBytes(howMany)', () => {
-        it('should return a cancellable Promise', (done) => {
-            const stream = new Stream.PassThrough();
-            const parser = new Parser(stream);
-            const promise = parser.readBytes(1);
-            expect(promise).to.be.an.instanceOf(Promise);
-            if (!bPromiseTest(promise))
-                parser.end()
-            done();
-        });
         it('should read as many bytes as requested', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -115,15 +89,6 @@ describe('Parser', () => {
         });
     });
     describe('readByteFlow(maxHowMany, targetStream)', () => {
-        it('should return a cancellable Promise', (done) => {
-            const stream = new Stream.PassThrough();
-            const parser = new Parser(stream);
-            const target = new Stream.PassThrough();
-            const promise = parser.readByteFlow(1, target);
-            if (!bPromiseTest(promise))
-                parser.end()
-            done();
-        });
         it('should read as many bytes as requested', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -147,13 +112,6 @@ describe('Parser', () => {
         });
     });
     describe('readAscii(howMany)', () => {
-        it('should return a cancellable Bluebird Promise', async () => {
-            const stream = new Stream.PassThrough();
-            const parser = new Parser(stream);
-            const promise = parser.readAscii(1);
-            if (!bPromiseTest(promise))
-                parser.end()
-        });
         it('should read as many ascii characters as requested 1', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -187,13 +145,6 @@ describe('Parser', () => {
         });
     });
     describe('readValue()', () => {
-        it('should return a cancellable Bluebird Promise', async () => {
-            const stream = new Stream.PassThrough();
-            const parser = new Parser(stream);
-            const promise = parser.readValue();
-            if (!bPromiseTest(promise))
-                parser.end()
-        });
         it('should read a protocol value as a Buffer', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -225,14 +176,6 @@ describe('Parser', () => {
         });
     });
     describe('readError()', () => {
-        it('should return a cancellable Bluebird Promise', (done) => {
-            const stream = new Stream.PassThrough();
-            const parser = new Parser(stream);
-            const promise = parser.readError();
-            if (!bPromiseTest(promise))
-                parser.end()
-            done();
-        });
         it('should reject with Parser.FailError using the value', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -255,14 +198,6 @@ describe('Parser', () => {
         });
     });
     describe('searchLine(re)', () => {
-        it('should return a cancellable Bluebird Promise', (done) => {
-            const stream = new Stream.PassThrough();
-            const parser = new Parser(stream);
-            const promise = parser.searchLine(/foo/);
-            if (!bPromiseTest(promise))
-                parser.end()
-            done();
-        });
         it('should return the re.exec match of the matching line', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -285,14 +220,6 @@ describe('Parser', () => {
         });
     });
     describe('readLine()', () => {
-        it('should return a cancellable Bluebird Promise', (done) => {
-            const stream = new Stream.PassThrough();
-            const parser = new Parser(stream);
-            const promise = parser.readLine();
-            if (!bPromiseTest(promise))
-                parser.end()
-            done();
-        });
         it('should skip a line terminated by \\n', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
@@ -331,14 +258,6 @@ describe('Parser', () => {
         });
     });
     describe('readUntil(code)', () => {
-        it('should return a cancellable Bluebird Promise', (done) => {
-            const stream = new Stream.PassThrough();
-            const parser = new Parser(stream);
-            const promise = parser.readUntil(0xa0);
-            if (!bPromiseTest(promise))
-                parser.end()
-            done();
-        });
         it('should return any characters before given value', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);

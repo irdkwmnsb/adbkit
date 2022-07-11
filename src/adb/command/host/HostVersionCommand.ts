@@ -10,7 +10,7 @@ export default class HostVersionCommand extends Command<number> {
         const value = await this.parser.readValue('utf8');
         return this._parseVersion(value);
       case Protocol.FAIL:
-        return this.parser.readError();
+        throw await this.parser.readError();
       default:
         return this._parseVersion(reply);
     }

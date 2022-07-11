@@ -105,7 +105,7 @@ export default class Sync extends EventEmitter {
         }
       }
       case Protocol.FAIL:
-        return this.readError();
+        throw await this.readError();
       default:
         throw this.parser.unexpected(reply, 'STAT or FAIL');
     }
@@ -135,7 +135,7 @@ export default class Sync extends EventEmitter {
         }
       }
       case Protocol.FAIL:
-        return this.readError();
+        throw await this.readError();
       default:
         throw this.parser.unexpected(reply, 'STAT or FAIL');
     }
@@ -175,7 +175,7 @@ export default class Sync extends EventEmitter {
           await this.parser.readBytes(16)
           return files;
         case Protocol.FAIL:
-          return this.readError();
+          throw await this.readError();
         default:
           throw this.parser.unexpected(reply, 'DENT, DONE or FAIL');
       }
@@ -214,7 +214,7 @@ export default class Sync extends EventEmitter {
           await this.parser.readBytes(16)
           return files;
         case Protocol.FAIL:
-          return this.readError();
+          throw await this.readError();
         default:
           throw this.parser.unexpected(reply, 'DENT, DONE or FAIL');
       }
@@ -351,7 +351,7 @@ export default class Sync extends EventEmitter {
           await this.parser.readBytes(4);
           return true;
         case Protocol.FAIL:
-          return this.readError();
+          throw await this.readError();
         default:
           throw this.parser.unexpected(reply, 'OKAY or FAIL');
       }
@@ -390,7 +390,7 @@ export default class Sync extends EventEmitter {
             await this.parser.readBytes(4)
             return true;
           case Protocol.FAIL:
-            return this.readError();
+            throw await this.readError();
           default:
             throw this.parser.unexpected(reply, 'DATA, DONE or FAIL');
         }
@@ -407,11 +407,11 @@ export default class Sync extends EventEmitter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async readError(): Promise<never> {
+  private async readError(): Promise<AdbFailError> {
     try {
       const length = await this.parser.readBytes(4);
       const buf = await this.parser.readBytes(length.readUInt32LE(0));
-      return Promise.reject(new AdbFailError(buf.toString(), this.lastMessage));
+      return new AdbFailError(buf.toString(), this.lastMessage);
     } finally {
       await this.parser.end();
     }

@@ -128,8 +128,7 @@ export default class Service extends EventEmitter {
           this.opened = true;
           break;
         case Protocol.FAIL:
-          this.transport.parser.readError();
-          break;
+          throw await this.transport.parser.readError();
         default:
           throw this.transport.parser.unexpected(reply, 'OKAY or FAIL');
       }
