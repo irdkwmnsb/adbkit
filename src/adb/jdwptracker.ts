@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import EventEmitter from 'events';
-import Parser from './parser';
+import { AdbPrematureEOFError } from './parser';
 import Command from './command';
 
 /**
@@ -57,7 +57,7 @@ export default class JdwpTracker extends EventEmitter {
     this.pidMap = Object.create(null);
     // this.reader = 
     this.read().catch(err => {
-      if (err instanceof Parser.PrematureEOFError) {
+      if (err instanceof AdbPrematureEOFError) {
         return this.emit('end');
       }
       this.command.connection.end();

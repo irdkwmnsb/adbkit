@@ -3,7 +3,7 @@ import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
-import Parser from '../../../../src/adb/parser';
+import { AdbPrematureEOFError } from '../../../../src/adb/parser';
 import WaitBootCompleteCommand from '../../../../src/adb/command/host-transport/waitbootcomplete';
 
 describe('WaitBootCompleteCommand', () => {
@@ -21,7 +21,7 @@ describe('WaitBootCompleteCommand', () => {
         });
         return cmd.execute();
     });
-    it('should reject with Parser.PrematureEOFError if connection cuts prematurely', async () => {
+    it('should reject with AdbPrematureEOFError if connection cuts prematurely', async () => {
         const conn = new MockConnection();
         const cmd = new WaitBootCompleteCommand(conn);
         setImmediate(() => {
@@ -32,7 +32,7 @@ describe('WaitBootCompleteCommand', () => {
             await cmd.execute()
             throw new Error('Succeeded even though it should not');
         } catch (err) {
-            expect(err).to.be.an.instanceof(Parser.PrematureEOFError);
+            expect(err).to.be.an.instanceof(AdbPrematureEOFError);
             return true;
         }
     });

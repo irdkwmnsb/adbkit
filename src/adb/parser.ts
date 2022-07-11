@@ -10,14 +10,14 @@ export class FailError extends Error {
   }
 }
 
-export class PrematureEOFError extends Error {
+export class AdbPrematureEOFError extends Error {
   public missingBytes: number;
   constructor(howManyMissing: number, lastMessage: string) {
     super(`Premature end of stream, needed ${howManyMissing} more bytes lastMessage:${lastMessage}`);
-    Object.setPrototypeOf(this, PrematureEOFError.prototype);
-    this.name = 'PrematureEOFError';
+    Object.setPrototypeOf(this, AdbPrematureEOFError.prototype);
+    this.name = 'AdbPrematureEOFError';
     this.missingBytes = howManyMissing;
-    Error.captureStackTrace(this, PrematureEOFError);
+    Error.captureStackTrace(this, AdbPrematureEOFError);
   }
 }
 
@@ -35,7 +35,6 @@ export class UnexpectedDataError extends Error {
  */
 export default class Parser {
   public static FailError = FailError;
-  public static PrematureEOFError = PrematureEOFError;
   public static UnexpectedDataError = UnexpectedDataError;
   private ended = false;
   public lastMessage = '';
@@ -143,7 +142,7 @@ export default class Parser {
             }
           }
           if (this.ended) {
-            return reject(new Parser.PrematureEOFError(howMany, this.lastMessage));
+            return reject(new AdbPrematureEOFError(howMany, this.lastMessage));
           }
         } else {
           return resolve(Buffer.alloc(0));
@@ -151,7 +150,7 @@ export default class Parser {
       };
       endListener = () => {
         this.ended = true;
-        return reject(new Parser.PrematureEOFError(howMany, this.lastMessage));
+        return reject(new AdbPrematureEOFError(howMany, this.lastMessage));
       };
       errorListener = (err) => {
         reject(err)
@@ -203,7 +202,7 @@ export default class Parser {
           if (this.ended) {
             // TODO add cancellable
             //clearTimeout(tm)
-            return reject(new Parser.PrematureEOFError(howMany, this.lastMessage));
+            return reject(new AdbPrematureEOFError(howMany, this.lastMessage));
           }
         } else {
           // TODO add cancellable
@@ -213,7 +212,7 @@ export default class Parser {
       };
       endListener = () => {
         this.ended = true;
-        return reject(new Parser.PrematureEOFError(howMany, this.lastMessage));
+        return reject(new AdbPrematureEOFError(howMany, this.lastMessage));
       };
       errorListener = (err) => {
         return reject(err);
@@ -242,7 +241,7 @@ export default class Parser {
       // keep localy generated error
       if (e instanceof FailError) {
         throw e;
-      } else if (e instanceof PrematureEOFError) {
+      } else if (e instanceof AdbPrematureEOFError) {
         throw e;
       } else if (e instanceof UnexpectedDataError) {
         throw e;

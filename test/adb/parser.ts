@@ -2,7 +2,7 @@ import Stream from 'stream';
 import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
-import Parser, { PrematureEOFError, UnexpectedDataError } from '../../src/adb/parser';
+import Parser, { AdbPrematureEOFError, UnexpectedDataError } from '../../src/adb/parser';
 import Util from '../../src/adb/util';
 
 /**
@@ -101,15 +101,15 @@ describe('Parser', () => {
             return true;
         });
 
-        it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', (done) => {
+        it('should reject with AdbPrematureEOFError if stream ends before enough bytes can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('F');
             const p = parser.readBytes(10)
             stream.end();
             p.catch(err => {
-                expect(err).to.be.an.instanceOf(Parser.PrematureEOFError);
-                expect(err as PrematureEOFError).to.be.an.instanceOf(Parser.PrematureEOFError);
+                expect(err).to.be.an.instanceOf(AdbPrematureEOFError);
+                expect(err as AdbPrematureEOFError).to.be.an.instanceOf(AdbPrematureEOFError);
                 done();
             })
         });
@@ -175,12 +175,12 @@ describe('Parser', () => {
             expect(str).to.equal('OKAY');
             return true;
         });
-        it('should reject with Parser.PrematureEOFError if stream ends before enough bytes can be read', (done) => {
+        it('should reject with AdbPrematureEOFError if stream ends before enough bytes can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('FOO');
             parser.readAscii(7).catch(err => {
-                expect(err).to.be.an.instanceOf(Parser.PrematureEOFError);
+                expect(err).to.be.an.instanceOf(AdbPrematureEOFError);
                 done();
             });
             stream.end();
@@ -212,12 +212,12 @@ describe('Parser', () => {
             expect(value).to.be.an.instanceOf(Buffer);
             expect(value).to.have.length(0);
         });
-        it('should reject with Parser.PrematureEOFError if stream ends before the value can be read', (done) => {
+        it('should reject with AdbPrematureEOFError if stream ends before the value can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readValue().catch(err => {
-                expect(err).to.be.an.instanceOf(Parser.PrematureEOFError);
-                expect(err as PrematureEOFError).to.be.an.instanceOf(Parser.PrematureEOFError);
+                expect(err).to.be.an.instanceOf(AdbPrematureEOFError);
+                expect(err as AdbPrematureEOFError).to.be.an.instanceOf(AdbPrematureEOFError);
                 done();
             });
             stream.write('00ffabc');
@@ -243,11 +243,11 @@ describe('Parser', () => {
             stream.write('000cepic failure');
         });
 
-        it('should reject with Parser.PrematureEOFError if stream ends before the error can be read', (done) => {
+        it('should reject with AdbPrematureEOFError if stream ends before the error can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readError().catch(err => {
-                expect(err).to.be.an.instanceOf(Parser.PrematureEOFError);
+                expect(err).to.be.an.instanceOf(AdbPrematureEOFError);
                 done();
             });
             stream.write('000cepic')
@@ -273,11 +273,11 @@ describe('Parser', () => {
             expect(line.input).to.equal('zip zap');
             return true;
         });
-        it('should reject with Parser.PrematureEOFError if stream ends before a line is found', (done) => {
+        it('should reject with Parser.AdbPrematureEOFError if stream ends before a line is found', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.searchLine(/nope/).catch(err => {
-                expect(err).to.be.an.instanceOf(Parser.PrematureEOFError);
+                expect(err).to.be.an.instanceOf(AdbPrematureEOFError);
                 done();
             })
             stream.write('foo bar');
@@ -317,16 +317,16 @@ describe('Parser', () => {
             expect(buf).to.equal('foo bar');
             return true;
         });
-        it('should reject with Parser.PrematureEOFError if stream ends before a line is found', async () => {
+        it('should reject with AdbPrematureEOFError if stream ends before a line is found', async () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('foo bar');
             stream.end();
             try {
                 await parser.readLine()
-                throw Error('should throw PrematureEOFError');
+                throw Error('should throw AdbPrematureEOFError');
             } catch (err) {
-                expect(err).to.be.an.instanceOf(Parser.PrematureEOFError);
+                expect(err).to.be.an.instanceOf(AdbPrematureEOFError);
             }
         });
     });
@@ -346,11 +346,11 @@ describe('Parser', () => {
             const buf = await parser.readUntil('p'.charCodeAt(0))
             expect(buf.toString()).to.equal('foo bar\nzi');
         });
-        it('should reject with Parser.PrematureEOFError if stream ends before a line is found', (done) => {
+        it('should reject with Parser.AdbPrematureEOFError if stream ends before a line is found', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             parser.readUntil('z'.charCodeAt(0)).catch(err => {
-                expect(err).to.be.an.instanceOf(Parser.PrematureEOFError);
+                expect(err).to.be.an.instanceOf(AdbPrematureEOFError);
                 done();
             })
             stream.write('ho ho');

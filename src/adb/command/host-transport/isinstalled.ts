@@ -1,4 +1,4 @@
-import Parser from '../../parser';
+import { AdbPrematureEOFError } from '../../parser';
 import Command from '../../command';
 
 export default class IsInstalledCommand extends Command<boolean> {
@@ -14,7 +14,7 @@ export default class IsInstalledCommand extends Command<boolean> {
           return this.parser.unexpected(reply, "'package:'");
       }
     } catch (err) {
-      if (err instanceof Parser.PrematureEOFError) {
+      if (err instanceof AdbPrematureEOFError) {
         return false;
       }
       throw err;

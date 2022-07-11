@@ -3,7 +3,7 @@ import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
-import Parser from '../../../../src/adb/parser';
+import { AdbPrematureEOFError } from '../../../../src/adb/parser';
 import UninstallCommand from '../../../../src/adb/command/host-transport/uninstall';
 
 describe('UninstallCommand', () => {
@@ -82,7 +82,7 @@ java.lang.IllegalArgumentException: Unknown package: foo
         });
         return cmd.execute('foo');
     });
-    it('should reject with Parser.PrematureEOFError if stream ends before match', (done) => {
+    it('should reject with AdbPrematureEOFError if stream ends before match', (done) => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
         setImmediate(() => {
@@ -91,7 +91,7 @@ java.lang.IllegalArgumentException: Unknown package: foo
             return conn.getSocket().causeEnd();
         });
         cmd.execute('foo').catch(err => {
-            if (err instanceof Parser.PrematureEOFError) {
+            if (err instanceof AdbPrematureEOFError) {
                 done();
             } else {
                 // failed

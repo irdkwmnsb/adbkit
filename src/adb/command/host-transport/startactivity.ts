@@ -1,4 +1,4 @@
-import Parser from '../../parser';
+import { AdbPrematureEOFError } from '../../parser';
 import Command from '../../command';
 import StartActivityOptions from '../../../models/StartActivityOptions';
 import { Extra, ExtraObject, ExtraValue } from '../../../models/StartServiceOptions';
@@ -38,7 +38,7 @@ export default class StartActivityCommand extends Command<boolean> {
       const match = await this.parser.searchLine(RE_ERROR);
       throw new Error(match[1]);
     } catch (err) {
-      if (err instanceof Parser.PrematureEOFError)
+      if (err instanceof AdbPrematureEOFError)
         return true;
     } finally {
       this.parser.end();

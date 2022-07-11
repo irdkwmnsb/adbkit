@@ -1,4 +1,4 @@
-import Parser from './parser';
+import { AdbPrematureEOFError } from './parser';
 import EventEmitter from 'events';
 import Device from '../models/Device';
 import HostDevicesCommand from './command/host/HostDevicesCommand';
@@ -82,7 +82,7 @@ export default class Tracker extends EventEmitter {
     } catch (err) {
       if (!this.stoped) {
         this.emit('error', err as Error)
-        if (err instanceof Parser.PrematureEOFError) {
+        if (err instanceof AdbPrematureEOFError) {
           throw new Error('Connection closed');
         }
       }
