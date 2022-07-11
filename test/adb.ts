@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import Adb from '../src/adb';
+import Adb from '../src/index';
 import Client from '../src/adb/client';
 // import { Keycode } from '../src/adb/keycode';
 import util from '../src/adb/util';

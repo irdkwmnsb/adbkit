@@ -4,14 +4,13 @@ import Sinon from 'sinon';
 import Chai, { expect, assert } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
-import Adb from '../../src/adb';
+import Adb, { Client }  from '../../src/index';
 import Sync, { ENOENT } from '../../src/adb/sync';
 import Stats from '../../src/adb/sync/stats';
 import Entry from '../../src/adb/sync/entry';
 import PushTransfer from '../../src/adb/sync/pushtransfer';
 import PullTransfer from '../../src/adb/sync/pulltransfer';
 import MockConnection from '../mock/connection';
-import Client from '../../src/adb/client';
 import Device from '../../src/models/Device';
 
 // This test suite is a bit special in that it requires a connected Android
