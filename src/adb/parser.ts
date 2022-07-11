@@ -1,6 +1,9 @@
 import Protocol from './protocol';
 import { Duplex } from 'stream';
 
+/**
+ * a command call respond an Error
+ */
 export class AdbFailError extends Error {
   constructor(message: string, lastMessage: string) {
     super(`Failure: '${message}' lastMessage:${lastMessage}`);
@@ -10,6 +13,9 @@ export class AdbFailError extends Error {
   }
 }
 
+/**
+ * the connection get interupt before the end of expected response
+ */
 export class AdbPrematureEOFError extends Error {
   public missingBytes: number;
   constructor(howManyMissing: number, lastMessage: string) {
