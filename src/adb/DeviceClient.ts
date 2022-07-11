@@ -552,7 +552,7 @@ export default class DeviceClient {
     const code = await (duplex.read(4) as Promise<Buffer>);
     if (!code.equals(Protocol.bOKAY)) {
       if (code.equals(Protocol.bFAIL)) return transport.parser.readError();
-      return transport.parser.unexpected(code.toString('ascii'), 'OKAY or FAIL');
+      throw transport.parser.unexpected(code.toString('ascii'), 'OKAY or FAIL');
     }
     return duplex;
   }

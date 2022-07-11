@@ -311,7 +311,7 @@ export default class Parser {
     }
   }
 
-  public unexpected(data: string, expected: string): Promise<never> {
-    return Promise.reject(new AdbUnexpectedDataError(data, expected, this.lastMessage));
+  public unexpected(data: string, expected: string): AdbUnexpectedDataError {
+    return new AdbUnexpectedDataError(data, expected, this.lastMessage);
   }
 }

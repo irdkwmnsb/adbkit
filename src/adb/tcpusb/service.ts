@@ -131,8 +131,7 @@ export default class Service extends EventEmitter {
           this.transport.parser.readError();
           break;
         default:
-          this.transport.parser.unexpected(reply, 'OKAY or FAIL');
-          break;
+          throw this.transport.parser.unexpected(reply, 'OKAY or FAIL');
       }
       return new Promise<void>((resolve, reject) => {
         if (!this.transport) {

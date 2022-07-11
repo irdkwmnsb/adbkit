@@ -373,14 +373,13 @@ describe('Parser', () => {
         it('should reject with AdbUnexpectedDataError', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.unexpected('foo', "'bar' or end of stream").catch(e => {
-                const err = e as AdbUnexpectedDataError;
-                expect(err).to.be.an.instanceOf(AdbUnexpectedDataError);
-                expect(err.message).to.equal("Unexpected 'foo', was expecting 'bar' or end of stream lastMessage:");
-                expect(err.unexpected).to.equal('foo');
-                expect(err.expected).to.equal("'bar' or end of stream");
-                done();
-            })
+            const e = parser.unexpected('foo', "'bar' or end of stream");
+            const err = e as AdbUnexpectedDataError;
+            expect(err).to.be.an.instanceOf(AdbUnexpectedDataError);
+            expect(err.message).to.equal("Unexpected 'foo', was expecting 'bar' or end of stream lastMessage:");
+            expect(err.unexpected).to.equal('foo');
+            expect(err.expected).to.equal("'bar' or end of stream");
+            done();
         });
     });
 });

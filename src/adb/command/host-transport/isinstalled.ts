@@ -11,7 +11,7 @@ export default class IsInstalledCommand extends Command<boolean> {
         case 'package:':
           return true;
         default:
-          return this.parser.unexpected(reply, "'package:'");
+          throw this.parser.unexpected(reply, "'package:'");
       }
     } catch (err) {
       if (err instanceof AdbPrematureEOFError) {

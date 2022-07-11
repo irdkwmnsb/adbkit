@@ -107,7 +107,7 @@ export default class Sync extends EventEmitter {
       case Protocol.FAIL:
         return this.readError();
       default:
-        return this.parser.unexpected(reply, 'STAT or FAIL');
+        throw this.parser.unexpected(reply, 'STAT or FAIL');
     }
   }
 
@@ -137,7 +137,7 @@ export default class Sync extends EventEmitter {
       case Protocol.FAIL:
         return this.readError();
       default:
-        return this.parser.unexpected(reply, 'STAT or FAIL');
+        throw this.parser.unexpected(reply, 'STAT or FAIL');
     }
   }
 
@@ -177,7 +177,7 @@ export default class Sync extends EventEmitter {
         case Protocol.FAIL:
           return this.readError();
         default:
-          return this.parser.unexpected(reply, 'DENT, DONE or FAIL');
+          throw this.parser.unexpected(reply, 'DENT, DONE or FAIL');
       }
     }
   }
@@ -216,7 +216,7 @@ export default class Sync extends EventEmitter {
         case Protocol.FAIL:
           return this.readError();
         default:
-          return this.parser.unexpected(reply, 'DENT, DONE or FAIL');
+          throw this.parser.unexpected(reply, 'DENT, DONE or FAIL');
       }
     }
   }
@@ -353,7 +353,7 @@ export default class Sync extends EventEmitter {
         case Protocol.FAIL:
           return this.readError();
         default:
-          return this.parser.unexpected(reply, 'OKAY or FAIL');
+          throw this.parser.unexpected(reply, 'OKAY or FAIL');
       }
     };
     // While I can't think of a case that would break this double-Promise
@@ -392,7 +392,7 @@ export default class Sync extends EventEmitter {
           case Protocol.FAIL:
             return this.readError();
           default:
-            return this.parser.unexpected(reply, 'DATA, DONE or FAIL');
+            throw this.parser.unexpected(reply, 'DATA, DONE or FAIL');
         }
       }
     };
