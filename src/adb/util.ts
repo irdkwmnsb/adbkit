@@ -74,9 +74,11 @@ export default class Util {
     for (; ;) {
       await this.waitforReadable(duplex, timeout);
       const buf = await duplex.read();
-      const text = buf.toString();
-      if (text.includes(expected))
-        return;
+      if (buf) {
+        const text = buf.toString();
+        if (text.includes(expected))
+          return;
+      }
     }
   }
 }

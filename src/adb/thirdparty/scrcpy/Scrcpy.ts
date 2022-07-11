@@ -544,6 +544,8 @@ export default class Scrcpy extends EventEmitter {
         pressure = 0x0
       else if (action == MotionEvent.ACTION_DOWN)
         pressure = 0xffff
+      else
+        pressure = 0xffff
     }
     // Writes a long to the underlying output stream as eight bytes, high byte first.
     chunk.writeBigUint64BE(pointerId);

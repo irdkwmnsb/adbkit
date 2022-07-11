@@ -20,7 +20,7 @@ async function getClientDevice(serials: string[]): Promise<DeviceClient[]> {
     if (devices.length == 0) {
       console.error('no Android devices found');
       process.exit(1);
-      return;
+      return [];
     }
     if (devices.length == 1) {
       return [devices[0].getClient()];

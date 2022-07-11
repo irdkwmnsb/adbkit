@@ -343,6 +343,8 @@ export default class STFService extends EventEmitter {
       }
     });
     const buf = this.protoSrv.write.Envelope(envelope)
+    if (!this.servicesSocket)
+      throw Error('servicesSocket is not open');
     this.servicesSocket.write(buf);
     const timeout = Utils.delay(this.config.timeout).then(() => {
       if (this.responseHook[id]) {

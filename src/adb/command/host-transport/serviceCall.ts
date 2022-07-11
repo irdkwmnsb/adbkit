@@ -5,17 +5,17 @@ import { ParcelVal } from './Parcel';
 
 export type ServiceCallArg = ServiceCallArgNumber | ServiceCallArgString | ServiceCallArgNull;
 
-export class ServiceCallArgNumber {
+export interface ServiceCallArgNumber {
   type: 'i32' | 'i64' | 'f' | 'd' | 'fd' | 'nfd' | 'afd';
   value: number;
 }
 
-export class ServiceCallArgString {
+export interface ServiceCallArgString {
   type: 's16';
   value: string;
 }
 
-export class ServiceCallArgNull {
+export interface ServiceCallArgNull {
   type: 'null';
 }
 

@@ -198,6 +198,7 @@ export default class Service extends EventEmitter {
       this.socket.write(Packet.assemble(Packet.A_WRTE, this.localId, this.remoteId, chunk));
       return (this.needAck = true);
     }
+    return false;
   }
 
   private _readChunk(stream: ReadableStream): Buffer {

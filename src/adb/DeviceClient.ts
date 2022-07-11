@@ -436,7 +436,7 @@ export default class DeviceClient {
    */
   public async execOut(command: string | ArrayLike<WithToString>): Promise<Buffer>;
   public async execOut(command: string | ArrayLike<WithToString>, encoding: BufferEncoding): Promise<string>;
-  public async execOut(command: string | ArrayLike<WithToString>, encoding?: BufferEncoding): Promise<string | Buffer> {
+  public async execOut(command: string | ArrayLike<WithToString>, encoding?: BufferEncoding): Promise<string | Buffer | undefined> {
     const duplex = new PromiseDuplex(await (this.exec(command)));
     if (encoding) {
       duplex.setEncoding(encoding);
@@ -1070,7 +1070,7 @@ export default class DeviceClient {
     return service;
   }
 
-  #extra: DeviceClientExtra;
+  #extra?: DeviceClientExtra;
   /**
    * get extra fucntions
    * @returns an DeviceClientExtra

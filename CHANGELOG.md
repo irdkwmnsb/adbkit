@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.0.4 (2022-07-11)
+* improve Utils
+* improve cli
+
 ## v4.0.3 (2022-07-01)
 * fix plain mode
 
