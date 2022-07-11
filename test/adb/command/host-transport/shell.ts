@@ -3,7 +3,7 @@ import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
-import Parser from '../../../../src/adb/parser';
+import { AdbFailError } from '../../../../src/adb/parser';
 import ShellCommand from '../../../../src/adb/command/host-transport/shell';
 
 describe('ShellCommand', () => {
@@ -56,9 +56,9 @@ describe('ShellCommand', () => {
         });
         try {
             await cmd.execute(['foo']);
-            throw Error('should throw FailError');
+            throw Error('should throw AdbFailError');
         } catch(err) {
-            expect(err).to.be.instanceOf(Parser.FailError);
+            expect(err).to.be.instanceOf(AdbFailError);
         }
         return true;
     });

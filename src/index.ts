@@ -26,7 +26,7 @@ export { default as RollingCounter } from './adb/tcpusb/rollingcounter';
 export { default as Packet } from './adb/tcpusb/packet';
 export { default as Socket, AuthError, UnauthorizedError } from './adb/tcpusb/socket';
 export { default as PacketReader, ChecksumError, MagicError } from './adb/tcpusb/packetreader';
-export { default as Parser, AdbUnexpectedDataError, AdbPrematureEOFError, FailError } from './adb/parser';
+export { default as Parser, AdbUnexpectedDataError, AdbPrematureEOFError, AdbFailError } from './adb/parser';
 export { default as Client } from './adb/client';
 export { default as DeviceClient } from './adb/DeviceClient';
 export { default as Connection } from './adb/connection';

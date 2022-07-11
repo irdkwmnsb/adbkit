@@ -2,7 +2,7 @@ import Stream from 'stream';
 import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
-import Parser, { AdbPrematureEOFError, AdbUnexpectedDataError } from '../../src/adb/parser';
+import Parser, { AdbFailError, AdbPrematureEOFError, AdbUnexpectedDataError } from '../../src/adb/parser';
 import Util from '../../src/adb/util';
 
 /**
@@ -237,7 +237,7 @@ describe('Parser', () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             parser.readError().catch(err => {
-                expect(err).to.be.an.instanceOf(Parser.FailError);
+                expect(err).to.be.an.instanceOf(AdbFailError);
                 done();
             })
             stream.write('000cepic failure');

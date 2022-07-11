@@ -1,12 +1,12 @@
 import Protocol from './protocol';
 import { Duplex } from 'stream';
 
-export class FailError extends Error {
+export class AdbFailError extends Error {
   constructor(message: string, lastMessage: string) {
     super(`Failure: '${message}' lastMessage:${lastMessage}`);
-    Object.setPrototypeOf(this, FailError.prototype);
-    this.name = 'FailError';
-    Error.captureStackTrace(this, FailError);
+    Object.setPrototypeOf(this, AdbFailError.prototype);
+    this.name = 'AdbFailError';
+    Error.captureStackTrace(this, AdbFailError);
   }
 }
 
@@ -34,7 +34,6 @@ export class AdbUnexpectedDataError extends Error {
  * helper to read in Duplex stream
  */
 export default class Parser {
-  public static FailError = FailError;
   private ended = false;
   public lastMessage = '';
 
@@ -238,7 +237,7 @@ export default class Parser {
       error = await this.readValue('utf8');
     } catch (e) {
       // keep localy generated error
-      if (e instanceof FailError) {
+      if (e instanceof AdbFailError) {
         throw e;
       } else if (e instanceof AdbPrematureEOFError) {
         throw e;
@@ -246,7 +245,7 @@ export default class Parser {
         throw e;
       }
     }
-    throw new Parser.FailError(error, this.lastMessage);
+    throw new AdbFailError(error, this.lastMessage);
   }
 
   /**

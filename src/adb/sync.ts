@@ -2,7 +2,7 @@ import fs from 'fs';
 import Path from 'path';
 import EventEmitter from 'events';
 import d from 'debug';
-import Parser from './parser';
+import Parser, { AdbFailError } from './parser';
 import Protocol from './protocol';
 import Stats from './sync/stats';
 import Entry from './sync/entry';
@@ -182,7 +182,7 @@ export default class Sync extends EventEmitter {
     }
   }
 
-  public async readdir64(path: string, v2?: boolean): Promise<Array<Entry64>> {
+  public async readdir64(path: string): Promise<Array<Entry64>> {
     const files: Entry64[] = [];
     await this.sendCommandWithArg(Protocol.LIS2, path);
     for (; ;) {
@@ -411,7 +411,7 @@ export default class Sync extends EventEmitter {
     try {
       const length = await this.parser.readBytes(4);
       const buf = await this.parser.readBytes(length.readUInt32LE(0));
-      return Promise.reject(new Parser.FailError(buf.toString(), this.lastMessage));
+      return Promise.reject(new AdbFailError(buf.toString(), this.lastMessage));
     } finally {
       await this.parser.end();
     }
