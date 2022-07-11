@@ -129,6 +129,21 @@ export default class Parser {
     return chunk.toString('ascii');
   }
 
+  /**
+   * should read code or failed
+   * the correct fail exception will be thow in case of error.
+   * @param codes the expected 4 char code to read
+   */
+  public async readCode(...codes: string[]): Promise<string> {
+    const reply = await this.readAscii(4);
+    for (const code of codes)
+      if (code === reply)
+        return code;
+    if (reply === 'FAIL')
+      throw await this.readError();
+    throw this.unexpected(reply, `${codes.join(', ')} or FAIL`);
+  }
+
   public async readBytes(howMany: number): Promise<Buffer> {
     let tryRead: () => void;
     let errorListener: (error: Error) => void;
@@ -276,7 +291,7 @@ export default class Parser {
    */
   public async readUntil(code: number): Promise<Buffer> {
     let skipped = Buffer.alloc(0);
-    for (;;) {
+    for (; ;) {
       const chunk = await this.readBytes(1);
       if (chunk[0] === code) {
         return skipped;
@@ -287,7 +302,7 @@ export default class Parser {
   }
 
   async searchLine(re: RegExp): Promise<RegExpExecArray> {
-    for (;;) {
+    for (; ;) {
       const line = await this.readLine();
       const match = re.exec(line);
       if (match) {

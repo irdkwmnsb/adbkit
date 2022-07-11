@@ -80,14 +80,6 @@ export default abstract class Command<T> {
    * most common action: read for Okey
    */
   protected async readOKAY(): Promise<void> {
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case Protocol.OKAY:
-        return;
-      case Protocol.FAIL:
-        throw await this.parser.readError();
-      default:
-        throw this.parser.unexpected(reply, 'OKAY or FAIL');
-    }
+    await this.parser.readCode(Protocol.OKAY);
   }
 }

@@ -91,53 +91,37 @@ export default class Sync extends EventEmitter {
    */
   public async stat(path: string): Promise<Stats> {
     await this.sendCommandWithArg(Protocol.STAT, path);
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case Protocol.STAT: {
-        const stat = await this.parser.readBytes(12);
-        const mode = stat.readUInt32LE(0);
-        const size = stat.readUInt32LE(4);
-        const mtime = stat.readUInt32LE(8);
-        if (mode === 0) {
-          return this.enoent(path);
-        } else {
-          return new Stats(mode, size, mtime);
-        }
-      }
-      case Protocol.FAIL:
-        throw await this.readError();
-      default:
-        throw this.parser.unexpected(reply, 'STAT or FAIL');
+    await this.parser.readCode(Protocol.STAT)
+    const stat = await this.parser.readBytes(12);
+    const mode = stat.readUInt32LE(0);
+    const size = stat.readUInt32LE(4);
+    const mtime = stat.readUInt32LE(8);
+    if (mode === 0) {
+      return this.enoent(path);
+    } else {
+      return new Stats(mode, size, mtime);
     }
   }
 
   public async stat64(path: string): Promise<Stats64> {
     await this.sendCommandWithArg(Protocol.STA2, path);
-    const reply = await this.parser.readAscii(4);
-    switch (reply) {
-      case Protocol.STA2: {
-        const stat = await this.parser.readBytes(68); // IQQIIIIQqqq https://daeken.svbtle.com/arbitrary-file-write-by-adb-pull
-        const error = stat.readUInt32LE(0);
-        const dev = stat.readBigUint64LE(4);
-        const ino = stat.readBigUint64LE(12);
-        const mode = stat.readUInt32LE(20);
-        const nlink = BigInt(stat.readUInt32LE(24));
-        const uid = BigInt(stat.readUInt32LE(28));
-        const gid = BigInt(stat.readUInt32LE(32));
-        const size = stat.readBigUint64LE(36);
-        const atime = stat.readBigUint64LE(44) * 1000000n;
-        const mtime = stat.readBigUint64LE(52) * 1000000n;
-        const ctime = stat.readBigUint64LE(60) * 1000000n;
-        if (mode === 0) {
-          return this.enoent(path);
-        } else {
-          return new Stats64(error, dev, ino, BigInt(mode), nlink, uid, gid, size, atime, mtime, ctime);
-        }
-      }
-      case Protocol.FAIL:
-        throw await this.readError();
-      default:
-        throw this.parser.unexpected(reply, 'STAT or FAIL');
+    await this.parser.readCode(Protocol.STA2)
+    const stat = await this.parser.readBytes(68); // IQQIIIIQqqq https://daeken.svbtle.com/arbitrary-file-write-by-adb-pull
+    const error = stat.readUInt32LE(0);
+    const dev = stat.readBigUint64LE(4);
+    const ino = stat.readBigUint64LE(12);
+    const mode = stat.readUInt32LE(20);
+    const nlink = BigInt(stat.readUInt32LE(24));
+    const uid = BigInt(stat.readUInt32LE(28));
+    const gid = BigInt(stat.readUInt32LE(32));
+    const size = stat.readBigUint64LE(36);
+    const atime = stat.readBigUint64LE(44) * 1000000n;
+    const mtime = stat.readBigUint64LE(52) * 1000000n;
+    const ctime = stat.readBigUint64LE(60) * 1000000n;
+    if (mode === 0) {
+      return this.enoent(path);
+    } else {
+      return new Stats64(error, dev, ino, BigInt(mode), nlink, uid, gid, size, atime, mtime, ctime);
     }
   }
 
@@ -155,29 +139,21 @@ export default class Sync extends EventEmitter {
     const files: Entry[] = [];
     await this.sendCommandWithArg(Protocol.LIST, path);
     for (; ;) {
-      const reply = await this.parser.readAscii(4);
-      switch (reply) {
-        case Protocol.DENT: {
-          const stat = await this.parser.readBytes(16);
-          const mode = stat.readUInt32LE(0);
-          const size = stat.readUInt32LE(4);
-          const mtime = stat.readUInt32LE(8);
-          const namelen = stat.readUInt32LE(12);
-          const name = await this.parser.readBytes(namelen);
-          const nameString = name.toString();
-          // Skip '.' and '..' to match Node's fs.readdir().
-          if (!(nameString === '.' || nameString === '..')) {
-            files.push(new Entry(nameString, mode, size, mtime));
-          }
-          continue;
-        }
-        case Protocol.DONE:
-          await this.parser.readBytes(16)
-          return files;
-        case Protocol.FAIL:
-          throw await this.readError();
-        default:
-          throw this.parser.unexpected(reply, 'DENT, DONE or FAIL');
+      const reply = await this.parser.readCode(Protocol.DENT, Protocol.DONE);
+      if (reply === Protocol.DONE) {
+        await this.parser.readBytes(16)
+        return files;
+      }
+      const stat = await this.parser.readBytes(16);
+      const mode = stat.readUInt32LE(0);
+      const size = stat.readUInt32LE(4);
+      const mtime = stat.readUInt32LE(8);
+      const namelen = stat.readUInt32LE(12);
+      const name = await this.parser.readBytes(namelen);
+      const nameString = name.toString();
+      // Skip '.' and '..' to match Node's fs.readdir().
+      if (!(nameString === '.' || nameString === '..')) {
+        files.push(new Entry(nameString, mode, size, mtime));
       }
     }
   }
@@ -186,37 +162,29 @@ export default class Sync extends EventEmitter {
     const files: Entry64[] = [];
     await this.sendCommandWithArg(Protocol.LIS2, path);
     for (; ;) {
-      const reply = await this.parser.readAscii(4);
-      switch (reply) {
-        case Protocol.DNT2: {
-          const stat = await this.parser.readBytes(72); // IQQIIIIQqqqI // https://daeken.svbtle.com/arbitrary-file-write-by-adb-pull
-          const error = stat.readUInt32LE(0);
-          const dev = stat.readBigUint64LE(4);
-          const ino = stat.readBigUint64LE(12);
-          const mode = stat.readUInt32LE(20);
-          const nlink = BigInt(stat.readUInt32LE(24));
-          const uid = BigInt(stat.readUInt32LE(28));
-          const gid = BigInt(stat.readUInt32LE(32));
-          const size = stat.readBigUint64LE(36);
-          const atime = stat.readBigUint64LE(44) * 1000000n;
-          const mtime = stat.readBigUint64LE(52) * 1000000n;
-          const ctime = stat.readBigUint64LE(60) * 1000000n;
-          const namelen = stat.readUInt32LE(68); // I
-          const name = await this.parser.readBytes(namelen);
-          const nameString = name.toString();
-          // Skip '.' and '..' to match Node's fs.readdir().
-          if (!(nameString === '.' || nameString === '..')) {
-            files.push(new Entry64(nameString, error, dev, ino, BigInt(mode), nlink, uid, gid, size, atime, mtime, ctime));
-          }
-          continue;
-        }
-        case Protocol.DONE:
-          await this.parser.readBytes(16)
-          return files;
-        case Protocol.FAIL:
-          throw await this.readError();
-        default:
-          throw this.parser.unexpected(reply, 'DENT, DONE or FAIL');
+      const reply = await this.parser.readCode(Protocol.DNT2, Protocol.DONE);
+      if (reply === Protocol.DONE) {
+        await this.parser.readBytes(16)
+        return files;
+      }
+      const stat = await this.parser.readBytes(72); // IQQIIIIQqqqI // https://daeken.svbtle.com/arbitrary-file-write-by-adb-pull
+      const error = stat.readUInt32LE(0);
+      const dev = stat.readBigUint64LE(4);
+      const ino = stat.readBigUint64LE(12);
+      const mode = stat.readUInt32LE(20);
+      const nlink = BigInt(stat.readUInt32LE(24));
+      const uid = BigInt(stat.readUInt32LE(28));
+      const gid = BigInt(stat.readUInt32LE(32));
+      const size = stat.readBigUint64LE(36);
+      const atime = stat.readBigUint64LE(44) * 1000000n;
+      const mtime = stat.readBigUint64LE(52) * 1000000n;
+      const ctime = stat.readBigUint64LE(60) * 1000000n;
+      const namelen = stat.readUInt32LE(68); // I
+      const name = await this.parser.readBytes(namelen);
+      const nameString = name.toString();
+      // Skip '.' and '..' to match Node's fs.readdir().
+      if (!(nameString === '.' || nameString === '..')) {
+        files.push(new Entry64(nameString, error, dev, ino, BigInt(mode), nlink, uid, gid, size, atime, mtime, ctime));
       }
     }
   }
@@ -379,21 +347,14 @@ export default class Sync extends EventEmitter {
     const transfer = new PullTransfer();
     const readAll = async (): Promise<boolean> => {
       for (; ;) {
-        const reply = await this.parser.readAscii(4);
-        switch (reply) {
-          case Protocol.DATA:
-            const lengthData = await this.parser.readBytes(4)
-            const length = lengthData.readUInt32LE(0);
-            await this.parser.readByteFlow(length, transfer)
-            continue;
-          case Protocol.DONE:
-            await this.parser.readBytes(4)
-            return true;
-          case Protocol.FAIL:
-            throw await this.readError();
-          default:
-            throw this.parser.unexpected(reply, 'DATA, DONE or FAIL');
+        const reply = await this.parser.readCode(Protocol.DATA, Protocol.DONE);
+        if (reply === Protocol.DONE) {
+          await this.parser.readBytes(4)
+          return true;
         }
+        const lengthData = await this.parser.readBytes(4)
+        const length = lengthData.readUInt32LE(0);
+        await this.parser.readByteFlow(length, transfer)
       }
     };
 
