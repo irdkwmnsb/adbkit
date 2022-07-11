@@ -21,12 +21,12 @@ export class AdbPrematureEOFError extends Error {
   }
 }
 
-export class UnexpectedDataError extends Error {
+export class AdbUnexpectedDataError extends Error {
   constructor(public unexpected: string, public expected: string, lastMessage: string) {
     super(`Unexpected '${unexpected}', was expecting ${expected} lastMessage:${lastMessage}`);
-    Object.setPrototypeOf(this, UnexpectedDataError.prototype);
-    this.name = 'UnexpectedDataError';
-    Error.captureStackTrace(this, UnexpectedDataError);
+    Object.setPrototypeOf(this, AdbUnexpectedDataError.prototype);
+    this.name = 'AdbUnexpectedDataError';
+    Error.captureStackTrace(this, AdbUnexpectedDataError);
   }
 }
 
@@ -35,7 +35,6 @@ export class UnexpectedDataError extends Error {
  */
 export default class Parser {
   public static FailError = FailError;
-  public static UnexpectedDataError = UnexpectedDataError;
   private ended = false;
   public lastMessage = '';
 
@@ -243,7 +242,7 @@ export default class Parser {
         throw e;
       } else if (e instanceof AdbPrematureEOFError) {
         throw e;
-      } else if (e instanceof UnexpectedDataError) {
+      } else if (e instanceof AdbUnexpectedDataError) {
         throw e;
       }
     }
@@ -308,6 +307,6 @@ export default class Parser {
   }
 
   public unexpected(data: string, expected: string): Promise<never> {
-    return Promise.reject(new Parser.UnexpectedDataError(data, expected, this.lastMessage));
+    return Promise.reject(new AdbUnexpectedDataError(data, expected, this.lastMessage));
   }
 }

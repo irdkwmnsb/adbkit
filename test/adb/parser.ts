@@ -2,7 +2,7 @@ import Stream from 'stream';
 import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
-import Parser, { AdbPrematureEOFError, UnexpectedDataError } from '../../src/adb/parser';
+import Parser, { AdbPrematureEOFError, AdbUnexpectedDataError } from '../../src/adb/parser';
 import Util from '../../src/adb/util';
 
 /**
@@ -370,12 +370,12 @@ describe('Parser', () => {
         });
     });
     return describe('unexpected(data, expected)', () => {
-        it('should reject with Parser.UnexpectedDataError', (done) => {
+        it('should reject with AdbUnexpectedDataError', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             parser.unexpected('foo', "'bar' or end of stream").catch(e => {
-                const err = e as UnexpectedDataError;
-                expect(err).to.be.an.instanceOf(Parser.UnexpectedDataError);
+                const err = e as AdbUnexpectedDataError;
+                expect(err).to.be.an.instanceOf(AdbUnexpectedDataError);
                 expect(err.message).to.equal("Unexpected 'foo', was expecting 'bar' or end of stream lastMessage:");
                 expect(err.unexpected).to.equal('foo');
                 expect(err.expected).to.equal("'bar' or end of stream");
