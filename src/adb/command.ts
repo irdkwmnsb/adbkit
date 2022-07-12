@@ -10,7 +10,6 @@ const RE_SQUOT = /'/g;
 const RE_ESCAPE = /([$`\\!"])/g;
 
 export default abstract class Command<T> {
-  public parser: Parser;
   public readonly options: Partial<DeviceClientOptions>;
   private lastCmd: string;
 
@@ -19,8 +18,11 @@ export default abstract class Command<T> {
   }
 
   constructor(public connection: Connection, options = {} as Partial<DeviceClientOptions>) {
-    this.parser = this.connection.parser;
     this.options = { sudo: false, ...options };
+  }
+
+  public get parser(): Parser {
+    return this.connection.parser;
   }
 
   // FIXME(intentional any): not "any" will break it all

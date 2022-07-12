@@ -1,5 +1,5 @@
 import LineTransform from '../../linetransform';
-import { AdbPrematureEOFError } from '../../parser';
+import { AdbPrematureEOFError } from '../../errors';
 import Command from '../../command';
 import { Duplex } from 'stream';
 

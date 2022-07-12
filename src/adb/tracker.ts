@@ -1,4 +1,4 @@
-import { AdbPrematureEOFError } from './parser';
+import { AdbPrematureEOFError } from './errors';
 import EventEmitter from 'events';
 import Device from '../models/Device';
 import HostDevicesCommand from './command/host/HostDevicesCommand';

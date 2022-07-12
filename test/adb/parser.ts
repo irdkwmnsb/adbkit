@@ -2,7 +2,8 @@ import Stream from 'stream';
 import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
-import Parser, { AdbFailError, AdbPrematureEOFError, AdbUnexpectedDataError } from '../../src/adb/parser';
+import Parser from '../../src/adb/parser';
+import { AdbFailError, AdbPrematureEOFError, AdbUnexpectedDataError } from '../../src/index';
 import Util from '../../src/adb/util';
 
 describe('Parser', () => {

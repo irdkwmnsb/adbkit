@@ -1,4 +1,4 @@
-import { AdbPrematureEOFError } from '../../parser';
+import { AdbPrematureEOFError } from '../../errors';
 import Command from '../../command';
 
 export default class IsInstalledCommand extends Command<boolean> {

@@ -1,40 +1,7 @@
 import Protocol from './protocol';
 import { Duplex } from 'stream';
-
-/**
- * a command call respond an Error
- */
-export class AdbFailError extends Error {
-  constructor(message: string, lastMessage: string) {
-    super(`Failure: '${message}' lastMessage:${lastMessage}`);
-    Object.setPrototypeOf(this, AdbFailError.prototype);
-    this.name = 'AdbFailError';
-    Error.captureStackTrace(this, AdbFailError);
-  }
-}
-
-/**
- * the connection get interupt before the end of expected response
- */
-export class AdbPrematureEOFError extends Error {
-  public missingBytes: number;
-  constructor(howManyMissing: number, lastMessage: string) {
-    super(`Premature end of stream, needed ${howManyMissing} more bytes lastMessage:${lastMessage}`);
-    Object.setPrototypeOf(this, AdbPrematureEOFError.prototype);
-    this.name = 'AdbPrematureEOFError';
-    this.missingBytes = howManyMissing;
-    Error.captureStackTrace(this, AdbPrematureEOFError);
-  }
-}
-
-export class AdbUnexpectedDataError extends Error {
-  constructor(public unexpected: string, public expected: string, lastMessage: string) {
-    super(`Unexpected '${unexpected}', was expecting ${expected} lastMessage:${lastMessage}`);
-    Object.setPrototypeOf(this, AdbUnexpectedDataError.prototype);
-    this.name = 'AdbUnexpectedDataError';
-    Error.captureStackTrace(this, AdbUnexpectedDataError);
-  }
-}
+import { AdbFailError, AdbPrematureEOFError, AdbUnexpectedDataError } from './errors';
+import { AdbError } from './errors';
 
 /**
  * helper to read in Duplex stream
@@ -252,7 +219,7 @@ export default class Parser {
     return promise;
   }
 
-  public async readError(): Promise<AdbFailError | AdbPrematureEOFError | AdbUnexpectedDataError> {
+  public async readError(): Promise<AdbError> {
     let error = 'unknown Error';
     try {
       error = await this.readValue('utf8');

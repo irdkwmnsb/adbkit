@@ -2,7 +2,7 @@ import fs from 'fs';
 import Path from 'path';
 import EventEmitter from 'events';
 import d from 'debug';
-import Parser, { AdbFailError } from './parser';
+import Parser from './parser';
 import Protocol from './protocol';
 import Stats from './sync/stats';
 import Entry from './sync/entry';

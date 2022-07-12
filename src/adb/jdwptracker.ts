@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import EventEmitter from 'events';
-import { AdbPrematureEOFError } from './parser';
+import { AdbPrematureEOFError } from './errors';
 import Command from './command';
 
 /**

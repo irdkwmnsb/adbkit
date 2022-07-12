@@ -1,4 +1,4 @@
-import { AdbPrematureEOFError } from '../../parser';
+import { AdbPrematureEOFError } from '../../errors';
 import Command from '../../command';
 import StartActivityOptions from '../../../models/StartActivityOptions';
 import { Extra, ExtraObject, ExtraValue } from '../../../models/StartServiceOptions';

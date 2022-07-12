@@ -3,7 +3,7 @@ import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
-import { AdbPrematureEOFError } from '../../../../src/adb/parser';
+import { AdbPrematureEOFError } from '../../../../src/index';
 import WaitBootCompleteCommand from '../../../../src/adb/command/host-transport/waitbootcomplete';
 
 describe('WaitBootCompleteCommand', () => {
