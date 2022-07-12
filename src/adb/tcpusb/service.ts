@@ -119,7 +119,7 @@ export default class Service extends EventEmitter {
       }
       if (!packet.data)
         throw Error("missing data in packet");
-      this.transport.write(Protocol.encodeData(packet.data.slice(0, -1))); // Discard null byte at end
+      this.transport.write(Protocol.encodeData(packet.data.subarray(0, -1))); // Discard null byte at end
       await this.transport.parser.readCode(Protocol.OKAY);
       debug('O:A_OKAY');
       this.socket.write(Packet.assemble(Packet.A_OKAY, this.localId, this.remoteId));

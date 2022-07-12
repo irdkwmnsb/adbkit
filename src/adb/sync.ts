@@ -60,7 +60,6 @@ interface IEmissions {
 
 export default class Sync extends EventEmitter {
   private parser: Parser;
-  private lastMessage: string;
 
   /**
    * get a temp file path
@@ -311,30 +310,15 @@ export default class Sync extends EventEmitter {
       });
 
 
-    const readReply = async (): Promise<boolean> => {
-      // may be replace by Command.readOKAY()
-      const reply = await this.parser.readAscii(4);
-      switch (reply) {
-        case Protocol.OKAY:
-          await this.parser.readBytes(4);
-          return true;
-        case Protocol.FAIL:
-          throw await this.readError();
-        default:
-          throw this.parser.unexpected(reply, 'OKAY or FAIL');
-      }
-    };
     // While I can't think of a case that would break this double-Promise
     // writer-reader arrangement right now, it's not immediately obvious
     // that the code is correct and it may or may not have some failing
     // edge cases. Refactor pending.
-    // const writer = 
     writeData().catch(err => {
       transfer.emit('error', err);
     })
 
-    // const reader: Promise<any> = 
-    readReply()
+    this.parser.readCode(Protocol.OKAY)
       .catch((err: Error): void => {
         transfer.emit('error', err);
       }).finally(() => {
@@ -358,7 +342,6 @@ export default class Sync extends EventEmitter {
       }
     };
 
-    // const reader = 
     readAll().catch(err => {
       transfer.emit('error', err as Error)
     }).finally(() => {
@@ -367,16 +350,6 @@ export default class Sync extends EventEmitter {
     return transfer;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async readError(): Promise<AdbFailError> {
-    try {
-      const length = await this.parser.readBytes(4);
-      const buf = await this.parser.readBytes(length.readUInt32LE(0));
-      return new AdbFailError(buf.toString(), this.lastMessage);
-    } finally {
-      await this.parser.end();
-    }
-  }
   /**
    * 
    * @param cmd 
@@ -387,10 +360,10 @@ export default class Sync extends EventEmitter {
     if (cmd !== Protocol.DATA) {
       debug(cmd);
     }
-    const payload = Buffer.alloc(cmd.length + 4);
+    const payload = Buffer.allocUnsafe(cmd.length + 4);
     payload.write(cmd, 0, cmd.length);
     payload.writeUInt32LE(length, cmd.length);
-    this.lastMessage = `${cmd} ${length}`;
+    this.parser.lastMessage = `${cmd} ${length}`;
     return this.connection.write(payload);
   }
 
@@ -401,16 +374,13 @@ export default class Sync extends EventEmitter {
    * @returns byte write count
    */
   private sendCommandWithArg(cmd: string, arg: string): Promise<number> {
-    this.lastMessage = `${cmd} ${arg}`;
-    debug(this.lastMessage);
+    this.parser.lastMessage = `${cmd} ${arg}`;
+    debug(this.parser.lastMessage);
     const arglen = Buffer.byteLength(arg, 'utf-8');
-    const payload = Buffer.alloc(cmd.length + 4 + arglen);
-    let pos = 0;
-    payload.write(cmd, pos, cmd.length);
-    pos += cmd.length;
-    payload.writeUInt32LE(arglen, pos);
-    pos += 4;
-    payload.write(arg, pos);
+    const payload = Buffer.allocUnsafe(cmd.length + 4 + arglen);
+    payload.write(cmd, 0, cmd.length);
+    payload.writeUInt32LE(arglen, cmd.length);
+    payload.write(arg, cmd.length + 4);
     return this.connection.write(payload);
   }
 
