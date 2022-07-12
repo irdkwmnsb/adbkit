@@ -280,16 +280,16 @@ export default class DeviceClient {
    * @returns the used port
    */
   public async tryForwardTCP(remote: string, preferedPort?: number): Promise<number> {
-    // const local =;
     const fwds = await this.listForwards()
     // const usedPort = fwds.filter(a => a.local === local);
-    const prev = fwds.filter(a => a.remote === remote && a.serial === this.serial);
+    const usedPort = fwds.filter(a => a.remote === remote);
+    const prev = usedPort.filter(a => a.remote === remote && a.serial === this.serial);
     if (prev.length) {
       // already connected
       return Number(prev[0].local.substring(4));
     }
 
-    if (preferedPort)
+    if (preferedPort && !usedPort.length)
       try {
         if (await this.forward(`tcp:${preferedPort}`, remote))
           return preferedPort;

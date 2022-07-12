@@ -1,5 +1,7 @@
 # CHANGELOG
 
+* fix DeviceClient.tryForwardTCP failing with multiple devices
+
 ## v4.1.0 (2022-07-12)
 * refactor Parser
 * prefix all errors classes with Adb
