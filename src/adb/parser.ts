@@ -252,21 +252,22 @@ export default class Parser {
     return promise;
   }
 
-  public async readError(): Promise<never> {
+  public async readError(): Promise<AdbFailError | AdbPrematureEOFError | AdbUnexpectedDataError> {
     let error = 'unknown Error';
     try {
       error = await this.readValue('utf8');
     } catch (e) {
       // keep localy generated error
       if (e instanceof AdbFailError) {
-        throw e;
+        return e;
       } else if (e instanceof AdbPrematureEOFError) {
-        throw e;
+        return e;
       } else if (e instanceof AdbUnexpectedDataError) {
-        throw e;
+        return e;
       }
+      error += ` ${e}`;
     }
-    throw new AdbFailError(error, this.lastMessage);
+    return new AdbFailError(error, this.lastMessage);
   }
 
   /**

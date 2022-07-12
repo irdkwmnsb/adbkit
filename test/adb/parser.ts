@@ -179,7 +179,7 @@ describe('Parser', () => {
         it('should reject with Parser.FailError using the value', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            parser.readError().catch(err => {
+            parser.readError().then(err => {
                 expect(err).to.be.an.instanceOf(AdbFailError);
                 done();
             })
@@ -189,7 +189,7 @@ describe('Parser', () => {
         it('should reject with AdbPrematureEOFError if stream ends before the error can be read', (done) => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
-            const p = parser.readError().catch(err => {
+            const p = parser.readError().then(err => {
                 expect(err).to.be.an.instanceOf(AdbPrematureEOFError);
                 done();
             });
