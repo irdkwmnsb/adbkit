@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.1.0 (2022-07-12)
+* refactor Parser
+* prefix all errors classes with Adb
+
 ## v4.0.4 (2022-07-11)
 * improve Utils
 * improve cli
