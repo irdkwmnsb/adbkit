@@ -11,7 +11,7 @@ import Connection from '../../src/adb/connection';
 import { Device, DeviceClient } from '../../src';
 import Util from '../../src/adb/util';
 
-const getClient = () => null as DeviceClient;
+const getClient = () => null as unknown as DeviceClient;
 
 describe('Tracker', () => {
     let writer: Transform;
