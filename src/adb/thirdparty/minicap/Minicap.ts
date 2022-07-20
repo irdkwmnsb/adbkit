@@ -165,7 +165,7 @@ export default class Minicap extends EventEmitter {
     //   const out = await this.minicapServer.setEncoding('utf8').readAll();
     //   console.log('read minicapServer stdOut:', out);
     // }
-    await Utils.waitforText(this.minicapServer, 'JpgEncoder');
+    await Utils.waitforText(this.minicapServer, /JpgEncoder/);
     this.videoSocket = new PromiseSocket(new net.Socket());
 
     // Connect videoSocket

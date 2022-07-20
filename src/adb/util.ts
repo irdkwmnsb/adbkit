@@ -66,18 +66,18 @@ export default class Util {
    * Wait for a spesific text in the Duplex
    * 
    * @param duplex 
-   * @param expected 
+   * @param expected regexp to match
    * @param timeout 
-   * @returns 
+   * @returns matched text
    */
-  public static async waitforText(duplex: PromiseDuplex<Duplex>, expected: string, timeout = 0): Promise<void> {
+  public static async waitforText(duplex: PromiseDuplex<Duplex>, expected: RegExp, timeout = 0): Promise<string> {
     for (; ;) {
       await this.waitforReadable(duplex, timeout);
       const buf = await duplex.read();
       if (buf) {
         const text = buf.toString();
-        if (text.includes(expected))
-          return;
+        if (expected.test(text))
+          return text;
       }
     }
   }

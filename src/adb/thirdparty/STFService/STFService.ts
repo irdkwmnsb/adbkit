@@ -132,9 +132,10 @@ export default class STFService extends EventEmitter {
     const setupPath = await this.getApkPath();
     const startAgent = `export CLASSPATH='${setupPath}'; exec app_process /system/bin '${PKG}.Agent' 2>&1`
     const agentProcess = new PromiseDuplex(await this.client.exec(startAgent));
-    await Util.waitforText(agentProcess, '@stfagent', 10000);
-    // Starting service: Intent { act=jp.co.cyberagent.stf.ACTION_START cmp=jp.co.cyberagent.stf/.Service }
-    // console.log(msg.trim());
+    const result = await Util.waitforText(agentProcess, /@stfagent|Address already in use/, 10000);
+    if (result.includes("@stfagent"))
+      return; // started
+    // console.log(`${this.client.serial} stfagent already running`);
     // debug only
     // ThirdUtils.dumpReadable(agentProcess, 'STFagent');
   }
