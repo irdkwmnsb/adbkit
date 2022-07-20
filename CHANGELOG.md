@@ -2,6 +2,9 @@
 
 * fix DeviceClient.tryForwardTCP failing with multiple devices
 
+## v4.1.1 (2022-07-20)
+* Imporve STFService to survive stress test
+
 ## v4.1.0 (2022-07-12)
 * refactor Parser
 * prefix all errors classes with Adb
