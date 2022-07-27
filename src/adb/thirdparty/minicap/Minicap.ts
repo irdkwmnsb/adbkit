@@ -38,6 +38,7 @@ export default class Minicap extends EventEmitter {
   private _virtualHigth: Promise<number>;
   private _orientation: Promise<number>;
   private _bitflags: Promise<number>;
+  private _firstFrame: Promise<void>;
 
   private setVersion: (version: number) => void;
   private setPid: (version: number) => void;
@@ -47,6 +48,7 @@ export default class Minicap extends EventEmitter {
   private setVirtualHigth: (height: number) => void;
   private setOrientation: (height: number) => void;
   private setBitflags: (height: number) => void;
+  private setFirstFrame: (() => void) | null;
   /**
    * closed had been call stop all new activity
    */
@@ -66,6 +68,7 @@ export default class Minicap extends EventEmitter {
     this._virtualHigth = new Promise<number>((resolve) => this.setVirtualHigth = resolve);
     this._orientation = new Promise<number>((resolve) => this.setOrientation = resolve);
     this._bitflags = new Promise<number>((resolve) => this.setBitflags = resolve);
+    this._firstFrame = new Promise<void>((resolve) => this.setFirstFrame = resolve);
   }
 
   public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
@@ -105,6 +108,11 @@ export default class Minicap extends EventEmitter {
    * Frame tear might be visible. Informative, no action required. Neither of our current two methods exhibit this behavior.
    */
   get QuickTear(): Promise<boolean> { return this.bitflags.then(v => !!(v & 4)); }
+  /**
+   * Promise to the first emited frame
+   * can be used to unsure that scrcpy propery start
+   */
+  get firstFrame(): Promise<void> { return this._firstFrame; }
 
   /**
    * 
@@ -258,6 +266,10 @@ export default class Minicap extends EventEmitter {
           }
         }
         if (len === 0) {
+          if (this.setFirstFrame) {
+            this.setFirstFrame();
+            this.setFirstFrame = null;
+          }
           this.emit('data', streamChunk);
           break;
         } else {

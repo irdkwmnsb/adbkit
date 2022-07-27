@@ -144,7 +144,7 @@ export default class Scrcpy extends EventEmitter {
 
   /**
    * Promise to the first emited frame
-   * can be nuse to unsure that scrcpy propery start
+   * can be used to unsure that scrcpy propery start
    */
   get firstFrame(): Promise<void> { return this._firstFrame; }
 

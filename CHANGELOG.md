@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v4.1.3 (2022-07-27)
+* refactor debug
+* new debug messages
+* add firstFrame promise to Minicap and Scrcpy
+* improve Minicap and Scrcpy resiliance
+
 ## v4.1.2 (2022-07-27)
 * minicap kill previous instance on startup
 * minicap only upload its binary if thet are missing
