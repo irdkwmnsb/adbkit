@@ -1,11 +1,11 @@
 import Connection from './connection';
 import Protocol from './protocol';
 import Parser from './parser';
-import d from 'debug';
 import WithToString from '../models/WithToString';
 import { DeviceClientOptions } from '../models/DeviceClientOptions';
+import Util from './util';
 
-const debug = d('adb:command');
+const debug = Util.debug('adb:command');
 const RE_SQUOT = /'/g;
 const RE_ESCAPE = /([$`\\!"])/g;
 

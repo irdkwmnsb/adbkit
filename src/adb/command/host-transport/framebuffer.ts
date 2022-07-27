@@ -1,12 +1,12 @@
 import { spawn } from 'child_process';
-import d from 'debug';
 import RgbTransform from '../../framebuffer/rgbtransform';
 import Command from '../../command';
 import { Readable } from 'stream';
 import FramebufferMeta, { ColorFormat } from '../../../models/FramebufferMeta';
 import FramebufferStreamWithMeta from '../../../models/FramebufferStreamWithMeta';
+import Util from '../../util';
 
-const debug = d('adb:command:framebuffer');
+const debug = Util.debug('adb:command:framebuffer');
 
 export default class FrameBufferCommand extends Command<FramebufferStreamWithMeta> {
   async execute(format: string): Promise<FramebufferStreamWithMeta> {

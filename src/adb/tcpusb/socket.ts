@@ -1,6 +1,5 @@
 import EventEmitter from 'events';
 import crypto from 'crypto';
-import d from 'debug';
 import { promisify } from 'util';
 import PacketReader from './packetreader';
 import RollingCounter from './rollingcounter';
@@ -11,8 +10,9 @@ import Net from 'net';
 import ServiceMap from './servicemap';
 import Service from './service';
 import SocketOptions from '../../models/SocketOptions';
+import Util from '../util';
 
-const debug = d('adb:tcpusb:socket');
+const debug = Util.debug('adb:tcpusb:socket');
 const UINT32_MAX = 0xffffffff;
 const UINT16_MAX = 0xffff;
 const AUTH_TOKEN = 1;

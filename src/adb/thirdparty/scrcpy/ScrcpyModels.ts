@@ -49,7 +49,7 @@ export interface ScrcpyOptions {
     showTouches: boolean;
     stayAwake: boolean;
     codecOptions: string;
-    encoderName: 'OMX.qcom.video.encoder.avc' | 'c2.android.avc.encoder' | 'OMX.google.h264.encoder'  | string;
+    encoderName: 'OMX.qcom.video.encoder.avc' | 'c2.android.avc.encoder' | 'OMX.google.h264.encoder' | string;
     powerOffScreenOnClose: boolean;
     /**
      * since scrcpy 1.21
@@ -66,4 +66,31 @@ export interface ScrcpyOptions {
      * since scrcpy 1.23
      */
     cleanup?: boolean;
+}
+
+export interface H264Configuration {
+    profileIndex: number;
+    constraintSet: number;
+    levelIndex: number;
+
+    encodedWidth: number;
+    encodedHeight: number;
+
+    cropLeft: number;
+    cropRight: number;
+
+    cropTop: number;
+    cropBottom: number;
+
+    croppedWidth: number;
+    croppedHeight: number;
+}
+
+
+export interface VideoStreamFramePacket {
+    // type: 'frame';
+    keyframe?: boolean | undefined;
+    pts?: bigint | undefined;
+    data: Uint8Array;
+    config?: H264Configuration;
 }

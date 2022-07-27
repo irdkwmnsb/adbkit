@@ -9,7 +9,7 @@ let root: Root;
 
 export default class STFServiceBuf {
   private static async internalInit(): Promise<STFServiceBuf> {
-    const proto = ThirdUtils.getResource('wireService.proto');
+    const proto = ThirdUtils.getResourcePath('wireService.proto');
     const _root = await load(proto);
     root = _root;
     return new STFServiceBuf(_root);

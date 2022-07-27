@@ -1,4 +1,3 @@
-import d from 'debug';
 import EventEmitter from 'events';
 import Packet from './packet';
 import Protocol from '../protocol';
@@ -6,7 +5,8 @@ import Client from '../client';
 import Socket from './socket';
 import ReadableStream = NodeJS.ReadableStream;
 import Connection from '../connection';
-const debug = d('adb:tcpusb:service');
+import Util from '../util';
+const debug = Util.debug('adb:tcpusb:service');
 
 export class PrematurePacketError extends Error {
   constructor(public packet: Packet) {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import adb, { DeviceClient, KeyCodes, Utils, MotionEvent, Client, Minicap } from '../src';
+import adb, { DeviceClient, KeyCodes, Utils, MotionEvent, Client, Minicap, Scrcpy } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
 import { KeyEvent } from '../src/adb/thirdparty/STFService/STFServiceModel';
@@ -163,10 +163,35 @@ const stressMinicap = async (deviceClient: DeviceClient) => {
       console.error(`start minicap ${pass} failed`, e);
     }
   }
-  await Util.delay(1000);
+  // await Util.delay(1000);
   const closeing = minicaps.map(m => m.stop());
   console.log("closeing", closeing)
 }
+
+const stressScrCpy = async (deviceClient: DeviceClient) => {
+  // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
+  const scrcpys: Scrcpy[] = [];
+  for (let i = 0; i < 15; i++) {
+    const pass = i;
+    const scrcpy = deviceClient.scrcpy({});
+    await Util.delay(100);
+    scrcpys.push(scrcpy)
+    try {
+      scrcpy.once('frame', (data) => {
+        console.log(`${pc.magenta('scrcpy')} emit hit first frame isKeyframe: ${data.keyframe} from #${pass}`);
+      })
+      await scrcpy.start();
+      await scrcpy.firstFrame;
+      console.log(`${pc.magenta('scrcpy')} Should had emit hit first frame isKeyframe from #${pass}`);
+    } catch (e) {
+      console.error(`start minicap ${pass} failed ${(e as Error).message}`);
+    }
+  }
+  // await Util.delay(1000);
+  const closeing = scrcpys.map(m => m.stop());
+  console.log("closeing", closeing)
+}
+
 
 const testService = async (deviceClient: DeviceClient) => {
   //   String getDeviceId(String callingPackage);
@@ -393,6 +418,7 @@ const testTracker = async (adbClient: Client) => {
 }
 
 const main = async () => {
+  // process.env.DEBUG = '*';
   const adbClient = adb.createClient();
   const devices = await adbClient.listDevices();
 
@@ -433,7 +459,8 @@ const main = async () => {
   // await testScrcpyTextInput(deviceClient);
   // await testScrcpyswap(deviceClient);
   // await testMinicap(deviceClient);
-  await stressMinicap(deviceClient);
+  // await stressMinicap(deviceClient);
+  await stressScrCpy(deviceClient);
   // await mtestSTFService(deviceClient);
   // await testService(deviceClient);
   // await extractFramesStream(deviceClient, 'OMX.qcom.video.encoder.avc');

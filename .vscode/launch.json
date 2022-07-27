@@ -16,7 +16,8 @@
             "skipFiles": ["<node_internals>/**" ],
             "env": {
               "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json",
-              "DEBUG": "*"
+              "DEBUG": "adb:minicap, adb:scrcpy",
+              "DEBUG_COLORS": "1"
             }
         },
         {
@@ -37,7 +38,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "type": "pwa-node"
+            "type": "node"
         },
         {
             "name": "Mocha Tests serviceCall",
@@ -57,7 +58,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "type": "pwa-node"
+            "type": "node"
         },
 
     ]

@@ -36,7 +36,12 @@ export default class ThirdUtils {
     return path.join(__dirname, '..', '..', '..', 'bin');
   }
 
-  static getResource(fileName: string) : string {
+  /**
+   * get fullpath from a ressource file.
+   * @param fileName filename
+   * @returns full path within the ressource folder
+   */
+  static getResourcePath(fileName: string): string {
     const fullPath = path.join(ThirdUtils.resourceDir, fileName);
     return fullPath;
   }

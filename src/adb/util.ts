@@ -3,6 +3,7 @@ import Auth from './auth';
 import ExtendedPublicKey from '../models/ExtendedPublicKey';
 import { Duplex } from 'stream';
 import PromiseDuplex from 'promise-duplex';
+import Debug from 'debug';
 
 export default class Util {
   /**
@@ -80,5 +81,11 @@ export default class Util {
           return text;
       }
     }
+  }
+
+  public static debug(name: string) {
+    const debug = Debug(name);
+    debug.log = console.log.bind(console);
+    return debug;
   }
 }

@@ -1,50 +1,24 @@
 import EventEmitter from 'events';
 import PromiseDuplex from 'promise-duplex';
-import Debug from 'debug';
 import DeviceClient from '../../DeviceClient';
 import Util from '../../util';
 import { Duplex } from 'stream';
 import { MotionEvent, Orientation, ControlMessage } from './ScrcpyConst';
 import { KeyCodes, Utils } from '../../..';
-import { Point, ScrcpyOptions } from './ScrcpyModel';
 import { BufWrite } from '../minicap/BufWrite';
 import ThirdUtils from '../ThirdUtils';
+import fs from 'fs';
+import Stats from '../../sync/entry';
 import { parse_sequence_parameter_set } from './sps';
+import { Point, ScrcpyOptions, H264Configuration, VideoStreamFramePacket } from './ScrcpyModels';
 
-const debug = Debug('scrcpy');
+const debug = Util.debug('adb:scrcpy');
 
 // const KEYFRAME_PTS = BigInt(1) << BigInt(62);
 // from https://github.com/Genymobile/scrcpy/blob/master/server/src/main/java/com/genymobile/scrcpy/ScreenEncoder.java
 
 const PACKET_FLAG_CONFIG = BigInt(1) << BigInt(63);
 const PACKET_FLAG_KEY_FRAME = BigInt(1) << BigInt(62);
-
-export interface H264Configuration {
-  profileIndex: number;
-  constraintSet: number;
-  levelIndex: number;
-
-  encodedWidth: number;
-  encodedHeight: number;
-
-  cropLeft: number;
-  cropRight: number;
-
-  cropTop: number;
-  cropBottom: number;
-
-  croppedWidth: number;
-  croppedHeight: number;
-}
-
-
-export interface VideoStreamFramePacket {
-  // type: 'frame';
-  keyframe?: boolean | undefined;
-  pts?: bigint | undefined;
-  data: Uint8Array;
-  config?: H264Configuration;
-}
 
 /**
  * by hand start:
@@ -98,18 +72,29 @@ export default class Scrcpy extends EventEmitter {
    * used to recive Process Error
    */
   private scrcpyServer: PromiseDuplex<Duplex>;
+
+  ///////
+  // promise holders
   private _name: Promise<string>;
   private _width: Promise<number>;
   private _height: Promise<number>;
+  private _onFatal: Promise<string>;
+  private _firstFrame: Promise<void>;
+
+  ////////
+  // promise resolve calls
 
   private setName: (name: string) => void;
   private setWidth: (width: number) => void;
   private setHeight: (height: number) => void;
-
-  private _onFatal: Promise<string>;
   private setFatalError: (error: string) => void;
+  private setFirstFrame: (() => void) | null;
 
   private lastConf?: H264Configuration;
+  /**
+   * closed had been call stop all new activity
+   */
+  private closed = false;
 
   constructor(private client: DeviceClient, config = {} as Partial<ScrcpyOptions>) {
     super();
@@ -139,6 +124,7 @@ export default class Scrcpy extends EventEmitter {
     this._width = new Promise<number>((resolve) => this.setWidth = resolve);
     this._height = new Promise<number>((resolve) => this.setHeight = resolve);
     this._onFatal = new Promise<string>((resolve) => this.setFatalError = resolve);
+    this._firstFrame = new Promise<void>((resolve) => this.setFirstFrame = resolve);
   }
 
   public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
@@ -149,11 +135,18 @@ export default class Scrcpy extends EventEmitter {
   get name(): Promise<string> { return this._name; }
   get width(): Promise<number> { return this._width; }
   get height(): Promise<number> { return this._height; }
+
   /**
    * Clever way to detect fatal process Error.
    * return the Ending message.
    */
   get onFatal(): Promise<string> { return this._onFatal; }
+
+  /**
+   * Promise to the first emited frame
+   * can be nuse to unsure that scrcpy propery start
+   */
+  get firstFrame(): Promise<void> { return this._firstFrame; }
 
   /**
    * emit scrcpyServer output as Error
@@ -187,7 +180,7 @@ export default class Scrcpy extends EventEmitter {
   /**
    * get last current video config
    */
-  get videoConfig():  H264Configuration | undefined {
+  get videoConfig(): H264Configuration | undefined {
     return this.lastConf;
   }
 
@@ -224,17 +217,27 @@ export default class Scrcpy extends EventEmitter {
    * After that data will be offered as a 'data' event.
    */
   async start(): Promise<this> {
+    if (this.closed) // can not start once stop called
+      return this;
     const jarDest = '/data/local/tmp/scrcpy-server.jar';
     // Transfer server...
-    try {
-      const jar = ThirdUtils.getResource(`scrcpy-server-v1.${this.config.version}.jar`);
-      const transfer = await this.client.push(jar, jarDest);
-      await transfer.waitForEnd();
-    } catch (e) {
-      debug('Impossible to transfer server file:', e);
-      throw e;
+    const jar = ThirdUtils.getResourcePath(`scrcpy-server-v1.${this.config.version}.jar`);
+    const srcStat: fs.Stats | null = await fs.promises.stat(jar).catch(() => null);
+    const dstStat: Stats | null = await this.client.stat(jarDest).catch(() => null);
+    if (!srcStat)
+      throw Error(`fail to get ressource ${jar}`);
+    if (!dstStat || srcStat.size !== dstStat.size) {
+      try {
+        debug(`pushing scrcpy-server.jar to ${this.client.serial}`);
+        const transfer = await this.client.push(jar, jarDest);
+        await transfer.waitForEnd();
+      } catch (e) {
+        debug(`Impossible to transfer server scrcpy-server.jar to ${this.client.serial}`, e);
+        throw e;
+      }
+    } else {
+      debug(`scrcpy-server.jar already present in ${this.client.serial}, keep it`);
     }
-
     // Start server
     try {
       const args: Array<string | number | boolean> = [];
@@ -292,7 +295,7 @@ export default class Scrcpy extends EventEmitter {
         if (this.config.version >= 22) {
           const {
             downsizeOnError, sendDeviceMeta, sendDummyByte, rawVideoStream
-          } = this.config;    
+          } = this.config;
           if (downsizeOnError !== undefined)
             args.push(`downsize_on_error=${downsizeOnError}`);
           if (sendDeviceMeta !== undefined)
@@ -303,15 +306,21 @@ export default class Scrcpy extends EventEmitter {
             args.push(`raw_video_stream=${rawVideoStream}`);
         }
         if (this.config.version >= 22) {
-          const { cleanup } = this.config;    
+          const { cleanup } = this.config;
           if (cleanup !== undefined)
             args.push(`raw_video_stream=${cleanup}`);
         }
         // check Server.java
       }
+      if (this.closed) // can not start once stop called
+        return this;
 
       const duplex = await this.client.shell(args.map(a => a.toString()).join(' '));
       this.scrcpyServer = new PromiseDuplex(duplex);
+      this.scrcpyServer.once("finish").then(() => {
+        debug(`scrcpyServer finished on device ${this.client.serial}`);
+        this.stop();
+      });
       // debug only
       // extraUtils.dumpReadable(this.scrcpyServer, 'scrcpyServer');
       this.throwsErrors(this.scrcpyServer);
@@ -319,6 +328,7 @@ export default class Scrcpy extends EventEmitter {
       debug('Impossible to run server:', e);
       throw e;
     }
+    
 
     if (Utils.waitforReadable(this.scrcpyServer, this.config.tunnelDelay)) {
       const srvOut = await this.scrcpyServer.read();
@@ -342,13 +352,22 @@ export default class Scrcpy extends EventEmitter {
     }
 
     // Wait 1 sec to forward to work
-    await Util.delay(this.config.tunnelDelay);
+    // await Util.delay(this.config.tunnelDelay);
 
+    if (this.closed) // can not start once stop called
+      return this;
     // Connect videoSocket
     this.videoSocket = await this.client.openLocal2('localabstract:scrcpy');
     // Connect controlSocket
+    if (this.closed) {
+      this.stop();
+      return this;
+    }
     this.controlSocket = await this.client.openLocal2('localabstract:scrcpy');
-
+    if (this.closed) {
+      this.stop();
+      return this;
+    }
     // First chunk is 69 bytes length -> 1 dummy byte, 64 bytes for deviceName, 2 bytes for width & 2 bytes for height
     try {
       await Utils.waitforReadable(this.videoSocket);
@@ -378,6 +397,7 @@ export default class Scrcpy extends EventEmitter {
   }
 
   public stop(): boolean {
+    this.closed = true;
     let close = false;
     if (this.videoSocket) {
       this.videoSocket.destroy();
@@ -411,8 +431,6 @@ export default class Scrcpy extends EventEmitter {
    */
   private async startStreamWithMeta(): Promise<void> {
     this.videoSocket.stream.pause();
-
-    //if (scrcpyServerVersion > 8) {
     await Utils.waitforReadable(this.videoSocket);
     const chunk = this.videoSocket.stream.read(68) as Buffer;
     const name = chunk.toString('utf8', 0, 64).trim();
@@ -421,7 +439,6 @@ export default class Scrcpy extends EventEmitter {
     this.setWidth(width);
     const height = chunk.readUint16BE(66);
     this.setHeight(height);
-    //}
 
     // let header: Uint8Array | undefined;
 
@@ -476,8 +493,10 @@ export default class Scrcpy extends EventEmitter {
             const croppedWidth = encodedWidth - cropLeft - cropRight;
             const croppedHeight = encodedHeight - cropTop - cropBottom;
 
-            const videoConf: H264Configuration = { profileIndex, constraintSet, levelIndex, encodedWidth, encodedHeight,
-              cropLeft, cropRight, cropTop, cropBottom, croppedWidth, croppedHeight};
+            const videoConf: H264Configuration = {
+              profileIndex, constraintSet, levelIndex, encodedWidth, encodedHeight,
+              cropLeft, cropRight, cropTop, cropBottom, croppedWidth, croppedHeight
+            };
             this.lastConf = videoConf;
             this.emit('config', videoConf);
           } else {
@@ -485,7 +504,12 @@ export default class Scrcpy extends EventEmitter {
             if (keyframe) {
               pts &= ~PACKET_FLAG_KEY_FRAME;
             }
-            this.emit('frame', { keyframe, pts, data: streamChunk, config: this.lastConf });
+            const frame = { keyframe, pts, data: streamChunk, config: this.lastConf };
+            if (this.setFirstFrame) {
+              this.setFirstFrame();
+              this.setFirstFrame = null;
+            }
+            this.emit('frame', frame);
           }
         } else {
           // large chunk.

@@ -16,7 +16,6 @@ import {
   ListForwardsCommand,
   WaitForDeviceCommand,
 } from './command/host-serial';
-import d from 'debug';
 import Forward from '../models/Forward';
 import Reverse from '../models/Reverse';
 import StartActivityOptions from '../models/StartActivityOptions';
@@ -36,7 +35,7 @@ import DeviceWithPath from '../models/DeviceWithPath';
 import Client from './client';
 import Util from './util';
 import Scrcpy from './thirdparty/scrcpy/Scrcpy';
-import type { ScrcpyOptions } from './thirdparty/scrcpy/ScrcpyModel';
+import type { ScrcpyOptions } from './thirdparty/scrcpy/ScrcpyModels';
 import { RebootType } from './command/host-transport/reboot';
 import Minicap, { MinicapOptions } from './thirdparty/minicap/Minicap';
 import STFService, { STFServiceOptions } from './thirdparty/STFService/STFService';
@@ -51,7 +50,7 @@ import Entry64 from './sync/entry64';
 import DevicePackage from './DevicePackage';
 import getPort from 'get-port';
 
-const debug = d('adb:client');
+const debug = Util.debug('adb:client');
 
 const NoUserOptionError = (err: Error) => err.message.indexOf('--user') !== -1;
 

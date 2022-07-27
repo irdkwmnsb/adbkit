@@ -2,14 +2,14 @@ import EventEmitter from 'events';
 import { execFile, ExecFileOptions } from 'child_process';
 import Parser from './parser';
 import dump from './dump';
-import d from 'debug';
 import { Socket, connect } from 'net';
 import { promisify } from 'util';
 import { ClientOptions } from '../models/ClientOptions';
 import { ObjectEncodingOptions } from 'fs';
 import { Client } from '..';
+import Util from './util';
 
-const debug = d('adb:connection');
+const debug = Util.debug('adb:connection');
 
 /**
  * enforce EventEmitter typing

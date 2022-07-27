@@ -1,7 +1,6 @@
 import fs from 'fs';
 import Path from 'path';
 import EventEmitter from 'events';
-import d from 'debug';
 import Parser from './parser';
 import Protocol from './protocol';
 import Stats from './sync/stats';
@@ -12,11 +11,12 @@ import Connection from './connection';
 import { Readable } from 'stream';
 import Stats64 from './sync/stats64';
 import Entry64 from './sync/entry64';
+import Util from './util';
 
 const TEMP_PATH = '/data/local/tmp';
 const DEFAULT_CHMOD = 0o644;
 const DATA_MAX_LENGTH = 65536;
-const debug = d('adb:sync');
+const debug = Util.debug('adb:sync');
 
 export interface ENOENT extends Error {
   errno: 34;

@@ -77,7 +77,7 @@ export default class STFService extends EventEmitter {
    * find the APK and install it
    */
   private async installApk(version: string): Promise<boolean> {
-    const apk = ThirdUtils.getResource(`STFService_${version}.apk`);
+    const apk = ThirdUtils.getResourcePath(`STFService_${version}.apk`);
     try {
       await fs.promises.stat(apk);
     } catch (e) {

@@ -59,7 +59,6 @@ export { default as ServiceCallCommand, ServiceCallArg, ParcelReader, ServiceCal
 export { default as Utils } from './adb/util';
 
 export { default as Scrcpy } from './adb/thirdparty/scrcpy/Scrcpy';
-export * from './adb/thirdparty/scrcpy/ScrcpyModel';
 export { MotionEvent, DeviceMessageType, SurfaceControl, Orientation, KeyEventMeta } from './adb/thirdparty/scrcpy/ScrcpyConst';
 
 export { default as Minicap, MinicapOptions } from './adb/thirdparty/minicap/Minicap';
@@ -67,7 +66,7 @@ export { default as Minicap, MinicapOptions } from './adb/thirdparty/minicap/Min
 export { default as STFService, STFServiceOptions } from './adb/thirdparty/STFService/STFService';
 export { default as STFServiceBuf, MyMessage } from './adb/thirdparty/STFService/STFServiceBuf';
 
-export { VideoStreamFramePacket, H264Configuration } from './adb/thirdparty/scrcpy/Scrcpy';
+export { Point, ScrcpyOptions, VideoStreamFramePacket, H264Configuration } from './adb/thirdparty/scrcpy/ScrcpyModels';
 
 export { default as DevicePackage, PackageInfo } from './adb/DevicePackage';
 

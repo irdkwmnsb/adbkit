@@ -1,11 +1,11 @@
 import { Duplex, EventEmitter } from 'stream';
 import DeviceClient from '../../DeviceClient';
 import PromiseDuplex from 'promise-duplex';
-import Debug from 'debug';
 import net from 'net';
 import ThirdUtils from "../ThirdUtils";
 import { Utils } from "../../..";
 import PromiseSocket from "promise-socket";
+import Util from '../../util';
 
 export interface MinicapOptions {
   /**
@@ -14,8 +14,7 @@ export interface MinicapOptions {
   dimention: string;
 }
 
-const debug = Debug('minicap');
-
+const debug = Util.debug('adb:minicap');
 /**
  * enforce EventEmitter typing
  */
@@ -48,6 +47,10 @@ export default class Minicap extends EventEmitter {
   private setVirtualHigth: (height: number) => void;
   private setOrientation: (height: number) => void;
   private setBitflags: (height: number) => void;
+  /**
+   * closed had been call stop all new activity
+   */
+  private closed = false;
 
   constructor(private client: DeviceClient, config = {} as Partial<MinicapOptions>) {
     super();
@@ -108,6 +111,8 @@ export default class Minicap extends EventEmitter {
    * @returns resolved once localabstract:minicap is connected
    */
   async start(): Promise<this> {
+    if (this.closed) // can not start once stop called
+      return this;
     const props = await this.client.getProperties();
     const abi = props['ro.product.cpu.abi'];
     const sdkLevel = parseInt(props['ro.build.version.sdk']);
@@ -131,12 +136,10 @@ export default class Minicap extends EventEmitter {
     // only upload if file is missing
     try {
       await this.client.stat('/data/local/tmp/minicap');
+      debug(`/data/local/tmp/minicap already presentin ${this.client.serial}`)
     } catch {
-      // try {
+      debug(`pushing minicap binary to ${this.client.serial}`)
       await this.client.push(binFile, '/data/local/tmp/minicap', 0o755);
-      //} catch (e) {
-      // allready running ?
-      //}
     }
 
 
@@ -155,7 +158,7 @@ export default class Minicap extends EventEmitter {
     const runnings = await this.client.getPs('-A');
     const minicapPs = runnings.filter(p => p.NAME === 'minicap');
     for (const ps of minicapPs) {
-      console.log(`killing old minicap process ${ps.PID}`);
+      debug(`killing old minicap process ${ps.PID}`);
       await this.client.execOut(`kill ${ps.PID}`);
     }
 
@@ -171,6 +174,9 @@ export default class Minicap extends EventEmitter {
       }
     }
     this.minicapServer = new PromiseDuplex(await this.client.shell(args.map(a => a.toString()).join(' ')));
+    this.minicapServer.once("finish").then(() => {
+      this.stop();
+    })
     // minicap: PID: 14231
     // INFO: Using projection 1080x2376@1080x2376/0
     // INFO: (external/MY_minicap/src/minicap_30.cpp:243) Creating SurfaceComposerClient
@@ -191,12 +197,13 @@ export default class Minicap extends EventEmitter {
     this.videoSocket = new PromiseSocket(new net.Socket());
 
     // Connect videoSocket
-    try {
-      this.videoSocket = await this.client.openLocal2('localabstract:minicap');
-    } catch (e) {
-      debug(`Impossible to connect video Socket localabstract:minicap`, e);
-      throw e;
-    }
+    if (!this.closed)
+      try {
+        this.videoSocket = await this.client.openLocal2('localabstract:minicap');
+      } catch (e) {
+        debug(`Impossible to connect video Socket localabstract:minicap`, e);
+        throw e;
+      }
     void this.startStream().catch(() => this.stop());
     // wait until first stream chunk is recieved
     await this.bitflags;
@@ -226,12 +233,16 @@ export default class Minicap extends EventEmitter {
       throw e;
     }
     for (; ;) {
+      if (this.closed)
+        return;
       await Utils.waitforReadable(this.videoSocket);
       let chunk = this.videoSocket.stream.read(4) as Buffer;
       let len = chunk.readUint32LE(0);
       // len -= 4;
       let streamChunk: Buffer | null = null;
       while (streamChunk === null) {
+        if (this.closed)
+          return;
         await Utils.waitforReadable(this.videoSocket);
         chunk = this.videoSocket.stream.read(len) as Buffer;
         if (chunk) {
@@ -261,6 +272,7 @@ export default class Minicap extends EventEmitter {
    * @returns true if videoSocket or minicapServer get closed
    */
   public stop(): boolean {
+    this.closed = true;
     let close = false;
     if (this.videoSocket) {
       this.videoSocket.destroy();
