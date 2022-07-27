@@ -103,6 +103,10 @@ export default class Minicap extends EventEmitter {
    */
   get QuickTear(): Promise<boolean> { return this.bitflags.then(v => !!(v & 4)); }
 
+  /**
+   * 
+   * @returns resolved once localabstract:minicap is connected
+   */
   async start(): Promise<this> {
     const props = await this.client.getProperties();
     const abi = props['ro.product.cpu.abi'];
@@ -124,24 +128,42 @@ export default class Minicap extends EventEmitter {
       throw Error(`minicap.so for your device check for @devicefarmer/minicap-prebuilt update that support android-${sdkLevel}`);
     }
 
+    // only upload if file is missing
     try {
+      await this.client.stat('/data/local/tmp/minicap');
+    } catch {
+      // try {
       await this.client.push(binFile, '/data/local/tmp/minicap', 0o755);
-    } catch (e) {
+      //} catch (e) {
       // allready running ?
+      //}
     }
+
+
     try {
+      await this.client.stat('/data/local/tmp/minicap.so');
+    } catch {
+      //try {
       await this.client.push(soFile, '/data/local/tmp/minicap.so', 0o755);
-    } catch (e) {
+      //} catch (e) {
       // allready running ?
+      //}
     }
     // await this.client.push(apkFile, '/data/local/tmp/minicap.apk', 0o755);
     // adb push libs/$ABI/minicap /data/local/tmp/
+
+    const runnings = await this.client.getPs('-A');
+    const minicapPs = runnings.filter(p => p.NAME === 'minicap');
+    for (const ps of minicapPs) {
+      console.log(`killing old minicap process ${ps.PID}`);
+      await this.client.execOut(`kill ${ps.PID}`);
+    }
 
     const args = ['LD_LIBRARY_PATH=/data/local/tmp/', 'exec', '/data/local/tmp/minicap']
     {
       args.push('-P')
       if (!this.config.dimention) {
-        const {x, y} = await ThirdUtils.getScreenSize(this.client);
+        const { x, y } = await ThirdUtils.getScreenSize(this.client);
         const dim = `${x}x${y}`;
         args.push(`${dim}@${dim}/0`);
       } else {
@@ -222,7 +244,7 @@ export default class Minicap extends EventEmitter {
           if (streamChunk[0] !== 0xFF || streamChunk[1] !== 0xD8) {
             console.error('Frame body does not start with JPG header');
             return;
-          }  
+          }
         }
         if (len === 0) {
           this.emit('data', streamChunk);
@@ -234,6 +256,10 @@ export default class Minicap extends EventEmitter {
     }
   }
 
+  /**
+   * closed all socket and emit disconnect in if socket closed
+   * @returns true if videoSocket or minicapServer get closed
+   */
   public stop(): boolean {
     let close = false;
     if (this.videoSocket) {

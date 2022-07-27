@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import adb, { DeviceClient, KeyCodes, Utils, MotionEvent, Client } from '../src';
+import adb, { DeviceClient, KeyCodes, Utils, MotionEvent, Client, Minicap } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
 import { KeyEvent } from '../src/adb/thirdparty/STFService/STFServiceModel';
@@ -37,10 +37,10 @@ const testScrcpy = async (deviceClient: DeviceClient) => {
     trData = 0;
   }, 1000);
   // const mille: BigInt = 1000n;
-  scrcpy.on('frame', ({pts, data}) => {
+  scrcpy.on('frame', ({ pts, data }) => {
     nbPkg++;
     trData += data.length;
-    const asFloat = parseFloat((pts||0).toString())
+    const asFloat = parseFloat((pts || 0).toString())
     const sec = asFloat / 1000000;
     console.log(`[${sec.toFixed(1)}] Data:  ${fmtSize(data.length)}`)
   });
@@ -144,6 +144,28 @@ const testMinicap = async (deviceClient: DeviceClient) => {
   } finally {
     minicap.stop();
   }
+}
+
+const stressMinicap = async (deviceClient: DeviceClient) => {
+  // const scrcpy = deviceClient.scrcpy({port: 8099, maxFps: 1, maxSize: 320});
+  const minicaps: Minicap[] = [];
+  for (let i = 0; i < 15; i++) {
+    const pass = i;
+    const minicap = deviceClient.minicap({});
+    await Util.delay(100);
+    minicaps.push(minicap)
+    try {
+      await minicap.start();
+      minicap.on('data', (buf: Buffer) => {
+        console.log(`rcv Buffer ${buf.length} from #${pass}`);
+      })
+    } catch (e) {
+      console.error(`start minicap ${pass} failed`, e);
+    }
+  }
+  await Util.delay(1000);
+  const closeing = minicaps.map(m => m.stop());
+  console.log("closeing", closeing)
 }
 
 const testService = async (deviceClient: DeviceClient) => {
@@ -403,7 +425,7 @@ const main = async () => {
   // const list = await deviceClient.readdir64('/');
   // console.log(list.map(a=>a.toString()).join('\n'));
   // await deviceClient.extra.usbTethering(true);
-  await deviceClient.extra.airPlainMode(false, 300);
+  // await deviceClient.extra.airPlainMode(false, 300);
   // await deviceClient.extra.airPlainMode(false);
   // await testScrcpyEncoder(deviceClient);
   // await testScrcpy(deviceClient);
@@ -411,6 +433,7 @@ const main = async () => {
   // await testScrcpyTextInput(deviceClient);
   // await testScrcpyswap(deviceClient);
   // await testMinicap(deviceClient);
+  await stressMinicap(deviceClient);
   // await mtestSTFService(deviceClient);
   // await testService(deviceClient);
   // await extractFramesStream(deviceClient, 'OMX.qcom.video.encoder.avc');
