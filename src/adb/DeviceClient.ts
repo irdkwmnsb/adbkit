@@ -31,6 +31,7 @@ import { Features } from '../models/Features';
 import FramebufferStreamWithMeta from '../models/FramebufferStreamWithMeta';
 import WithToString from '../models/WithToString';
 import JdwpTracker from './jdwptracker';
+import { DeviceType } from '../models/Device';
 import DeviceWithPath from '../models/DeviceWithPath';
 import Client from './client';
 import Util from './util';
@@ -111,7 +112,7 @@ export default class DeviceClient {
    *
    * @returns The device state. This corresponds to the device type in `client.listDevices()`.
    */
-  public async getState(): Promise<string> {
+  public async getState(): Promise<DeviceType> {
     const conn = await this.connection();
     return new GetStateCommand(conn).execute(this.serial);
   }

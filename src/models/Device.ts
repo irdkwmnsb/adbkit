@@ -1,5 +1,8 @@
 import { DeviceClient } from "..";
 
+/**
+ * adb device starts
+ */
 export type DeviceType = 'emulator' | 'device' | 'offline';
 
 export default interface Device {
