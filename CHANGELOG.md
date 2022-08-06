@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.1.4 (2022-08-06)
+* improve android 12 support
+* improve error messages.
+
 ## v4.1.3 (2022-07-27)
 * refactor debug
 * new debug messages
