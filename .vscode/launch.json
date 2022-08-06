@@ -8,7 +8,7 @@
             "name": "realTest",
             "type": "node",
             "request": "launch",
-            "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+            "runtimeArgs": [ "--trace-warnings", "--unhandled-rejections", "warn", "--trace-sync-io", "--nolazy", "-r", "ts-node/register"],
             "args": ["./tasks/realTest.ts", "--transpile-only"],
             "cwd": "${workspaceFolder}",
             "internalConsoleOptions": "openOnSessionStart",

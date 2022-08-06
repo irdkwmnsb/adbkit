@@ -7,6 +7,11 @@ import { Utils } from "../../..";
 import PromiseSocket from "promise-socket";
 import Util from '../../util';
 
+/**
+ * Application binary interface known CPU
+ */
+export type ABI_CPU = 'arm64-v8a' | 'armeabi-v7a' | 'x86' | 'x86_64';
+
 export interface MinicapOptions {
   /**
    * dimention formated as `{RealWidth}x{RealHeight}@{VirtualWidth}x{VirtualHeight}/{Orientation}`
@@ -122,7 +127,7 @@ export default class Minicap extends EventEmitter {
     if (this.closed) // can not start once stop called
       return this;
     const props = await this.client.getProperties();
-    const abi = props['ro.product.cpu.abi'];
+    const abi = props['ro.product.cpu.abi'] as ABI_CPU;
     const sdkLevel = parseInt(props['ro.build.version.sdk']);
     const minicapName = (sdkLevel >= 16) ? 'minicap' : 'minicap-nopie';
 
@@ -136,26 +141,32 @@ export default class Minicap extends EventEmitter {
     }
 
     try {
-      soFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/lib/android-${sdkLevel}/minicap.so`);
+      if (sdkLevel === 32) {
+        soFile = ThirdUtils.getResourcePath(`minicap/android-${sdkLevel}/${abi}/minicap.so`);
+      } else  {
+        soFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/lib/android-${sdkLevel}/minicap.so`);
+      }
     } catch (e) {
       throw Error(`minicap.so for your device check for @devicefarmer/minicap-prebuilt update that support android-${sdkLevel}`);
     }
 
-    // only upload if file is missing
+    // only upload minicap binary in tmp filder if file is missing
     try {
       await this.client.stat('/data/local/tmp/minicap');
       debug(`/data/local/tmp/minicap already presentin ${this.client.serial}`)
     } catch {
       debug(`pushing minicap binary to ${this.client.serial}`)
-      await this.client.push(binFile, '/data/local/tmp/minicap', 0o755);
+      const tr = await this.client.push(binFile, '/data/local/tmp/minicap', 0o755);
+      await tr.waitForEnd();
     }
 
-
+    // only upload minicap.so in tmp filder if file is missing
     try {
       await this.client.stat('/data/local/tmp/minicap.so');
     } catch {
       //try {
-      await this.client.push(soFile, '/data/local/tmp/minicap.so', 0o755);
+      const tr = await this.client.push(soFile, '/data/local/tmp/minicap.so', 0o755);
+      await tr.waitForEnd();
       //} catch (e) {
       // allready running ?
       //}
@@ -201,7 +212,7 @@ export default class Minicap extends EventEmitter {
     //   const out = await this.minicapServer.setEncoding('utf8').readAll();
     //   console.log('read minicapServer stdOut:', out);
     // }
-    await Utils.waitforText(this.minicapServer, /JpgEncoder/);
+    await Utils.waitforText(this.minicapServer, /JpgEncoder/, 5000);
     this.videoSocket = new PromiseSocket(new net.Socket());
 
     // Connect videoSocket

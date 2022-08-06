@@ -459,8 +459,8 @@ const main = async () => {
   // await testScrcpyTextInput(deviceClient);
   // await testScrcpyswap(deviceClient);
   // await testMinicap(deviceClient);
-  // await stressMinicap(deviceClient);
-  await stressScrCpy(deviceClient);
+  await stressMinicap(deviceClient);
+  // await stressScrCpy(deviceClient);
   // await mtestSTFService(deviceClient);
   // await testService(deviceClient);
   // await extractFramesStream(deviceClient, 'OMX.qcom.video.encoder.avc');
@@ -473,4 +473,4 @@ const main = async () => {
   console.log('all Done');
 }
 
-main();
+main().catch(e => console.error(e));
