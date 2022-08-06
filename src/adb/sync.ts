@@ -213,6 +213,13 @@ export default class Sync extends EventEmitter {
    */
   public async pushFile(file: string, path: string, mode = DEFAULT_CHMOD): Promise<PushTransfer> {
     mode || (mode = DEFAULT_CHMOD);
+    try {
+      const stats = await fs.promises.stat(file);
+      if (stats.isDirectory())
+        throw Error(`can not push directory "${file}" only files are supported for now.`);
+    } catch (e) {
+      throw Error(`can not read file "${file}"`);
+    }
     return this.pushStream(fs.createReadStream(file), path, mode);
   }
 
