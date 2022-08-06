@@ -68,10 +68,12 @@ export default class Util {
    * 
    * @param duplex 
    * @param expected regexp to match
-   * @param timeout 
    * @returns matched text
    */
-  public static async waitforText(duplex: PromiseDuplex<Duplex>, expected: RegExp, timeout = 0): Promise<string> {
+  public static async waitforText(duplex: PromiseDuplex<Duplex>, expected: RegExp, timeout = 10000): Promise<string> {
+    const ignoredText: string[] = [];
+    const t0 = Date.now();
+    let nextTimeout = timeout;
     for (; ;) {
       await this.waitforReadable(duplex, timeout);
       const buf = await duplex.read();
@@ -79,6 +81,15 @@ export default class Util {
         const text = buf.toString();
         if (expected.test(text))
           return text;
+        else
+          ignoredText.push(text);
+        // console.log('RCV Non matching DATA:', text);
+      }
+      if (timeout) {
+        const timeSpend = Date.now() - t0;
+        if (nextTimeout <= 0)
+          throw Error(`timeout waiting for ${expected}, receved: ${ignoredText.join('')}`);
+        nextTimeout = timeout - timeSpend;
       }
     }
   }
