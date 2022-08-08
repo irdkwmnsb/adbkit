@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v4.1.5
+* add missing export
+
 ## v4.1.4 (2022-08-06)
 * improve android 12 support
 * improve error messages.

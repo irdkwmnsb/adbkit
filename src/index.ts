@@ -49,7 +49,6 @@ export { default as ProcStat, LoadsWithLine, CpuStatsWithLine, ProcStats } from 
 
 export { KeyEvent, KeyEventRequest } from './adb/thirdparty/STFService/STFServiceModel';
 
-
 // export android key enumeration
 export { KeyCodes } from './adb/keycode';
 
