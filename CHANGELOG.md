@@ -1,10 +1,12 @@
 # CHANGELOG
 
-## v4.1.5
+## v4.1.5 (2022-08-09)
 * add missing export
+* fix airplan mode for android 12
 
 ## v4.1.4 (2022-08-06)
-* improve android 12 support
+* bug fix im minicap launcher.
+* add minicap for android 12.
 * improve error messages.
 
 ## v4.1.3 (2022-07-27)

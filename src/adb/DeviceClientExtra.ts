@@ -48,20 +48,31 @@ export default class DeviceClientExtra {
     // wake screen
     await this.keyCode(KeyCodes.KEYCODE_WAKEUP);
     await this.deviceClient.startActivity({ action: 'android.settings.AIRPLANE_MODE_SETTINGS', wait: true });
-    const xml = await this.deviceClient.execOut('uiautomator dump /dev/tty', 'utf8');
+    let xml = await this.deviceClient.execOut('uiautomator dump /dev/tty', 'utf8');
+    xml = xml.replace('UI hierchary dumped to: /dev/tty', '');
+    // xml = xml.replace(/ ([a-z-]+)=""/g, '');
+    // xml = xml.replace(/ (checkable|clickable|content-desc|enabled|focused|focusable|index|long-clickable|package|password|resource-id|scrollable|selected)="[^"]*"/g, '');
     const textFilter = (text: string) => text.toLowerCase();
     const doc = new DOMParser().parseFromString(textFilter(xml))
+
+    const all_switch_widget = xpath.select(textFilter('//*/node[@class="android.widget.Switch"]'), doc) as Element[];
+    let theSwitch: Element | null = null;
+    if (!all_switch_widget.length) {
+      throw Error('no switch on screen.');
+    }
+    for (let i = 0; i < all_switch_widget.length; i++) {
+      const nodes = xpath.select('../../*/node[contains(@text,"mode")]', all_switch_widget[i]) as Element[];
+      if (nodes.length) {
+        theSwitch = all_switch_widget[i];
+      }
+    }
+    if (!theSwitch) {
+      throw Error('can not find mode labeled node "mode avion" airPlainMode switch failed');
+    }
     // https://gist.github.com/LeCoupa/8c305ec8c713aad07b14
     // "Airplane mode"
-    const nodes = xpath.select('//*[contains(@text,"mode")]/../..', doc) as Element[]
-    if (!nodes.length)
-      throw Error('can not find mode labeled node "mode avion" airPlainMode switch failed');
-    const switch_widget = xpath.select(textFilter('./*/node[@class="android.widget.Switch"]'), nodes[0]) as Element[];
-    if (!switch_widget.length)
-      throw Error('can not find android.widget.Switch linked to airPlainMode label');
-    const [checkBox] = switch_widget;
-    const checked = checkBox.getAttribute('checked') === 'true';
-    const bounds = checkBox.getAttribute('bounds');
+    const checked = theSwitch.getAttribute('checked') === 'true';
+    const bounds = theSwitch.getAttribute('bounds');
     if (!twiceMs && checked === enable) {
       return false;
     }

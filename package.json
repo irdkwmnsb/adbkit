@@ -1,6 +1,6 @@
 {
     "name": "@u4/adbkit",
-    "version": "4.1.4",
+    "version": "4.1.5",
     "description": "A Typescript client for the Android Debug Bridge.",
     "keywords": [
         "adb",
@@ -23,13 +23,11 @@
         "email": "contact@openstf.io",
         "url": "https://urielch.github.io/"
     },
-    "contributors": [
-        {
-            "name": "uriel chemouni",
-            "email": "uchemouni@gmail.com",
-            "url": "https://urielch.github.io/"
-        }
-    ],
+    "contributors": [{
+        "name": "uriel chemouni",
+        "email": "uchemouni@gmail.com",
+        "url": "https://urielch.github.io/"
+    }],
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "repository": {
