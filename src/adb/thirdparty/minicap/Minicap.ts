@@ -1,9 +1,7 @@
 import { Duplex, EventEmitter } from 'stream';
 import DeviceClient from '../../DeviceClient';
 import PromiseDuplex from 'promise-duplex';
-import net from 'net';
 import ThirdUtils from "../ThirdUtils";
-import PromiseSocket from "promise-socket";
 import Utils from '../../utils';
 import * as fs from 'fs';
 
@@ -217,8 +215,6 @@ export default class Minicap extends EventEmitter {
     //   console.log('read minicapServer stdOut:', out);
     // }
     await Utils.waitforText(this.minicapServer, /JpgEncoder/, 5000);
-    this.videoSocket = new PromiseSocket(new net.Socket());
-
     // Connect videoSocket
     if (!this.closed)
       try {
@@ -227,6 +223,9 @@ export default class Minicap extends EventEmitter {
         debug(`Impossible to connect video Socket localabstract:minicap`, e);
         throw e;
       }
+    this.videoSocket.once('end').then(() => { this.stop('connection to localabstract:minicap ended') })
+    // this.videoSocket.once('finish').then(() => { this.stop('connection to localabstract:minicap finished') })
+
     void this.startStream().catch((e) => this.stop(`stream throws ${e}`));
     // wait until first stream chunk is recieved
     await this.bitflags;
@@ -260,6 +259,8 @@ export default class Minicap extends EventEmitter {
         return;
       await Utils.waitforReadable(this.videoSocket);
       let chunk = this.videoSocket.stream.read(4) as Buffer;
+      if (!chunk)
+        continue;
       let len = chunk.readUint32LE(0);
       // len -= 4;
       let streamChunk: Buffer | null = null;
