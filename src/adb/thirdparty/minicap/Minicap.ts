@@ -5,6 +5,7 @@ import net from 'net';
 import ThirdUtils from "../ThirdUtils";
 import PromiseSocket from "promise-socket";
 import Utils from '../../utils';
+import * as fs from 'fs';
 
 /**
  * Application binary interface known CPU
@@ -25,7 +26,7 @@ const debug = Utils.debug('adb:minicap');
 interface IEmissions {
   data: (data: Buffer) => void
   error: (error: Error) => void
-  disconnect: () => void
+  disconnect: (cause: string) => void
 }
 
 export default class Minicap extends EventEmitter {
@@ -160,15 +161,17 @@ export default class Minicap extends EventEmitter {
     }
 
     // only upload minicap.so in tmp filder if file is missing
+    const localStats = fs.statSync(soFile);
+    let droidStats: fs.Stats | undefined;
     try {
-      await this.client.stat('/data/local/tmp/minicap.so');
+      droidStats = await this.client.stat('/data/local/tmp/minicap.so');
     } catch {
-      //try {
+      droidStats = undefined;
+    }
+
+    if (!droidStats || droidStats.size !== localStats.size) {
       const tr = await this.client.push(soFile, '/data/local/tmp/minicap.so', 0o755);
       await tr.waitForEnd();
-      //} catch (e) {
-      // allready running ?
-      //}
     }
     // await this.client.push(apkFile, '/data/local/tmp/minicap.apk', 0o755);
     // adb push libs/$ABI/minicap /data/local/tmp/
@@ -193,7 +196,7 @@ export default class Minicap extends EventEmitter {
     }
     this.minicapServer = new PromiseDuplex(await this.client.shell(args.map(a => a.toString()).join(' ')));
     this.minicapServer.once("finish").then(() => {
-      this.stop();
+      this.stop(`minicap server finish`);
     })
     // minicap: PID: 14231
     // INFO: Using projection 1080x2376@1080x2376/0
@@ -222,7 +225,7 @@ export default class Minicap extends EventEmitter {
         debug(`Impossible to connect video Socket localabstract:minicap`, e);
         throw e;
       }
-    void this.startStream().catch(() => this.stop());
+    void this.startStream().catch((e) => this.stop(`stream throws ${e}`));
     // wait until first stream chunk is recieved
     await this.bitflags;
     return this;
@@ -293,7 +296,7 @@ export default class Minicap extends EventEmitter {
    * closed all socket and emit disconnect in if socket closed
    * @returns true if videoSocket or minicapServer get closed
    */
-  public stop(): boolean {
+  public stop(cause?: string): boolean {
     this.closed = true;
     let close = false;
     if (this.videoSocket) {
@@ -307,7 +310,7 @@ export default class Minicap extends EventEmitter {
       close = true;
     }
     if (close)
-      this.emit('disconnect');
+      this.emit('disconnect', cause || 'close() called');
     return close;
   }
 

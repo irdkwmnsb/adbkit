@@ -141,7 +141,7 @@ const testMinicap = async (deviceClient: DeviceClient) => {
   } catch (e) {
     console.error('scrcpy failed', e);
   } finally {
-    minicap.stop();
+    minicap.stop('user End');
   }
 }
 
@@ -457,8 +457,8 @@ const main = async () => {
   // await testUiautomator(deviceClient);
   // await testScrcpyTextInput(deviceClient);
   // await testScrcpyswap(deviceClient);
-  // await testMinicap(deviceClient);
-  await stressMinicap(deviceClient);
+  await testMinicap(deviceClient);
+  // await stressMinicap(deviceClient);
   // await stressScrCpy(deviceClient);
   // await mtestSTFService(deviceClient);
   // await testService(deviceClient);
