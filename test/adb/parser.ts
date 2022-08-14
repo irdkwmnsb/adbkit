@@ -3,8 +3,7 @@ import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import Parser from '../../src/adb/parser';
-import { AdbFailError, AdbPrematureEOFError, AdbUnexpectedDataError } from '../../src/index';
-import Util from '../../src/adb/util';
+import { AdbFailError, AdbPrematureEOFError, AdbUnexpectedDataError, Utils } from '../../src/';
 
 describe('Parser', () => {
     describe('end()', () => {
@@ -59,7 +58,7 @@ describe('Parser', () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             const p = parser.readBytes(5);
-            await Util.delay(50);
+            await Utils.delay(50);
             stream.write('BYTES');
             const buf = await p;
             expect(buf.toString()).to.equal('BYTES');
@@ -69,7 +68,7 @@ describe('Parser', () => {
             const stream = new Stream.PassThrough();
             const parser = new Parser(stream);
             stream.write('FOO');
-            await Util.delay(50);
+            await Utils.delay(50);
             const buf = await parser.readBytes(2);
             expect(buf.length).to.equal(2);
             expect(buf.toString()).to.equal('FO');

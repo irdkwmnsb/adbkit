@@ -5,8 +5,8 @@ import Client from '../client';
 import Socket from './socket';
 import ReadableStream = NodeJS.ReadableStream;
 import Connection from '../connection';
-import Util from '../util';
-const debug = Util.debug('adb:tcpusb:service');
+import Utils from '../utils';
+const debug = Utils.debug('adb:tcpusb:service');
 
 export class PrematurePacketError extends Error {
   constructor(public packet: Packet) {
@@ -31,7 +31,7 @@ export class LateTransportError extends Error {
 /**
  * enforce EventEmitter typing
  */
- interface IEmissions {
+interface IEmissions {
   end: () => void
   error: (data: Error) => void
 }
@@ -151,7 +151,7 @@ export default class Service extends EventEmitter {
     return this._tryPush();
   }
 
-  private _handleWritePacket(packet: Packet): boolean  {
+  private _handleWritePacket(packet: Packet): boolean {
     debug('I:A_WRTE', packet);
     if (this.ended) {
       return false;

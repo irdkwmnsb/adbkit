@@ -5,7 +5,7 @@ import { Duplex } from 'stream';
 import PromiseDuplex from 'promise-duplex';
 import Debug from 'debug';
 
-export default class Util {
+export default class Utils {
   /**
    * Takes a [`Stream`][node-stream] and reads everything it outputs until the stream ends. Then it resolves with the collected output. Convenient with `client.shell()`.
    * 
@@ -46,7 +46,9 @@ export default class Util {
   public static async waitforReadable(duplex?: Duplex | PromiseDuplex<Duplex>, timeout = 0): Promise<boolean> {
     if (!duplex)
       return false
+    let theResolve: undefined | (() => void);
     const waitRead = new Promise<void>((resolve) => {
+      theResolve = resolve;
       if (duplex instanceof Duplex) {
         duplex.once('readable', resolve)
       } else {
@@ -55,8 +57,15 @@ export default class Util {
     });
     if (timeout) {
       let readable = true;
-      const timeOut = Util.delay(timeout).then(() => readable = false);
+      const timeOut = Utils.delay(timeout).then(() => readable = false);
       await Promise.race([waitRead, timeOut]);
+      if (!readable) {
+        if (duplex instanceof Duplex) {
+          duplex.off('readable', theResolve)
+        } else {
+          duplex.readable.stream.off('readable', theResolve)
+        }
+      }
       return readable;
     }
     await waitRead;
@@ -65,13 +74,14 @@ export default class Util {
 
   /**
    * Wait for a spesific text in the Duplex
+   * all text will be concatened in a single string to dean with segments.
    * 
    * @param duplex 
    * @param expected regexp to match
    * @returns matched text
    */
   public static async waitforText(duplex: PromiseDuplex<Duplex>, expected: RegExp, timeout = 10000): Promise<string> {
-    const ignoredText: string[] = [];
+    let allText = '';
     const t0 = Date.now();
     let nextTimeout = timeout;
     for (; ;) {
@@ -79,16 +89,15 @@ export default class Util {
       const buf = await duplex.read();
       if (buf) {
         const text = buf.toString();
-        if (expected.test(text))
+        allText += text;
+        if (expected.test(allText))
           return text;
-        else
-          ignoredText.push(text);
         // console.log('RCV Non matching DATA:', text);
       }
       if (timeout) {
         const timeSpend = Date.now() - t0;
         if (nextTimeout <= 0)
-          throw Error(`timeout waiting for ${expected}, receved: ${ignoredText.join('')}`);
+          throw Error(`timeout waiting for ${expected}, receved: ${allText}`);
         nextTimeout = timeout - timeSpend;
       }
     }

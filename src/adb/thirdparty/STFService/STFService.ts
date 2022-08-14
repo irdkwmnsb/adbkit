@@ -1,6 +1,5 @@
 import fs from 'fs';
 import DeviceClient from '../../DeviceClient';
-import { Utils } from '../../..';
 import PromiseDuplex from 'promise-duplex';
 import { Duplex, EventEmitter } from 'stream';
 import ThirdUtils from '../ThirdUtils';
@@ -8,7 +7,7 @@ import * as STF from './STFServiceModel';
 // import * as STFAg from "./STFAgentModel";
 import { Reader } from 'protobufjs';
 import STFServiceBuf from './STFServiceBuf';
-import Util from '../../util';
+import Utils from '../../utils';
 
 interface IEmissions {
   airplaneMode: (data: STF.AirplaneModeEvent) => void
@@ -132,7 +131,7 @@ export default class STFService extends EventEmitter {
     const setupPath = await this.getApkPath();
     const startAgent = `export CLASSPATH='${setupPath}'; exec app_process /system/bin '${PKG}.Agent' 2>&1`
     const agentProcess = new PromiseDuplex(await this.client.exec(startAgent));
-    const result = await Util.waitforText(agentProcess, /@stfagent|Address already in use/, 10000);
+    const result = await Utils.waitforText(agentProcess, /@stfagent|Address already in use/, 10000);
     if (result.includes("@stfagent"))
       return; // started
     // console.log(`${this.client.serial} stfagent already running`);
@@ -281,7 +280,7 @@ export default class STFService extends EventEmitter {
       await Utils.waitforReadable(socket);
       const chunk = await socket.read() as string;
       data = data + chunk;
-      for (;;) {
+      for (; ;) {
         const p = data.indexOf('\n');
         if (p >= 0)
           break;
@@ -291,7 +290,7 @@ export default class STFService extends EventEmitter {
         if (line.startsWith('v 1'))
           continue;
         if (line.startsWith('^')) {
-          const [, mc, w, h, mp ] = line.split(/ /);
+          const [, mc, w, h, mp] = line.split(/ /);
           this.setMaxContact(Number(mc));
           this.setWidth(Number(w));
           this.setHeight(Number(h));

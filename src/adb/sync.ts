@@ -11,12 +11,12 @@ import Connection from './connection';
 import { Readable } from 'stream';
 import Stats64 from './sync/stats64';
 import Entry64 from './sync/entry64';
-import Util from './util';
+import Utils from './utils';
 
 const TEMP_PATH = '/data/local/tmp';
 const DEFAULT_CHMOD = 0o644;
 const DATA_MAX_LENGTH = 65536;
-const debug = Util.debug('adb:sync');
+const debug = Utils.debug('adb:sync');
 
 export interface ENOENT extends Error {
   errno: 34;

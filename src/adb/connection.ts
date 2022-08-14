@@ -7,9 +7,9 @@ import { promisify } from 'util';
 import { ClientOptions } from '../models/ClientOptions';
 import { ObjectEncodingOptions } from 'fs';
 import { Client } from '..';
-import Util from './util';
+import Utils from './utils';
 
-const debug = Util.debug('adb:connection');
+const debug = Utils.debug('adb:connection');
 
 /**
  * enforce EventEmitter typing
@@ -61,7 +61,7 @@ export default class Connection extends EventEmitter {
         this.socket.once('error', reject);
       });
     } catch (err) {
-      if ((err as {code: string}).code === 'ECONNREFUSED' && !this.triedStarting) {
+      if ((err as { code: string }).code === 'ECONNREFUSED' && !this.triedStarting) {
         debug("Connection was refused, let's try starting the server once");
         this.triedStarting = true;
         await this.startServer();

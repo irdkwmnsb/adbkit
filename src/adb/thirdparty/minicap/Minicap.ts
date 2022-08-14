@@ -3,9 +3,8 @@ import DeviceClient from '../../DeviceClient';
 import PromiseDuplex from 'promise-duplex';
 import net from 'net';
 import ThirdUtils from "../ThirdUtils";
-import { Utils } from "../../..";
 import PromiseSocket from "promise-socket";
-import Util from '../../util';
+import Utils from '../../utils';
 
 /**
  * Application binary interface known CPU
@@ -19,7 +18,7 @@ export interface MinicapOptions {
   dimention: string;
 }
 
-const debug = Util.debug('adb:minicap');
+const debug = Utils.debug('adb:minicap');
 /**
  * enforce EventEmitter typing
  */
@@ -143,7 +142,7 @@ export default class Minicap extends EventEmitter {
     try {
       if (sdkLevel === 32) {
         soFile = ThirdUtils.getResourcePath(`minicap/android-${sdkLevel}/${abi}/minicap.so`);
-      } else  {
+      } else {
         soFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/lib/android-${sdkLevel}/minicap.so`);
       }
     } catch (e) {

@@ -1,11 +1,11 @@
 import Connection from '../../connection';
 import Command from '../../command';
 import { Duplex } from 'stream';
-import Utils from '../../../adb/util';
+import Utils from '../../utils';
 import { DeviceClientOptions } from '../../../models/DeviceClientOptions';
 
 export default class MonkeyCommand extends Command<Duplex> {
-  constructor (connection: Connection, private timeout = 1000, options?: Partial<DeviceClientOptions>) {
+  constructor(connection: Connection, private timeout = 1000, options?: Partial<DeviceClientOptions>) {
     super(connection, options);
   }
 

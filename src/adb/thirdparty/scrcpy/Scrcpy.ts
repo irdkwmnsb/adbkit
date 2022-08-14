@@ -1,10 +1,10 @@
 import EventEmitter from 'events';
 import PromiseDuplex from 'promise-duplex';
 import DeviceClient from '../../DeviceClient';
-import Util from '../../util';
+import Utils from '../../utils';
 import { Duplex } from 'stream';
 import { MotionEvent, Orientation, ControlMessage } from './ScrcpyConst';
-import { KeyCodes, Utils } from '../../..';
+import { KeyCodes } from '../../keycode';
 import { BufWrite } from '../minicap/BufWrite';
 import ThirdUtils from '../ThirdUtils';
 import fs from 'fs';
@@ -12,7 +12,7 @@ import Stats from '../../sync/entry';
 import { parse_sequence_parameter_set } from './sps';
 import { Point, ScrcpyOptions, H264Configuration, VideoStreamFramePacket } from './ScrcpyModels';
 
-const debug = Util.debug('adb:scrcpy');
+const debug = Utils.debug('adb:scrcpy');
 
 // const KEYFRAME_PTS = BigInt(1) << BigInt(62);
 // from https://github.com/Genymobile/scrcpy/blob/master/server/src/main/java/com/genymobile/scrcpy/ScreenEncoder.java
@@ -328,7 +328,7 @@ export default class Scrcpy extends EventEmitter {
       debug('Impossible to run server:', e);
       throw e;
     }
-    
+
 
     if (Utils.waitforReadable(this.scrcpyServer, this.config.tunnelDelay)) {
       const srvOut = await this.scrcpyServer.read();

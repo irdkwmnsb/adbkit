@@ -4,9 +4,9 @@ import Command from '../../command';
 import { Readable } from 'stream';
 import FramebufferMeta, { ColorFormat } from '../../../models/FramebufferMeta';
 import FramebufferStreamWithMeta from '../../../models/FramebufferStreamWithMeta';
-import Util from '../../util';
+import Utils from '../../utils';
 
-const debug = Util.debug('adb:command:framebuffer');
+const debug = Utils.debug('adb:command:framebuffer');
 
 export default class FrameBufferCommand extends Command<FramebufferStreamWithMeta> {
   async execute(format: string): Promise<FramebufferStreamWithMeta> {

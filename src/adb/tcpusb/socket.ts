@@ -10,9 +10,9 @@ import Net from 'net';
 import ServiceMap from './servicemap';
 import Service from './service';
 import SocketOptions from '../../models/SocketOptions';
-import Util from '../util';
+import Utils from '../utils';
 
-const debug = Util.debug('adb:tcpusb:socket');
+const debug = Utils.debug('adb:tcpusb:socket');
 const UINT32_MAX = 0xffffffff;
 const UINT16_MAX = 0xffff;
 const AUTH_TOKEN = 1;
@@ -41,7 +41,7 @@ export class UnauthorizedError extends Error {
 /**
  * enforce EventEmitter typing
  */
- interface IEmissions {
+interface IEmissions {
   end: (serv: boolean) => void
   userActivity: (packet: Packet) => void
   error: (data: Error) => void
@@ -80,7 +80,7 @@ export default class Socket extends EventEmitter {
         debug(`PacketReader error: ${err.message}`);
         return this.end();
       })
-      .on('end', ()=> this.end());
+      .on('end', () => this.end());
     this.remoteAddress = this.socket.remoteAddress;
     this.token = undefined;
     this.signature = undefined;

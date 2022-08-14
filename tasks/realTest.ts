@@ -4,7 +4,6 @@ import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
 import { KeyEvent } from '../src/adb/thirdparty/STFService/STFServiceModel';
 import ThirdUtils from '../src/adb/thirdparty/ThirdUtils';
-import Util from '../src/adb/util';
 import fs from 'fs';
 import path from 'path';
 import pc from 'picocolors';
@@ -125,7 +124,7 @@ const testScrcpyEncoder = async (deviceClient: DeviceClient) => {
   } finally {
     scrcpy.stop();
   }
-  await Util.delay(1000);
+  await Utils.delay(1000);
   await scrcpy.onFatal;
 }
 
@@ -152,7 +151,7 @@ const stressMinicap = async (deviceClient: DeviceClient) => {
   for (let i = 0; i < 15; i++) {
     const pass = i;
     const minicap = deviceClient.minicap({});
-    await Util.delay(100);
+    await Utils.delay(100);
     minicaps.push(minicap)
     try {
       await minicap.start();
@@ -174,7 +173,7 @@ const stressScrCpy = async (deviceClient: DeviceClient) => {
   for (let i = 0; i < 15; i++) {
     const pass = i;
     const scrcpy = deviceClient.scrcpy({});
-    await Util.delay(100);
+    await Utils.delay(100);
     scrcpys.push(scrcpy)
     try {
       scrcpy.once('frame', (data) => {
@@ -340,7 +339,7 @@ const testSTFService = async (deviceClient: DeviceClient) => {
     // // not working
     let x = 0.4;
     const y = 0.3;
-    await Util.delay(1000);
+    await Utils.delay(1000);
     await STFService.downCommit(x * w, y * w);
     for (let i = 0; i < 20; i++) {
       x += 0.01

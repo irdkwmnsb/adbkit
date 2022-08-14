@@ -7,7 +7,7 @@ import PacketReader from './adb/tcpusb/packetreader';
 import path from 'path';
 import Device from './models/Device';
 import DeviceClient from './adb/DeviceClient';
-import Util from './adb/util';
+import Utils from './adb/utils';
 
 const pkg: { version: string } = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), { encoding: 'utf-8' }));
 
@@ -93,7 +93,7 @@ program
     const process = async (device: DeviceClient) => {
       if (await device.extra.usbTethering(true)) {
         console.log(`[${device.serial}] tethering enabled`);
-        await Util.delay(100)
+        await Utils.delay(100)
         await device.extra.back();
       } else {
         console.log(`[${device.serial}] failed or already enabled`);
@@ -110,7 +110,7 @@ program
     const process = async (device: DeviceClient) => {
       if (await device.extra.usbTethering(false)) {
         console.log(`[${device.serial}] tethering enabled`);
-        await Util.delay(100)
+        await Utils.delay(100)
         await device.extra.back();
       } else {
         console.log(`[${device.serial}] failed or already enabled`);
@@ -127,7 +127,7 @@ program
     const process = async (device: DeviceClient) => {
       if (await device.extra.airPlainMode(true)) {
         console.log(`[${device.serial}] airplane enabled`);
-        await Util.delay(100)
+        await Utils.delay(100)
         await device.extra.back();
       } else {
         console.log(`[${device.serial}] airplane or already enabled`);
@@ -144,7 +144,7 @@ program
     const process = async (device: DeviceClient) => {
       if (await device.extra.airPlainMode(false)) {
         console.log(`[${device.serial}] airplane disabled`);
-        await Util.delay(100)
+        await Utils.delay(100)
         await device.extra.back();
       } else {
         console.log(`[${device.serial}] airplane or already enabled`);
@@ -161,7 +161,7 @@ program
     const process = async (device: DeviceClient) => {
       if (await device.extra.airPlainMode(false, 200)) {
         console.log(`[${device.serial}] airplane on-off`);
-        await Util.delay(100)
+        await Utils.delay(100)
         await device.extra.back();
       } else {
         console.log(`[${device.serial}] airplane or already enabled`);
@@ -216,7 +216,7 @@ program
         out = path.join(path.dirname(out), device.serial + '-' + path.basename(out));
       }
       const stream = await device.screencap();
-      const capture = await Util.readAll(stream);
+      const capture = await Utils.readAll(stream);
       fs.writeFileSync(dest, capture);
     }
   });

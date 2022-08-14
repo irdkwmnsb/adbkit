@@ -34,7 +34,7 @@ import JdwpTracker from './jdwptracker';
 import { DeviceType } from '../models/Device';
 import DeviceWithPath from '../models/DeviceWithPath';
 import Client from './client';
-import Util from './util';
+import Utils from './utils';
 import Scrcpy from './thirdparty/scrcpy/Scrcpy';
 import type { ScrcpyOptions } from './thirdparty/scrcpy/ScrcpyModels';
 import { RebootType } from './command/host-transport/reboot';
@@ -42,7 +42,6 @@ import Minicap, { MinicapOptions } from './thirdparty/minicap/Minicap';
 import STFService, { STFServiceOptions } from './thirdparty/STFService/STFService';
 import PromiseDuplex from 'promise-duplex';
 import Protocol from './protocol';
-import { Utils } from '..';
 import { DeviceClientOptions } from '../models/DeviceClientOptions';
 import ServiceCallCommand, { ParcelReader, ServiceCallArg } from './command/host-transport/serviceCall';
 import DeviceClientExtra from './DeviceClientExtra';
@@ -51,7 +50,7 @@ import Entry64 from './sync/entry64';
 import DevicePackage from './DevicePackage';
 import getPort from 'get-port';
 
-const debug = Util.debug('adb:client');
+const debug = Utils.debug('adb:client');
 
 const NoUserOptionError = (err: Error) => err.message.indexOf('--user') !== -1;
 
@@ -246,9 +245,9 @@ export default class DeviceClient {
    */
   public async getIpAddress(iface = 'wlan0'): Promise<string[]> {
     const ipData = await this.execOut(`ip addr show ${iface}`, 'utf-8');
-    const ipV4 = [...ipData.matchAll(/inet ([\d]+\.[\d]+\.[\d]+\.[\d]+)\/\d+/g)].map(m=>m[1])
-    const ipV6 = [...ipData.matchAll(/inet6 ([0-9a-f:]+)\/\d+/g)].map(m=>m[1])
-    return [ ...ipV4, ...ipV6 ];
+    const ipV4 = [...ipData.matchAll(/inet ([\d]+\.[\d]+\.[\d]+\.[\d]+)\/\d+/g)].map(m => m[1])
+    const ipV6 = [...ipData.matchAll(/inet6 ([0-9a-f:]+)\/\d+/g)].map(m => m[1])
+    return [...ipV4, ...ipV6];
   }
 
   /**
@@ -600,7 +599,7 @@ export default class DeviceClient {
       } catch (err) {
         if ((times -= 1)) {
           debug(`Monkey can't be reached, trying ${times} more times`);
-          await Util.delay(100)
+          await Utils.delay(100)
           return tryConnect(times);
         } else {
           throw err;
@@ -1087,7 +1086,7 @@ export default class DeviceClient {
    * @param options list all or only third party apps
    * @returns an array of DevicePackage
    */
-  public async listPackages(options?: {thirdparty?: boolean}): Promise<DevicePackage[]> {
+  public async listPackages(options?: { thirdparty?: boolean }): Promise<DevicePackage[]> {
     options = options || {};
     let cmd = 'pm list packages'
     if (options.thirdparty) {

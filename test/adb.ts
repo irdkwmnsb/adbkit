@@ -1,18 +1,17 @@
 import { expect } from 'chai';
-import Adb from '../src/index';
+import Adb, { Utils } from '../src/';
 import Client from '../src/adb/client';
 // import { Keycode } from '../src/adb/keycode';
-import util from '../src/adb/util';
 
 describe('Adb', () => {
     //it('should expose Keycode', (done) => {
     //    expect(Adb).to.have.property('Keycode');
-        // expect(Adb.Keycode).to.equal(Keycode);
+    // expect(Adb.Keycode).to.equal(Keycode);
     //    done();
     //});
-    it('should expose util', (done) => {
+    it('should expose utisl', (done) => {
         expect(Adb).to.have.property('util');
-        expect(Adb.util).to.equal(util);
+        expect(Adb.util).to.equal(Utils);
         done();
     });
     return describe('@createClient(options)', () => {

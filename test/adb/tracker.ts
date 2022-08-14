@@ -8,8 +8,7 @@ import Tracker from '../../src/adb/tracker';
 import Protocol from '../../src/adb/protocol';
 import HostTrackDevicesCommand from '../../src/adb/command/host/HostTrackDevicesCommand';
 import Connection from '../../src/adb/connection';
-import { Device, DeviceClient } from '../../src';
-import Util from '../../src/adb/util';
+import { Device, DeviceClient, Utils } from '../../src';
 
 const getClient = () => null as unknown as DeviceClient;
 
@@ -31,7 +30,7 @@ describe('Tracker', () => {
     it("should emit 'add' when a device is added", (done) => {
         const spy = Sinon.spy();
         tracker.on('add', spy);
-        const device1: Device = { id: 'a', type: 'device', getClient};
+        const device1: Device = { id: 'a', type: 'device', getClient };
         const device2: Device = { id: 'b', type: 'device', getClient };
         tracker.update([device1, device2]);
         expect(spy).to.have.been.calledTwice;
@@ -106,7 +105,7 @@ c\tdevice`),
 c\toffline
 d\toffline`),
         );
-        await Util.delay(10)
+        await Utils.delay(10)
         expect(spy).to.have.been.calledTwice;
         // expect(spy).to.have.been.calledWith({
         //     added: [device1, device2, device3],

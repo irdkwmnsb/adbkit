@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.1.6 (2022-08-14)
+* fix text detection on segmentented text in Utils.waitforText
+* rename Util to Utils avoiding naming conflict.
+
 ## v4.1.5 (2022-08-09)
 * add missing export
 * fix airplan mode for android 12

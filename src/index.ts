@@ -58,7 +58,7 @@ export { default as ServiceCallCommand, ServiceCallArg, ParcelReader, ServiceCal
 
 
 // give access to Utils class ( readAll and parsePublicKey)
-export { default as Utils } from './adb/util';
+export { default as Utils } from './adb/utils';
 
 export { default as Scrcpy } from './adb/thirdparty/scrcpy/Scrcpy';
 export { MotionEvent, DeviceMessageType, SurfaceControl, Orientation, KeyEventMeta } from './adb/thirdparty/scrcpy/ScrcpyConst';
@@ -77,7 +77,7 @@ export { default as DevicePackage, PackageInfo } from './adb/DevicePackage';
  */
 import { createClient } from './adb';
 
-import { default as util } from './adb/util';
+import { default as util } from './adb/utils';
 
 /**
  * Keep @u4/adbkit v3.x old adb export
