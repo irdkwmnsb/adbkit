@@ -170,6 +170,8 @@ export default class Minicap extends EventEmitter {
     }
 
     if (!droidStats || droidStats.size !== localStats.size) {
+      if (droidStats)
+        debug(`minicap.so version mismatch in ${this.client.serial} overwriting file.`)
       const tr = await this.client.push(soFile, '/data/local/tmp/minicap.so', 0o755);
       await tr.waitForEnd();
     }

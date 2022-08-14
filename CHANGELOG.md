@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.1.7 (2022-08-14)
+* fix Minicap failure after OS upgrade
+* improve error messages
+
 ## v4.1.6 (2022-08-14)
 * fix text detection on segmentented text in Utils.waitforText
 * rename Util to Utils avoiding naming conflict.
