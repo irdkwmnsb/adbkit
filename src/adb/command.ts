@@ -11,7 +11,7 @@ const RE_ESCAPE = /([$`\\!"])/g;
 
 export default abstract class Command<T> {
   public readonly options: Partial<DeviceClientOptions>;
-  private lastCmd: string;
+  private lastCmd = '';
 
   get lastCommand(): string {
     return this.lastCmd || '';

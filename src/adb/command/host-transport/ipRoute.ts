@@ -4,7 +4,7 @@ import Connection from '../../connection';
 
 export default class IpRouteCommand extends Command<Array<IpRouteEntry>> {
 
-  constructor(connection: Connection, options?: {sudo?: boolean}) {
+  constructor(connection: Connection, options?: { sudo?: boolean }) {
     super(connection, options);
   }
 
@@ -84,7 +84,7 @@ export class IpRouteEntry {
 
     while (words.length) {
       const next = words.shift();
-      const value = words.shift();
+      const value = words.shift() || '';
       switch (next) {
         case 'dev':
         case 'via':
@@ -117,8 +117,9 @@ export class IpRouteEntry {
   public toString(): string {
     const out: string[] = [];
     for (const field of ['type', 'dest'] as const) {
-      if (this[field])
-        out.push(this[field]);
+      const value = this[field];
+      if (value)
+        out.push(value);
     }
     for (const field of ['via', 'dev', 'table', 'expires', 'proto', 'scope', 'tos', 'src', 'metric', 'pref', 'mtu'] as const) {
       if (this[field] || this[field] === 0) {

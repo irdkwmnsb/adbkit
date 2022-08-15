@@ -61,9 +61,9 @@ export default class Utils {
       await Promise.race([waitRead, timeOut]);
       if (!readable) {
         if (duplex instanceof Duplex) {
-          duplex.off('readable', theResolve)
+          duplex.off('readable', theResolve!)
         } else {
-          duplex.readable.stream.off('readable', theResolve)
+          duplex.readable.stream.off('readable', theResolve!)
         }
       }
       return readable;

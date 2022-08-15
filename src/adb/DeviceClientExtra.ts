@@ -27,6 +27,8 @@ export default class DeviceClientExtra {
     // console.log(checkBox.toString());
     const checked = checkBox.getAttribute('checked') === 'true';
     const bounds = checkBox.getAttribute('bounds');
+    if (!bounds)
+      throw Error('missing bounds attribut to checkbox');
     if (checked === enable) {
       return false;
     }
@@ -73,6 +75,8 @@ export default class DeviceClientExtra {
     // "Airplane mode"
     const checked = theSwitch.getAttribute('checked') === 'true';
     const bounds = theSwitch.getAttribute('bounds');
+    if (!bounds)
+      throw Error('missing bounds attribut in switch');
     if (!twiceMs && checked === enable) {
       return false;
     }

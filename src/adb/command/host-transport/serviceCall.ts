@@ -53,7 +53,7 @@ export class ParcelReader {
     const chars = data.readInt32BE(pos);
     pos += 4;
     const block = (chars + 1) >> 1;
-    const dest = Buffer.allocUnsafe(block  * 4);
+    const dest = Buffer.allocUnsafe(block * 4);
 
     for (let i = 0; i < block; i++) {
       const src = pos + i * 4;
@@ -145,6 +145,7 @@ export default class ServiceCallCommand extends Command<ParcelReader> {
     if (m2) {
       throw new Error(`0x${m2[1]} ${m2[2]}`);
     }
-    //return Buffer.concat(data);
+    throw new Error(`Fail to parse Parcel`);
+    // return Buffer.concat(data);
   }
 }

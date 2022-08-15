@@ -26,7 +26,8 @@ interface IEmissions {
 }
 
 export default class Client extends EventEmitter {
-  public readonly options: ClientOptions;
+  //   public readonly options: ClientOptions & { host: string, bin: string };
+  public readonly options: ClientOptions & Required<Pick<ClientOptions, 'host' | 'bin'>>;
 
   /**
  * host to connect default is 127.0.0.1

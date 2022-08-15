@@ -8,9 +8,10 @@ import { KeyCodes } from '../../keycode';
 import { BufWrite } from '../minicap/BufWrite';
 import ThirdUtils from '../ThirdUtils';
 import fs from 'fs';
-import Stats from '../../sync/entry';
+import Stats from '../../sync/stats';
 import { parse_sequence_parameter_set } from './sps';
 import { Point, ScrcpyOptions, H264Configuration, VideoStreamFramePacket } from './ScrcpyModels';
+import assert from 'assert';
 
 const debug = Utils.debug('adb:scrcpy');
 
@@ -71,7 +72,7 @@ export default class Scrcpy extends EventEmitter {
   /**
    * used to recive Process Error
    */
-  private scrcpyServer: PromiseDuplex<Duplex>;
+  private scrcpyServer: PromiseDuplex<Duplex> | undefined;
 
   ///////
   // promise holders
@@ -84,11 +85,11 @@ export default class Scrcpy extends EventEmitter {
   ////////
   // promise resolve calls
 
-  private setName: (name: string) => void;
-  private setWidth: (width: number) => void;
-  private setHeight: (height: number) => void;
-  private setFatalError: (error: string) => void;
-  private setFirstFrame: (() => void) | null;
+  private setName!: (name: string) => void;
+  private setWidth!: (width: number) => void;
+  private setHeight!: (height: number) => void;
+  private setFatalError!: (error: string) => void;
+  private setFirstFrame!: (() => void) | null;
 
   private lastConf?: H264Configuration;
   /**
@@ -192,7 +193,7 @@ export default class Scrcpy extends EventEmitter {
    */
   async readOneMessage(duplex: PromiseDuplex<Duplex>): Promise<string> {
     if (!duplex)
-      return;
+      return '';
     // const waitforReadable = () => new Promise<void>((resolve) => duplex.readable.stream.once('readable', resolve));
     await Utils.waitforReadable(duplex);
     let chunk = (await duplex.read(1)) as Buffer;
@@ -330,9 +331,11 @@ export default class Scrcpy extends EventEmitter {
     }
 
 
-    if (Utils.waitforReadable(this.scrcpyServer, this.config.tunnelDelay)) {
+    if (await Utils.waitforReadable(this.scrcpyServer, this.config.tunnelDelay)) {
       const srvOut = await this.scrcpyServer.read();
-      let info = srvOut.toString();
+      let info = '';
+      if (srvOut)
+        info = srvOut.toString();
       if (!info.startsWith('[server] INFO: Device: ')) {
         try {
           while (await Utils.waitforReadable(this.scrcpyServer)) {
@@ -379,7 +382,9 @@ export default class Scrcpy extends EventEmitter {
       // old protocol
       const control = firstChunk.at(0);
       if (firstChunk.at(0) !== 0) {
-        throw Error(`Control code should be 0x00, receves: 0x${control.toString(16).padStart(2, '0')}`);
+        if (control)
+          throw Error(`Control code should be 0x00, receves: 0x${control.toString(16).padStart(2, '0')}`);
+        throw Error(`Control code should be 0x00, receves nothing.`);
       }
     } catch (e) {
       debug('Impossible to read first chunk:', e);
@@ -409,7 +414,7 @@ export default class Scrcpy extends EventEmitter {
       this.controlSocket = undefined;
       close = true;
     }
-    this.scrcpyServer.destroy();
+    if (this.scrcpyServer) this.scrcpyServer.destroy();
     if (close) {
       this.emit('disconnect');
       this.setFatalError('stoped');
@@ -422,6 +427,7 @@ export default class Scrcpy extends EventEmitter {
   }
 
   private startStreamRaw() {
+    assert(this.videoSocket);
     this.videoSocket.stream.on('data', d => this.emit('raw', d));
   }
 
@@ -430,6 +436,7 @@ export default class Scrcpy extends EventEmitter {
    * get resolve once capture stop
    */
   private async startStreamWithMeta(): Promise<void> {
+    assert(this.videoSocket);
     this.videoSocket.stream.pause();
     await Utils.waitforReadable(this.videoSocket);
     const chunk = this.videoSocket.stream.read(68) as Buffer;
@@ -538,6 +545,7 @@ export default class Scrcpy extends EventEmitter {
     chunk.writeUint32BE(keyCode);
     chunk.writeUint32BE(repeatCount);
     chunk.writeUint32BE(metaState);
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk.buffer);
   }
 
@@ -545,7 +553,8 @@ export default class Scrcpy extends EventEmitter {
   async injectText(text: string): Promise<void> {
     const chunk = new BufWrite(5);
     chunk.writeUint8(ControlMessage.TYPE_INJECT_TEXT);
-    chunk.writeString(text)
+    chunk.writeString(text);
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk.buffer);
   }
 
@@ -579,6 +588,7 @@ export default class Scrcpy extends EventEmitter {
     chunk.writeUint16BE(screenSize.y | 0);
     chunk.writeUint16BE(pressure);
     chunk.writeUint32BE(MotionEvent.BUTTON_PRIMARY);
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk.buffer);
     // console.log(chunk.buffer.toString('hex'))
   }
@@ -594,6 +604,7 @@ export default class Scrcpy extends EventEmitter {
     chunk.writeUint16BE(HScroll);
     chunk.writeInt32BE(VScroll);
     chunk.writeInt32BE(MotionEvent.BUTTON_PRIMARY);
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk.buffer);
   }
 
@@ -602,6 +613,7 @@ export default class Scrcpy extends EventEmitter {
     const chunk = new BufWrite(2);
     chunk.writeUint8(ControlMessage.TYPE_BACK_OR_SCREEN_ON);
     chunk.writeUint8(MotionEvent.ACTION_UP);
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk.buffer);
   }
 
@@ -609,6 +621,7 @@ export default class Scrcpy extends EventEmitter {
   async expandNotificationPanel(): Promise<void> {
     const chunk = Buffer.allocUnsafe(1);
     chunk.writeUInt8(ControlMessage.TYPE_EXPAND_NOTIFICATION_PANEL);
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk);
   }
 
@@ -616,6 +629,7 @@ export default class Scrcpy extends EventEmitter {
   async collapsePannels(): Promise<void> {
     const chunk = Buffer.allocUnsafe(1);
     chunk.writeUInt8(ControlMessage.TYPE_EXPAND_SETTINGS_PANEL);
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk);
   }
 
@@ -623,6 +637,7 @@ export default class Scrcpy extends EventEmitter {
   async getClipboard(): Promise<string> {
     const chunk = Buffer.allocUnsafe(1);
     chunk.writeUInt8(ControlMessage.TYPE_GET_CLIPBOARD);
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk);
     return this.readOneMessage(this.controlSocket);
   }
@@ -633,6 +648,7 @@ export default class Scrcpy extends EventEmitter {
     chunk.writeUint8(ControlMessage.TYPE_SET_CLIPBOARD);
     chunk.writeUint8(1); // past
     chunk.writeString(text)
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk.buffer);
   }
 
@@ -640,6 +656,7 @@ export default class Scrcpy extends EventEmitter {
   async setScreenPowerMode(): Promise<void> {
     const chunk = Buffer.allocUnsafe(1);
     chunk.writeUInt8(ControlMessage.TYPE_SET_SCREEN_POWER_MODE);
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk);
   }
 
@@ -647,6 +664,7 @@ export default class Scrcpy extends EventEmitter {
   async rotateDevice(): Promise<void> {
     const chunk = Buffer.allocUnsafe(1);
     chunk.writeUInt8(ControlMessage.TYPE_ROTATE_DEVICE);
+    assert(this.controlSocket);
     await this.controlSocket.write(chunk);
   }
 }

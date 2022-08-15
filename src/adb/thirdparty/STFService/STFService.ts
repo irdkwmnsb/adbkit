@@ -44,10 +44,10 @@ export default class STFService extends EventEmitter {
   private _height: Promise<number>;
   private _maxPressure: Promise<number>;
 
-  private setMaxContact: (width: number) => void;
-  private setWidth: (height: number) => void;
-  private setHeight: (height: number) => void;
-  private setMaxPressure: (height: number) => void;
+  private setMaxContact!: (width: number) => void;
+  private setWidth!: (height: number) => void;
+  private setHeight!: (height: number) => void;
+  private setMaxPressure!: (height: number) => void;
 
   constructor(private client: DeviceClient, options = {} as Partial<STFServiceOptions>) {
     super();
@@ -213,6 +213,8 @@ export default class STFService extends EventEmitter {
     let buffer: Buffer | null = null;
     for (; ;) {
       await Utils.waitforReadable(this.servicesSocket);
+      if (!this.servicesSocket)
+        return;
       const next = await this.servicesSocket.read() as Buffer;
       if (!next) continue;
       if (buffer) {
@@ -326,19 +328,21 @@ export default class STFService extends EventEmitter {
   /**
    * Generic method to push message to service
    */
-  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader: null | ((req: Uint8Array) => T)): Promise<T> {
+  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader: null): Promise<void>;
+  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader: ((req: Uint8Array) => T)): Promise<T>;
+  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader: null | ((req: Uint8Array) => T)): Promise<T | void> {
     const id = (this.reqCnt + 1) | 0xFFFFFF;
     this.reqCnt = id;
     const envelope = { type, message, id };
     let pReject: (error: Error) => void;
-    const promise = new Promise<T>((resolve, reject) => {
+    const promise = new Promise<T | void>((resolve, reject) => {
       pReject = reject;
       this.responseHook[id] = (message: Uint8Array) => {
         if (requestReader) {
           const conv = requestReader(message);
           resolve(conv);
         } else {
-          resolve(null);
+          resolve();
         }
       }
     });

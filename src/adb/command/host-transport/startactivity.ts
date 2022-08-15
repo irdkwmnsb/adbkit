@@ -151,7 +151,8 @@ export default class StartActivityCommand extends Command<boolean> {
       //if (extra.value) {
       args.push(`--e${type}`);
       args.push(this.escape(extra.key));
-      args.push(this.escape(extra.value));
+      if (extra.value)
+        args.push(this.escape(extra.value));
       //}
     }
     return args;

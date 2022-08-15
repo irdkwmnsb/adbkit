@@ -44,6 +44,8 @@ export class IpRuleEntry {
   constructor(line: string) {
     const words = line.split(/\s+/g).filter(a => a);
     const id = words.shift();
+    if (!id)
+      throw Error(`Failed to parse line:\n ${line}\n line should start with an id, Fix me in ipRule.ts`);
     this.id = Number(id.replace(':', ''))
     while (words.length) {
       const next = words.shift();
@@ -79,9 +81,10 @@ export class IpRuleEntry {
   toStirng(): string {
     const opt: string[] = [];
     for (const field of ['from', 'fwmark', 'iif', 'oif', 'uidrange', 'lookup'] as const) {
-      if (this[field]) {
+      const value = this[field];
+      if (value) {
         opt.push(field);
-        opt.push(this[field]);
+        opt.push(value);
       }
     }
     if (this.unreachable)

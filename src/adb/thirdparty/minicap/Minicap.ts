@@ -43,15 +43,15 @@ export default class Minicap extends EventEmitter {
   private _bitflags: Promise<number>;
   private _firstFrame: Promise<void>;
 
-  private setVersion: (version: number) => void;
-  private setPid: (version: number) => void;
-  private setRealWidth: (width: number) => void;
-  private setRealHigth: (height: number) => void;
-  private setVirtualWidth: (width: number) => void;
-  private setVirtualHigth: (height: number) => void;
-  private setOrientation: (height: number) => void;
-  private setBitflags: (height: number) => void;
-  private setFirstFrame: (() => void) | null;
+  private setVersion!: (version: number) => void;
+  private setPid!: (version: number) => void;
+  private setRealWidth!: (width: number) => void;
+  private setRealHigth!: (height: number) => void;
+  private setVirtualWidth!: (width: number) => void;
+  private setVirtualHigth!: (height: number) => void;
+  private setOrientation!: (height: number) => void;
+  private setBitflags!: (height: number) => void;
+  private setFirstFrame: (() => void) | null = null;
   /**
    * closed had been call stop all new activity
    */
@@ -216,33 +216,34 @@ export default class Minicap extends EventEmitter {
     // }
     await Utils.waitforText(this.minicapServer, /JpgEncoder/, 5000);
     // Connect videoSocket
-    if (!this.closed)
+    if (!this.closed) {
       try {
         this.videoSocket = await this.client.openLocal2('localabstract:minicap');
       } catch (e) {
         debug(`Impossible to connect video Socket localabstract:minicap`, e);
         throw e;
       }
-    this.videoSocket.once('end').then(() => { this.stop('connection to localabstract:minicap ended') })
-    // this.videoSocket.once('finish').then(() => { this.stop('connection to localabstract:minicap finished') })
+      this.videoSocket.once('end').then(() => { this.stop('connection to localabstract:minicap ended') })
+      // this.videoSocket.once('finish').then(() => { this.stop('connection to localabstract:minicap finished') })
 
-    void this.startStream().catch((e) => this.stop(`stream throws ${e}`));
-    // wait until first stream chunk is recieved
+      void this.startStream(this.videoSocket).catch((e) => this.stop(`stream throws ${e}`));
+      // wait until first stream chunk is recieved
+    }
     await this.bitflags;
     return this;
   }
 
-  private async startStream() {
+  private async startStream(videoSocket: PromiseDuplex<Duplex>) {
     // first chunk 24
     try {
-      await Utils.waitforReadable(this.videoSocket);
-      let firstChunk = await this.videoSocket.read(2) as Buffer;
+      await Utils.waitforReadable(videoSocket);
+      let firstChunk = await videoSocket.read(2) as Buffer;
       if (!firstChunk) {
         throw Error('fail to read firstChunk, inclease tunnelDelay for this device.');
       }
       this.setVersion(firstChunk[0]); // == 1
       const len = firstChunk[1]; // == 24
-      firstChunk = await this.videoSocket.read(len - 2) as Buffer;
+      firstChunk = await videoSocket.read(len - 2) as Buffer;
       this.setPid(firstChunk.readUint32LE(0));
       this.setRealWidth(firstChunk.readUint32LE(4));
       this.setRealHigth(firstChunk.readUint32LE(8));
@@ -257,8 +258,8 @@ export default class Minicap extends EventEmitter {
     for (; ;) {
       if (this.closed)
         return;
-      await Utils.waitforReadable(this.videoSocket);
-      let chunk = this.videoSocket.stream.read(4) as Buffer;
+      await Utils.waitforReadable(videoSocket);
+      let chunk = videoSocket.stream.read(4) as Buffer;
       if (!chunk)
         continue;
       let len = chunk.readUint32LE(0);
@@ -267,8 +268,8 @@ export default class Minicap extends EventEmitter {
       while (streamChunk === null) {
         if (this.closed)
           return;
-        await Utils.waitforReadable(this.videoSocket);
-        chunk = this.videoSocket.stream.read(len) as Buffer;
+        await Utils.waitforReadable(videoSocket);
+        chunk = videoSocket.stream.read(len) as Buffer;
         if (chunk) {
           len -= chunk.length;
           if (!streamChunk)
@@ -286,7 +287,8 @@ export default class Minicap extends EventEmitter {
             this.setFirstFrame();
             this.setFirstFrame = null;
           }
-          this.emit('data', streamChunk);
+          if (streamChunk)
+            this.emit('data', streamChunk);
           break;
         } else {
           await Utils.delay(0);

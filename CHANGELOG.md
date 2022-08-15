@@ -1,7 +1,8 @@
 # CHANGELOG
 
-## v4.1.9
+## v4.1.8 (2022-08-15)
 * improve disconnection detection in Minicap
+* TSC Strict
 
 ## v4.1.7 (2022-08-14)
 * fix Minicap failure after OS upgrade

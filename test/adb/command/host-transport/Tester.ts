@@ -48,7 +48,7 @@ export default class Tester {
     testTr(expectWrite: string, ...args: string[]): Promise<any> {
         const conn = new MockConnection();
         const cmd = new this.cmdClass(conn);
-        if (this.sudo) {
+        if (this.sudo()) {
             cmd.sudo = true;
             this._sudo = false;
         }
@@ -69,7 +69,7 @@ export default class Tester {
     testTr2(expectWrite: string, causeRead?: string, ...args: string[]): Promise<any> {
         const conn = new MockConnection();
         const cmd = new this.cmdClass(conn);
-        if (this.sudo) {
+        if (this.sudo()) {
             cmd.sudo = true;
             this._sudo = false;
         }
