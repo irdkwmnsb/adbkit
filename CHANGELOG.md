@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v4.1.9
+* improve disconnection detection in Minicap
+
 ## v4.1.7 (2022-08-14)
 * fix Minicap failure after OS upgrade
 * improve error messages
