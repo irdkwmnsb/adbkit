@@ -191,7 +191,7 @@ export default class STFService extends EventEmitter {
     this._minitouchagent = this.client.openLocal2('localabstract:minitouchagent');
     const socket = await this._minitouchagent;
     socket.once('close').then(() => {
-      console.log('agentSocket just closed');
+      // console.log('getMinitouchSocket just closed');
     });
     void this.startMinitouchStream(socket).catch(() => { socket.destroy() });
     return socket;
@@ -203,7 +203,7 @@ export default class STFService extends EventEmitter {
     this._agentSocket = this.client.openLocal2('localabstract:stfagent');
     const socket = await this._agentSocket;
     socket.once('close').then(() => {
-      console.log('agentSocket just closed');
+      // console.log('agentSocket just closed');
     });
     void this.startAgentStream(socket).catch(() => { socket.destroy() });
     return this._agentSocket;

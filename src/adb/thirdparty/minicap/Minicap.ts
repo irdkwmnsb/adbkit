@@ -209,11 +209,7 @@ export default class Minicap extends EventEmitter {
     // INFO: (external/MY_minicap/src/minicap_30.cpp:274) Creating frame waiter
     // INFO: (external/MY_minicap/src/minicap_30.cpp:278) Publishing virtual display
     // INFO: (jni/minicap/JpgEncoder.cpp:64) Allocating 7783428 bytes for JPG encoder
-    // if (!Utils.waitforReadable(this.minicapServer, this.config.tunnelDelay)) {
-    //   // try to read error
-    //   const out = await this.minicapServer.setEncoding('utf8').readAll();
-    //   console.log('read minicapServer stdOut:', out);
-    // }
+    // INFO: (jni/minicap/JpgEncoder.cpp:64) Allocating 3458052 bytes for JPG encoder
     await Utils.waitforText(this.minicapServer, /JpgEncoder/, 5000);
     // Connect videoSocket
     if (!this.closed) {
@@ -239,11 +235,14 @@ export default class Minicap extends EventEmitter {
       await Utils.waitforReadable(videoSocket);
       let firstChunk = await videoSocket.read(2) as Buffer;
       if (!firstChunk) {
-        throw Error('fail to read firstChunk, inclease tunnelDelay for this device.');
+        throw Error('Fail to read firstChunk 2 byte Header.');
       }
       this.setVersion(firstChunk[0]); // == 1
       const len = firstChunk[1]; // == 24
       firstChunk = await videoSocket.read(len - 2) as Buffer;
+      if (!firstChunk) {
+        throw Error('Fail to read firstChunk data.');
+      }
       this.setPid(firstChunk.readUint32LE(0));
       this.setRealWidth(firstChunk.readUint32LE(4));
       this.setRealHigth(firstChunk.readUint32LE(8));
