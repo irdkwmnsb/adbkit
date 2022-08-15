@@ -191,6 +191,7 @@ export default class STFService extends EventEmitter {
     this._minitouchagent = this.client.openLocal2('localabstract:minitouchagent');
     const socket = await this._minitouchagent;
     socket.once('close').then(() => {
+      this._minitouchagent = undefined;
       // console.log('getMinitouchSocket just closed');
     });
     void this.startMinitouchStream(socket).catch(() => { socket.destroy() });
@@ -203,6 +204,7 @@ export default class STFService extends EventEmitter {
     this._agentSocket = this.client.openLocal2('localabstract:stfagent');
     const socket = await this._agentSocket;
     socket.once('close').then(() => {
+      this._agentSocket = undefined;
       // console.log('agentSocket just closed');
     });
     void this.startAgentStream(socket).catch(() => { socket.destroy() });
@@ -275,13 +277,15 @@ export default class STFService extends EventEmitter {
    * ^ %d %d %d %d DEFAULT_MAX_CONTACTS, width, height, DEFAULT_MAX_PRESSURE;
    * @param socket 
    */
-  private async startMinitouchStream(socket: PromiseDuplex<Duplex>) {
+  private async startMinitouchStream(socket: PromiseDuplex<Duplex>): Promise<void> {
     socket.setEncoding('ascii');
     let data = '';
     for (; ;) {
       await Utils.waitforReadable(socket);
-      const chunk = await socket.read() as string;
-      data = data + chunk;
+      const chunk = await socket.read();
+      if (!chunk)
+        return;
+      data = data + chunk as string;
       for (; ;) {
         const p = data.indexOf('\n');
         if (p >= 0)
@@ -306,12 +310,14 @@ export default class STFService extends EventEmitter {
   }
 
 
-  private async startAgentStream(socket: PromiseDuplex<Duplex>) {
+  private async startAgentStream(socket: PromiseDuplex<Duplex>): Promise<void> {
     for (; ;) {
       await Utils.waitforReadable(socket);
       const chunk = await socket.read() as Buffer;
       if (chunk) {
         console.log('agentSocket RCV chunk len:', chunk.length, chunk.toString('hex').substring(0, 80));
+      } else {
+        return;
       }
       await Utils.delay(0);
     }
