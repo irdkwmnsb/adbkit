@@ -2,7 +2,6 @@ import { Monkey, Client as MonkeyClient } from '@u4/adbkit-monkey';
 import Logcat from '@u4/adbkit-logcat';
 import Connection from './connection';
 import Sync from './sync';
-import Parser from './parser';
 import ProcStat from './proc/stat';
 
 import { HostTransportCommand } from './command/host';
@@ -737,11 +736,8 @@ export default class DeviceClient {
    */
   public async installRemote(apk: string): Promise<boolean> {
     const transport = await this.transport();
-
     await new hostCmd.InstallCommand(transport, this.options).execute(apk);
-
-    const stream = await this.exec(['rm', '-f', apk]);
-    await new Parser(stream).readAll();
+    await this.execOut(['rm', '-f', apk]);
     return true;
   }
 

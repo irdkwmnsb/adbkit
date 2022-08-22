@@ -159,8 +159,10 @@ export default class STFService extends EventEmitter {
   /**
    * uninstall the service
    */
-  public uninstall(): Promise<boolean> {
-    return this.client.uninstall(PKG);
+  public async uninstall(): Promise<boolean> {
+    await this.client.uninstall(PKG);
+    await this.client.execOut('rm -f /data/local/tmp/minicap /data/local/tmp/minicap.so /data/local/tmp/minitouch /data/local/tmp/minirev');
+    return true;
   }
 
   async start(): Promise<this> {
@@ -334,9 +336,9 @@ export default class STFService extends EventEmitter {
   /**
    * Generic method to push message to service
    */
-  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader: null): Promise<void>;
-  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader: ((req: Uint8Array) => T)): Promise<T>;
-  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader: null | ((req: Uint8Array) => T)): Promise<T | void> {
+  private pushService(type: STF.MessageType, message: Uint8Array, requestReader?: null): Promise<void>;
+  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader?: ((req: Uint8Array) => T)): Promise<T>;
+  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader?: null | ((req: Uint8Array) => T)): Promise<T | void> {
     const id = (this.reqCnt + 1) | 0xFFFFFF;
     this.reqCnt = id;
     const envelope = { type, message, id };
@@ -453,7 +455,7 @@ export default class STFService extends EventEmitter {
 
   public async setRotationRequest(req: STF.SetRotationRequest): Promise<void> {
     const message = this.protoSrv.write.SetRotationRequest(req);
-    return this.pushService<void>(STF.MessageType.SET_ROTATION, message, null)
+    return this.pushService(STF.MessageType.SET_ROTATION, message)
   }
 
   public async setWakeLock(req: STF.SetWakeLockRequest): Promise<STF.GetWifiStatusResponse> {

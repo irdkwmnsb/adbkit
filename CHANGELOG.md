@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v4.1.9 (2022-08-22)
+* drop unused depencency
+* dump dep versions
+* improve STFService uninstall
+  
 ## v4.1.8 (2022-08-15)
 * improve disconnection detection in Minicap
 * TSC Strict
