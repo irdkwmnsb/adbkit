@@ -1,6 +1,6 @@
 {
     "name": "@u4/adbkit",
-    "version": "4.1.9",
+    "version": "4.1.10",
     "description": "A Typescript client for the Android Debug Bridge.",
     "keywords": [
         "adb",
@@ -51,6 +51,7 @@
     "dependencies": {
         "@u4/adbkit-logcat": "2.1.2",
         "@u4/adbkit-monkey": "^1.0.5",
+        "@u4/minicap-prebuilt": "^1.0.0",
         "commander": "9.4.0",
         "debug": "~4.3.4",
         "get-port": "5.1.1",
@@ -63,16 +64,16 @@
     "devDependencies": {
         "@types/debug": "^4.1.7",
         "@types/mocha": "^9.1.1",
-        "@types/node": "^18.7.9",
+        "@types/node": "^18.7.13",
         "@types/node-forge": "^1.0.4",
         "@types/sinon": "^10.0.13",
         "@types/sinon-chai": "^3.2.8",
         "@types/xmldom": "^0.1.31",
-        "@typescript-eslint/eslint-plugin": "^5.33.1",
-        "@typescript-eslint/parser": "^5.33.1",
+        "@typescript-eslint/eslint-plugin": "^5.35.1",
+        "@typescript-eslint/parser": "^5.35.1",
         "bench": "~0.3.6",
         "chai": "~4.3.6",
-        "eslint": "^8.22.0",
+        "eslint": "^8.23.0",
         "mocha": "~10.0.0",
         "picocolors": "^1.0.0",
         "prettier": "^2.7.1",
@@ -80,9 +81,9 @@
         "sinon": "~14.0.0",
         "sinon-chai": "~3.7.0",
         "ts-node": "^10.9.1",
-        "typedoc": "^0.23.10",
+        "typedoc": "^0.23.11",
         "typedoc-plugin-rename-defaults": "^0.6.4",
-        "typescript": "4.7.4"
+        "typescript": "4.8.2"
     },
     "engines": {
         "node": ">= 12.20.0"

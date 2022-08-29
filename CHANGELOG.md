@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v4.1.10 (2022-08-29)
+* minicap-prebuilt for sdk 32+ removed from the package.
+
 ## v4.1.9 (2022-08-22)
 * drop unused depencency
 * dump dep versions

@@ -130,7 +130,7 @@ export default class Minicap extends EventEmitter {
     const minicapName = (sdkLevel >= 16) ? 'minicap' : 'minicap-nopie';
 
     let binFile: string;
-    let soFile: string;
+    let soFile = '';
 
     try {
       binFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/bin/${minicapName}`);
@@ -140,12 +140,12 @@ export default class Minicap extends EventEmitter {
 
     try {
       if (sdkLevel === 32) {
-        soFile = ThirdUtils.getResourcePath(`minicap/android-${sdkLevel}/${abi}/minicap.so`);
+        soFile = require.resolve(`@u4/minicap-prebuilt/prebuilt/${abi}/lib/android-${sdkLevel}/minicap.so`);
       } else {
         soFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/lib/android-${sdkLevel}/minicap.so`);
       }
     } catch (e) {
-      throw Error(`minicap.so for your device check for @devicefarmer/minicap-prebuilt update that support android-${sdkLevel}`);
+      throw Error(`minicap.so for your device check for @devicefarmer/minicap-prebuilt update that support android-${sdkLevel}, ${soFile} is missing`);
     }
 
     // only upload minicap binary in tmp filder if file is missing
