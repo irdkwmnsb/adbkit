@@ -46,7 +46,7 @@ export default class Utils {
   public static async waitforReadable(duplex?: Duplex | PromiseDuplex<Duplex>, timeout = 0): Promise<boolean> {
     if (!duplex)
       return false
-    let theResolve: undefined | (() => void);
+    let theResolve: (() => void) = () => { /** dummy */ };
     const waitRead = new Promise<void>((resolve) => {
       theResolve = resolve;
       if (duplex instanceof Duplex) {
@@ -61,9 +61,9 @@ export default class Utils {
       await Promise.race([waitRead, timeOut]);
       if (!readable) {
         if (duplex instanceof Duplex) {
-          duplex.off('readable', theResolve!)
+          duplex.off('readable', theResolve)
         } else {
-          duplex.readable.stream.off('readable', theResolve!)
+          duplex.readable.stream.off('readable', theResolve)
         }
       }
       return readable;

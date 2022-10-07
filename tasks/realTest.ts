@@ -451,13 +451,13 @@ const main = async () => {
   // console.log(list.map(a=>a.toString()).join('\n'));
   // await deviceClient.extra.usbTethering(true);
   // await deviceClient.extra.airPlainMode(false, 300);
-  // await deviceClient.extra.airPlainMode(false);
+  // await deviceClient.extra.airPlainMode(true);
   // await testScrcpyEncoder(deviceClient);
-  // await testScrcpy(deviceClient);
+  await testScrcpy(deviceClient);
   // await testUiautomator(deviceClient);
   // await testScrcpyTextInput(deviceClient);
   // await testScrcpyswap(deviceClient);
-  await testMinicap(deviceClient);
+  // await testMinicap(deviceClient);
   // await stressMinicap(deviceClient);
   // await stressScrCpy(deviceClient);
   // await mtestSTFService(deviceClient);

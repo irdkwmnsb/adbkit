@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v4.1.11 (2022-10-07)
+* fix regression in Scrcpy [issue 9](https://github.com/UrielCh/adbkit/issues/9)
+
 ## v4.1.10 (2022-08-29)
 * minicap-prebuilt for sdk 32+ removed from the package.
 

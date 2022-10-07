@@ -324,7 +324,6 @@ export default class Scrcpy extends EventEmitter {
       });
       // debug only
       // extraUtils.dumpReadable(this.scrcpyServer, 'scrcpyServer');
-      this.throwsErrors(this.scrcpyServer);
     } catch (e) {
       debug('Impossible to run server:', e);
       throw e;
@@ -353,6 +352,8 @@ export default class Scrcpy extends EventEmitter {
         throw Error(msg);
       }
     }
+
+    this.throwsErrors(this.scrcpyServer);
 
     // Wait 1 sec to forward to work
     // await Util.delay(this.config.tunnelDelay);

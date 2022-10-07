@@ -50,6 +50,7 @@ export default class DeviceClientExtra {
     // wake screen
     await this.keyCode(KeyCodes.KEYCODE_WAKEUP);
     await this.deviceClient.startActivity({ action: 'android.settings.AIRPLANE_MODE_SETTINGS', wait: true });
+    // await Utils.delay(100);
     let xml = await this.deviceClient.execOut('uiautomator dump /dev/tty', 'utf8');
     xml = xml.replace('UI hierchary dumped to: /dev/tty', '');
     // xml = xml.replace(/ ([a-z-]+)=""/g, '');
