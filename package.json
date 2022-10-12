@@ -2,6 +2,15 @@
     "name": "@u4/adbkit",
     "version": "4.1.11",
     "description": "A Typescript client for the Android Debug Bridge.",
+    "main": "dist/cjs/index.js",
+    "module": "dist/mjs/index.js",
+    "types": "dist/mjs/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/mjs/index.js",
+            "require": "./dist/cjs/index.js"
+        }
+    },
     "keywords": [
         "adb",
         "adbkit",
@@ -23,13 +32,13 @@
         "email": "contact@openstf.io",
         "url": "https://urielch.github.io/"
     },
-    "contributors": [{
-        "name": "uriel chemouni",
-        "email": "uchemouni@gmail.com",
-        "url": "https://urielch.github.io/"
-    }],
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "contributors": [
+        {
+            "name": "uriel chemouni",
+            "email": "uchemouni@gmail.com",
+            "url": "https://urielch.github.io/"
+        }
+    ],
     "repository": {
         "type": "git",
         "url": "https://github.com/UrielCh/adbkit.git"
@@ -38,10 +47,10 @@
         "clean": "rimraf dist",
         "keycode": "ts-node tasks/keycode.ts",
         "servicemap": "ts-node tasks/servicemap.ts",
-        "prepublish": "npm run clean && npm run compile",
+        "prepublish": "npm run clean && npm run build",
         "docs": "typedoc --entryPointStrategy expand",
-        "compile": "tsc -p .",
-        "build": "tsc -p .",
+        "build": "rimraf dist && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json && npm run fixup",
+        "fixup": "cp misc/cjs/package.json dist/cjs/ && cp misc/mjs/package.json dist/mjs/",
         "lint": "eslint   ./ --ext .ts",
         "format": "eslint ./ --ext .ts --fix",
         "test": "mocha -r ts-node/register --reporter spec --colors test/**/*.ts",
@@ -87,7 +96,8 @@
         "why-is-node-running": "^2.2.2"
     },
     "engines": {
-        "node": ">= 12.20.0"
+        "node": ">= 12.20.0",
+        "npm": ">=7.0.0"
     },
     "files": [
         "dist",
