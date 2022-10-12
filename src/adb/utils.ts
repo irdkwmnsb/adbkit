@@ -5,6 +5,8 @@ import { Duplex } from 'stream';
 import PromiseDuplex from 'promise-duplex';
 import Debug from 'debug';
 
+export type CancellablePromise<T> = Promise<T> & { cancel: () => void };
+
 export default class Utils {
   /**
    * Takes a [`Stream`][node-stream] and reads everything it outputs until the stream ends. Then it resolves with the collected output. Convenient with `client.shell()`.
@@ -31,11 +33,18 @@ export default class Utils {
    * @param ms time to wait im ms
    * @returns void
    */
-  public static delay(ms: number): Promise<void> {
-    return new Promise<void>((resolve) => {
-      setTimeout(resolve, ms);
-    });
+  public static delay(ms: number): CancellablePromise<void> {
+    let timeout: null | NodeJS.Timeout = null;
+    const promise = new Promise<void>((resolve) => {
+      timeout = setTimeout(() => {
+        timeout = null;
+        resolve();
+      }, ms);
+    }) as CancellablePromise<void>;
+    promise.cancel = () => { if (timeout) clearTimeout(timeout); timeout = null; };
+    return promise;
   }
+
   /**
    * Promise waiter for a Duplex to be readable
    * 
@@ -43,33 +52,62 @@ export default class Utils {
    * @param timeout do not wait more than timeout
    * @returns is the true is duplex is readable
    */
-  public static async waitforReadable(duplex?: Duplex | PromiseDuplex<Duplex>, timeout = 0): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static async waitforReadable(duplex?: Duplex | PromiseDuplex<Duplex>, timeout = 0, _debugCtxt = ''): Promise<boolean> {
+    // let t0 = Date.now();
+    /**
+     * prechecks
+     */
     if (!duplex)
-      return false
-    let theResolve: (() => void) = () => { /** dummy */ };
+      throw Error('can not waitforReadable on a null / undefined duplex');
+    const stream: Duplex = (duplex instanceof Duplex) ? duplex : duplex.stream;
+    if (stream.closed)
+      throw Error('can not waitforReadable on a closed duplex');
+
+    /**
+     * readable is true by default
+     */
+    let readable = true;
+
+    /**
+     * handle close event
+     */
+    let theResolve: (() => void) = () => { /* dummy */ };
+    let onClose = () => { readable = false; };
+    const waitClose = new Promise<void>((resolve) => onClose = resolve)
+    stream.once('close', onClose);
+
+    /**
+     * Handle readable event
+     */
     const waitRead = new Promise<void>((resolve) => {
       theResolve = resolve;
-      if (duplex instanceof Duplex) {
-        duplex.once('readable', resolve)
-      } else {
-        duplex.readable.stream.once('readable', resolve)
-      }
+      stream.once('readable', theResolve)
     });
+
+    const promises = [waitRead, waitClose];
+    /**
+     * Handle timeout event
+     */
+    let timeOut: CancellablePromise<void> | null = null;
     if (timeout) {
-      let readable = true;
-      const timeOut = Utils.delay(timeout).then(() => readable = false);
-      await Promise.race([waitRead, timeOut]);
-      if (!readable) {
-        if (duplex instanceof Duplex) {
-          duplex.off('readable', theResolve)
-        } else {
-          duplex.readable.stream.off('readable', theResolve)
-        }
-      }
-      return readable;
+      timeOut = Utils.delay(timeout);
+      promises.push(timeOut.then(() => { readable = false }));
     }
-    await waitRead;
-    return true;
+    /**
+     * single Promise race call
+     */
+    await Promise.race(promises);
+    /**
+     * clean unused events
+     */
+    stream.off('readable', theResolve)
+    stream.off('close', onClose);
+    if (timeOut)
+      timeOut.cancel();
+    // t0 = Date.now() - t0;
+    // console.log(`waitforReadable return after ${t0}ms`, readable, _debugCtxt);
+    return readable;
   }
 
   /**

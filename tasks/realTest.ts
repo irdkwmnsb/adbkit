@@ -8,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import pc from 'picocolors';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const log = require('why-is-node-running');
+// const logRunning = require('why-is-node-running');
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -51,24 +51,26 @@ const testScrcpy = async (deviceClient: DeviceClient) => {
     const asFloat = parseFloat((pts || 0).toString())
     const sec = asFloat / 1000000;
     console.log(`[${sec.toFixed(1)}] Data: ${fmtSize(data.length)} ${nbFrame} Frame receved ${nbkeyframe} KeyFrame`)
-    if (nbFrame > MAX_FRAMES) {
+    if (nbFrame >= MAX_FRAMES) {
       console.log('capture Done config:', JSON.stringify(config));
       scrcpy.stop();
       // await deviceClient.disconnect();
       scrcpy.off('frame', onFrame);
       clearInterval(loginterval);
-      await Utils.delay(100);
-      log();
+      // await Utils.delay(100);
+      // logRunning();
     }
   }
   scrcpy.on('frame', onFrame);
   try {
     await scrcpy.start();
-    console.log(`Started`);
+    console.log('scrcpy Started waiting for Termination');
+    await scrcpy.onTermination;
   } catch (e) {
     console.error('Impossible to start', e);
   }
 }
+
 
 const testScrcpyTextInput = async (deviceClient: DeviceClient) => {
   const scrcpy = deviceClient.scrcpy({});
@@ -132,7 +134,7 @@ const testScrcpyEncoder = async (deviceClient: DeviceClient) => {
     scrcpy.on('error', (e) => { nbError++; console.log(e) });
     // scrcpy.on('error', (e) => { nbError++; /* get Error message line per line */ });
     await scrcpy.start();
-    const error = await scrcpy.onFatal;
+    const error = await scrcpy.onTermination;
     // full error message
     // console.log(error);
     const m = [...error.matchAll(/encoder '([^']+)'/g)].map(a => a[1]);
@@ -144,7 +146,7 @@ const testScrcpyEncoder = async (deviceClient: DeviceClient) => {
     scrcpy.stop();
   }
   await Utils.delay(1000);
-  await scrcpy.onFatal;
+  await scrcpy.onTermination;
 }
 
 const testMinicap = async (deviceClient: DeviceClient) => {
@@ -309,7 +311,7 @@ const extractFramesStream = async (deviceClient: DeviceClient, encoderName: 'OMX
     }
   });
   await scrcpy.start();
-  await scrcpy.onFatal;
+  await scrcpy.onTermination;
 }
 
 const testSTFService = async (deviceClient: DeviceClient) => {

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import Adb, { Utils } from '../';
-import Client from '../src/adb/client';
+// import Client from '../src/adb/client';
 // import { Keycode } from '../src/adb/keycode';
 
 describe('Adb', () => {
