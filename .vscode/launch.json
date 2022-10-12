@@ -23,14 +23,15 @@
             "name": "Mocha Tests",
             "cwd": "${workspaceFolder}",
             "args": [
-                "-r",
-                "ts-node/register",
-                "--project",
-                "tsconfig.json",
                 "--no-timeouts",
                 "--colors",
                 "${workspaceFolder}/test/**/*.ts"
             ],
+            "env": {
+                // "NODE_OPTIONS": "--loader ts-node/esm",
+                "NODE_OPTIONS": "-r ts-node/register --no-warnings",
+                "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig-cjs.json",
+            },
             "internalConsoleOptions": "openOnSessionStart",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "request": "launch",
@@ -46,7 +47,7 @@
                 "-r",
                 "ts-node/register",
                 "--project",
-                "tsconfig.json",
+                "tsconfig-cjs.json",
                 "--no-timeouts",
                 "--colors",
                 "${workspaceFolder}/test/adb/command/host-transport/serviceCall.ts"

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v5.0.0 (2022-10-12)
+* Hybride npm package, ESM + CJS export
+* refactor scrcpy module
+
 ## v4.1.11 (2022-10-07)
 * fix regression in Scrcpy [issue 9](https://github.com/UrielCh/adbkit/issues/9)
 
