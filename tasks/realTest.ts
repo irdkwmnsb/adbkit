@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import adb, { DeviceClient, KeyCodes, Utils, MotionEvent, Client, Minicap, Scrcpy } from '../src';
+import adb, { DeviceClient, KeyCodes, Utils, MotionEvent, Client, Minicap, Scrcpy, VideoStreamFramePacket } from '../src';
 import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
 import { KeyEvent } from '../src/adb/thirdparty/STFService/STFServiceModel';
@@ -7,6 +7,8 @@ import ThirdUtils from '../src/adb/thirdparty/ThirdUtils';
 import fs from 'fs';
 import path from 'path';
 import pc from 'picocolors';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const log = require('why-is-node-running');
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -26,9 +28,12 @@ function fmtSize(trData: number): string {
 
 const testScrcpy = async (deviceClient: DeviceClient) => {
   const scrcpy = deviceClient.scrcpy({});
+  let nbFrame = 0;
+  let nbkeyframe = 0;
   let nbPkg = 0;
   let trData = 0;
-  setInterval(() => {
+  const MAX_FRAMES = 200;
+  const loginterval = setInterval(() => {
     if (!nbPkg)
       return;
     console.log(`${nbPkg} packet Transfered for a total of ${fmtSize(trData)}`);
@@ -36,13 +41,27 @@ const testScrcpy = async (deviceClient: DeviceClient) => {
     trData = 0;
   }, 1000);
   // const mille: BigInt = 1000n;
-  scrcpy.on('frame', ({ pts, data }) => {
+
+  const onFrame: (data: VideoStreamFramePacket) => void = async ({ pts, data, keyframe, config }) => {
     nbPkg++;
+    nbFrame++;
+    if (keyframe)
+      nbkeyframe++;
     trData += data.length;
     const asFloat = parseFloat((pts || 0).toString())
     const sec = asFloat / 1000000;
-    console.log(`[${sec.toFixed(1)}] Data:  ${fmtSize(data.length)}`)
-  });
+    console.log(`[${sec.toFixed(1)}] Data: ${fmtSize(data.length)} ${nbFrame} Frame receved ${nbkeyframe} KeyFrame`)
+    if (nbFrame > MAX_FRAMES) {
+      console.log('capture Done config:', JSON.stringify(config));
+      scrcpy.stop();
+      // await deviceClient.disconnect();
+      scrcpy.off('frame', onFrame);
+      clearInterval(loginterval);
+      await Utils.delay(100);
+      log();
+    }
+  }
+  scrcpy.on('frame', onFrame);
   try {
     await scrcpy.start();
     console.log(`Started`);
