@@ -79,7 +79,7 @@ export default class Scrcpy extends EventEmitter {
   private _name: Promise<string>;
   private _width: Promise<number>;
   private _height: Promise<number>;
-  private _onFatal: Promise<string>;
+  private _onTermination: Promise<string>;
   private _firstFrame: Promise<void>;
 
   ////////
@@ -89,7 +89,7 @@ export default class Scrcpy extends EventEmitter {
   private setWidth!: (width: number) => void;
   private setHeight!: (height: number) => void;
   private setFatalError?: (error: string) => void;
-  private setFirstFrame!: (() => void) | null;
+  private setFirstFrame?: (() => void) | null;
 
   private lastConf?: H264Configuration;
   /**
@@ -124,7 +124,7 @@ export default class Scrcpy extends EventEmitter {
     this._name = new Promise<string>((resolve) => this.setName = resolve);
     this._width = new Promise<number>((resolve) => this.setWidth = resolve);
     this._height = new Promise<number>((resolve) => this.setHeight = resolve);
-    this._onFatal = new Promise<string>((resolve) => this.setFatalError = resolve);
+    this._onTermination = new Promise<string>((resolve) => this.setFatalError = resolve);
     this._firstFrame = new Promise<void>((resolve) => this.setFirstFrame = resolve);
   }
 
@@ -141,7 +141,7 @@ export default class Scrcpy extends EventEmitter {
    * Clever way to detect Termination.
    * return the Ending message.
    */
-  get onTermination(): Promise<string> { return this._onFatal; }
+  get onTermination(): Promise<string> { return this._onTermination; }
 
   /**
    * Promise to the first emited frame
@@ -481,8 +481,10 @@ export default class Scrcpy extends EventEmitter {
         await Utils.waitforReadable(this.videoSocket, 0, 'videoSocket streamChunk');
         streamChunk = this.videoSocket.stream.read(len) as Buffer;
         if (streamChunk) {
-          // debug('\tPacket length:', streamChunk.length);
           if (config) { // non-media data packet len: 33
+            /**
+             * is a config package pts have PACKET_FLAG_CONFIG flag
+             */
             const sequenceParameterSet = parse_sequence_parameter_set(streamChunk);
             const {
               profile_idc: profileIndex,
@@ -512,6 +514,9 @@ export default class Scrcpy extends EventEmitter {
             this.lastConf = videoConf;
             this.emit('config', videoConf);
           } else {
+            /**
+             * if pts have PACKET_FLAG_KEY_FRAME, this is a keyframe
+             */
             const keyframe = !!(pts & PACKET_FLAG_KEY_FRAME);
             if (keyframe) {
               pts &= ~PACKET_FLAG_KEY_FRAME;
@@ -519,7 +524,7 @@ export default class Scrcpy extends EventEmitter {
             const frame = { keyframe, pts, data: streamChunk, config: this.lastConf };
             if (this.setFirstFrame) {
               this.setFirstFrame();
-              this.setFirstFrame = null;
+              this.setFirstFrame = undefined;
             }
             this.emit('frame', frame);
           }

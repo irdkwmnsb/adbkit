@@ -8,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import pc from 'picocolors';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const log = require('why-is-node-running');
+// const logRunning = require('why-is-node-running');
 
 function print(list: Array<IpRouteEntry | IpRuleEntry>) {
   for (const route of list) console.log(route.toString());
@@ -51,14 +51,14 @@ const testScrcpy = async (deviceClient: DeviceClient) => {
     const asFloat = parseFloat((pts || 0).toString())
     const sec = asFloat / 1000000;
     console.log(`[${sec.toFixed(1)}] Data: ${fmtSize(data.length)} ${nbFrame} Frame receved ${nbkeyframe} KeyFrame`)
-    if (nbFrame > MAX_FRAMES) {
+    if (nbFrame >= MAX_FRAMES) {
       console.log('capture Done config:', JSON.stringify(config));
       scrcpy.stop();
       // await deviceClient.disconnect();
       scrcpy.off('frame', onFrame);
       clearInterval(loginterval);
-      await Utils.delay(100);
-      log();
+      // await Utils.delay(100);
+      // logRunning();
     }
   }
   scrcpy.on('frame', onFrame);

@@ -52,8 +52,9 @@ export default class Utils {
    * @param timeout do not wait more than timeout
    * @returns is the true is duplex is readable
    */
-  public static async waitforReadable(duplex?: Duplex | PromiseDuplex<Duplex>, timeout = 0, debugCtxt = ''): Promise<boolean> {
-    let t0 = Date.now();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static async waitforReadable(duplex?: Duplex | PromiseDuplex<Duplex>, timeout = 0, _debugCtxt = ''): Promise<boolean> {
+    // let t0 = Date.now();
     /**
      * prechecks
      */
@@ -81,12 +82,7 @@ export default class Utils {
      */
     const waitRead = new Promise<void>((resolve) => {
       theResolve = resolve;
-      if (duplex instanceof Duplex) {
-        duplex.once('readable', theResolve)
-      } else {
-        // duplex.stream.once('readable', theResolve)
-        duplex.readable.stream.once('readable', theResolve)
-      }
+      stream.once('readable', theResolve)
     });
 
     const promises = [waitRead, waitClose];
@@ -102,21 +98,15 @@ export default class Utils {
      * single Promise race call
      */
     await Promise.race(promises);
-
     /**
      * clean unused events
      */
-    if (duplex instanceof Duplex) {
-      duplex.off('readable', theResolve)
-    } else {
-      // duplex.stream.off('readable', theResolve)
-      duplex.readable.stream.off('readable', theResolve)
-    }
+    stream.off('readable', theResolve)
     stream.off('close', onClose);
     if (timeOut)
       timeOut.cancel();
-    t0 = Date.now() - t0;
-    console.log(`waitforReadable return after ${t0}ms`, readable, debugCtxt);
+    // t0 = Date.now() - t0;
+    // console.log(`waitforReadable return after ${t0}ms`, readable, _debugCtxt);
     return readable;
   }
 
