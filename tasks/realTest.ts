@@ -64,11 +64,13 @@ const testScrcpy = async (deviceClient: DeviceClient) => {
   scrcpy.on('frame', onFrame);
   try {
     await scrcpy.start();
-    console.log(`Started`);
+    console.log('scrcpy Started waiting for Termination');
+    await scrcpy.onTermination;
   } catch (e) {
     console.error('Impossible to start', e);
   }
 }
+
 
 const testScrcpyTextInput = async (deviceClient: DeviceClient) => {
   const scrcpy = deviceClient.scrcpy({});
@@ -132,7 +134,7 @@ const testScrcpyEncoder = async (deviceClient: DeviceClient) => {
     scrcpy.on('error', (e) => { nbError++; console.log(e) });
     // scrcpy.on('error', (e) => { nbError++; /* get Error message line per line */ });
     await scrcpy.start();
-    const error = await scrcpy.onFatal;
+    const error = await scrcpy.onTermination;
     // full error message
     // console.log(error);
     const m = [...error.matchAll(/encoder '([^']+)'/g)].map(a => a[1]);
@@ -144,7 +146,7 @@ const testScrcpyEncoder = async (deviceClient: DeviceClient) => {
     scrcpy.stop();
   }
   await Utils.delay(1000);
-  await scrcpy.onFatal;
+  await scrcpy.onTermination;
 }
 
 const testMinicap = async (deviceClient: DeviceClient) => {
@@ -309,7 +311,7 @@ const extractFramesStream = async (deviceClient: DeviceClient, encoderName: 'OMX
     }
   });
   await scrcpy.start();
-  await scrcpy.onFatal;
+  await scrcpy.onTermination;
 }
 
 const testSTFService = async (deviceClient: DeviceClient) => {
