@@ -18,6 +18,8 @@ const DEFAULT_CHMOD = 0o644;
 const DATA_MAX_LENGTH = 65536;
 const debug = Utils.debug('adb:sync');
 
+const b1m = BigInt(1000000); //1000000n in es next
+
 export interface ENOENT extends Error {
   errno: 34;
   code: 'ENOENT';
@@ -114,9 +116,9 @@ export default class Sync extends EventEmitter {
     const uid = BigInt(stat.readUInt32LE(28));
     const gid = BigInt(stat.readUInt32LE(32));
     const size = stat.readBigUint64LE(36);
-    const atime = stat.readBigUint64LE(44) * 1000000n;
-    const mtime = stat.readBigUint64LE(52) * 1000000n;
-    const ctime = stat.readBigUint64LE(60) * 1000000n;
+    const atime = stat.readBigUint64LE(44) * b1m;
+    const mtime = stat.readBigUint64LE(52) * b1m;
+    const ctime = stat.readBigUint64LE(60) * b1m;
     if (mode === 0) {
       return this.enoent(path);
     } else {
@@ -175,9 +177,9 @@ export default class Sync extends EventEmitter {
       const uid = BigInt(stat.readUInt32LE(28));
       const gid = BigInt(stat.readUInt32LE(32));
       const size = stat.readBigUint64LE(36);
-      const atime = stat.readBigUint64LE(44) * 1000000n;
-      const mtime = stat.readBigUint64LE(52) * 1000000n;
-      const ctime = stat.readBigUint64LE(60) * 1000000n;
+      const atime = stat.readBigUint64LE(44) * b1m;
+      const mtime = stat.readBigUint64LE(52) * b1m;
+      const ctime = stat.readBigUint64LE(60) * b1m;
       const namelen = stat.readUInt32LE(68); // I
       const name = await this.parser.readBytes(namelen);
       const nameString = name.toString();

@@ -1,6 +1,8 @@
 import Stats from './stats';
 import fs from 'fs';
 
+const b1k = BigInt(1000);
+
 export default class Stats64 implements fs.BigIntStats {
   isFile(): boolean {
     return !!(Number(this.mode) & Stats.S_IFREG);
@@ -25,21 +27,21 @@ export default class Stats64 implements fs.BigIntStats {
   }
 
   get atimeMs(): bigint {
-    return this.atimeNs / 1000n;
+    return this.atimeNs / b1k;
   }
   get mtimeMs(): bigint {
-    return this.mtimeNs / 1000n;
+    return this.mtimeNs / b1k;
   }
   get ctimeMs(): bigint {
-    return this.ctimeNs / 1000n;
+    return this.ctimeNs / b1k;
   }
   get birthtimeMs(): bigint {
-    return this.birthtimeMs / 1000n;
+    return this.birthtimeMs / b1k;
   }
 
-  rdev: bigint = 0n;
-  blksize: bigint = 0n;
-  blocks: bigint = 0n;
+  rdev = BigInt(0);
+  blksize = BigInt(0);
+  blocks = BigInt(0);
 
   get atime(): Date {
     return new Date(Number(this.atimeMs))
