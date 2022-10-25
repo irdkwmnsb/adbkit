@@ -3,7 +3,7 @@ import { DeviceClient } from "..";
 /**
  * adb device starts
  */
-export type DeviceType = 'emulator' | 'device' | 'offline';
+export type DeviceType = 'emulator' | 'device' | 'offline' | 'unauthorized';
 
 export default interface Device {
   /**
