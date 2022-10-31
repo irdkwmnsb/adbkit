@@ -114,8 +114,7 @@ export default class DeviceClientExtra {
 
   /**
    * Tap a keyCode
-   * @param x1 
-   * @param y1 
+   * @param key
    * @returns 
    */
   async keyCode(key: KeyCodes): Promise<string> {
