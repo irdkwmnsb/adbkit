@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## V4.1.14 (2022-11-04)
+* rewrite legacy transfert function
+
 ## V4.1.13 (2022-11-04)
 * improve file transfert
 
