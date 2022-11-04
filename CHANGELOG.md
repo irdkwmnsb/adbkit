@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## V4.1.13 (2022-11-04)
+* improve file transfert
+
 ## V4.1.12 (2022-11-04)
 * improve file transfert
 * improve install APK

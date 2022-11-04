@@ -198,11 +198,11 @@ export default class Sync extends EventEmitter {
    * @param mode Optional. The mode of the file. Defaults to `0644`.
    * @returns A `PushTransfer` instance. See below for details.
    */
-  public async push(contents: string | Readable, path: string, mode?: number): Promise<PushTransfer> {
+  public async push(contents: string | Readable, path: string, mode?: number, streamName = 'stream'): Promise<PushTransfer> {
     if (typeof contents === 'string') {
       return this.pushFile(contents, path, mode);
     } else {
-      return this.pushStream(contents, path, mode);
+      return this.pushStream(contents, path, mode, streamName);
     }
   }
   /**
@@ -222,7 +222,8 @@ export default class Sync extends EventEmitter {
     } catch (e) {
       throw Error(`can not read file "${file}"`);
     }
-    return this.pushStream(fs.createReadStream(file), path, mode);
+    const stream = fs.createReadStream(file);
+    return this.pushStream(stream, path, mode, file);
   }
 
   /**
@@ -233,10 +234,10 @@ export default class Sync extends EventEmitter {
    * @param mode See `sync.push()` for details.
    * @returns See `sync.push()` for details.
    */
-  public async pushStream(stream: Readable, path: string, mode = DEFAULT_CHMOD): Promise<PushTransfer> {
+  public async pushStream(stream: Readable, path: string, mode = DEFAULT_CHMOD, streamName = 'stream'): Promise<PushTransfer> {
     mode |= Stats.S_IFREG;
     await this.sendCommandWithArg(Protocol.SEND, `${path},${mode}`);
-    return this._writeData(stream, Math.floor(Date.now() / 1000));
+    return this._writeData(stream, Math.floor(Date.now() / 1000), streamName);
   }
 
   /**
@@ -268,7 +269,7 @@ export default class Sync extends EventEmitter {
     return Sync.temp(path);
   }
 
-  private _writeData(stream: Readable, timeStamp: number): PushTransfer {
+  private _writeData(stream: Readable, timeStamp: number, streamName: string): PushTransfer {
     const transfer = new PushTransfer();
 
     let readableListener: () => void;
@@ -276,7 +277,7 @@ export default class Sync extends EventEmitter {
     let endListener: () => void;
     let errorListener: (err: Error) => void;
 
-    const writeData = (): Promise<unknown> => new Promise((resolve, reject) => {
+    const writeData = () => new Promise<void>((resolve, reject) => {
 
       const writer = Promise.resolve();
       endListener = () => {
@@ -301,12 +302,12 @@ export default class Sync extends EventEmitter {
 
       readableListener = () => writer.then(writeAll);
       stream.on('readable', readableListener);
-      errorListener = (err) => reject(err);
+      errorListener = (err) => reject(new Error(`Source Error: ${err.message} while transfering ${streamName}`));
       stream.on('error', errorListener);
       connErrorListener = (err: Error) => {
         stream.destroy(err);
         this.connection.end();
-        reject(err);
+        reject(new Error(`Target Error: ${err.message} while transfering ${streamName}`));
       };
       this.connection.on('error', connErrorListener);
     })
@@ -317,7 +318,6 @@ export default class Sync extends EventEmitter {
         this.connection.removeListener('error', connErrorListener);
         // writer.cancel();
       });
-
 
     // While I can't think of a case that would break this double-Promise
     // writer-reader arrangement right now, it's not immediately obvious

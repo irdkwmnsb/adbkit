@@ -4,7 +4,7 @@ import Sinon from 'sinon';
 import Chai, { expect, assert } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
-import Adb, { Client }  from '../../src/index';
+import Adb, { Client } from '../../src/index';
 import Sync, { ENOENT } from '../../src/adb/sync';
 import Stats from '../../src/adb/sync/stats';
 import Entry from '../../src/adb/sync/entry';
@@ -148,7 +148,7 @@ describe('Sync', () => {
             }).finally(done);
         });
         dt('should return a PullTransfer instance', (done) => {
-            return forEachSyncDevice( async (sync) => {
+            return forEachSyncDevice(async (sync) => {
                 const rval = await sync.pull(SURELY_EXISTING_FILE);
                 expect(rval).to.be.an.instanceof(PullTransfer);
                 return rval.cancel();

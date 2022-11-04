@@ -24,7 +24,6 @@ interface IEmissions {
  */
 export default class PushTransfer extends EventEmitter {
   private stack: number[] = [];
-  private waitForEndPromise?: Promise<void>;
   public stats = {
     bytesTransferred: 0,
   };
@@ -58,19 +57,21 @@ export default class PushTransfer extends EventEmitter {
     return this.emit('end');
   }
 
+
+  private waitForEndPromise?: Promise<void>;
   /**
    * get end notification using Promise
    */
   public waitForEnd(): Promise<void> {
     if (!this.waitForEndPromise) {
       this.waitForEndPromise = new Promise<void>((resolve, reject) => {
-        const unReg = (cb: () => void) => {
+        const unReg = (cb: () => void, e?: Error) => {
           this.off('end', resolve);
-          this.off('error', reject);
+          this.off('error', () => reject(e));
           cb();
         }
         this.on('end', () => unReg(resolve));
-        this.on('error', () => unReg(reject));
+        this.on('error', (e) => unReg(reject, e));
       })
     }
     return this.waitForEndPromise;

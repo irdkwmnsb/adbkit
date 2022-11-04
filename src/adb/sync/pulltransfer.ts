@@ -43,18 +43,23 @@ export default class PullTransfer extends Stream.PassThrough {
     })
   }
 
+  private waitForEndPromise?: Promise<void>;
   /**
    * get end notification using Promise
    */
   public waitForEnd(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const unReg = (cb: () => void) => {
-        this.off('end', resolve);
-        this.off('error', reject);
-        cb();
-      }
-      this.on('end', () => unReg(resolve));
-      this.on('error', () => unReg(reject));
-    })
+    if (!this.waitForEndPromise) {
+      this.waitForEndPromise = new Promise<void>((resolve, reject) => {
+        const unReg = (cb: () => void, e?: Error) => {
+          this.off('end', resolve);
+          this.off('error', () => reject(e));
+          cb();
+        }
+        this.on('end', () => unReg(resolve));
+        this.on('error', (e) => unReg(reject, e));
+      })
+    }
+    return this.waitForEndPromise;
+
   }
 }
