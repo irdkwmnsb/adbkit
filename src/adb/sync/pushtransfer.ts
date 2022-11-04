@@ -57,7 +57,6 @@ export default class PushTransfer extends EventEmitter {
     return this.emit('end');
   }
 
-
   private waitForEndPromise?: Promise<void>;
   /**
    * get end notification using Promise
@@ -65,13 +64,14 @@ export default class PushTransfer extends EventEmitter {
   public waitForEnd(): Promise<void> {
     if (!this.waitForEndPromise) {
       this.waitForEndPromise = new Promise<void>((resolve, reject) => {
-        const unReg = (cb: () => void, e?: Error) => {
+        const unReg = () => {
           this.off('end', resolve);
-          this.off('error', () => reject(e));
-          cb();
+          this.off('error', onError);
         }
-        this.on('end', () => unReg(resolve));
-        this.on('error', (e) => unReg(reject, e));
+        const onError = (e: Error) => { unReg(); reject(e); };
+        const onEnd = () => (unReg(), resolve());
+        this.on('end', () => onEnd);
+        this.on('error', (e) => (onError));
       })
     }
     return this.waitForEndPromise;
