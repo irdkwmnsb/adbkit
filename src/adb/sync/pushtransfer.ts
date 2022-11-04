@@ -53,7 +53,9 @@ export default class PushTransfer extends EventEmitter {
     return this.emit('progress', this.stats);
   }
 
+  private done = false;
   public end(): boolean {
+    this.done = true;
     return this.emit('end');
   }
 
@@ -63,16 +65,20 @@ export default class PushTransfer extends EventEmitter {
    */
   public waitForEnd(): Promise<void> {
     if (!this.waitForEndPromise) {
-      this.waitForEndPromise = new Promise<void>((resolve, reject) => {
-        const unReg = () => {
-          this.off('end', resolve);
-          this.off('error', onError);
-        }
-        const onError = (e: Error) => { unReg(); reject(e); };
-        const onEnd = () => (unReg(), resolve());
-        this.on('end', () => onEnd);
-        this.on('error', (e) => (onError));
-      })
+      if (this.done) {
+        this.waitForEndPromise = Promise.resolve();
+      } else {
+        this.waitForEndPromise = new Promise<void>((resolve, reject) => {
+          const unReg = () => {
+            this.off('end', onEnd);
+            this.off('error', onError);
+          }
+          const onError = (e: Error) => { unReg(); reject(e); };
+          const onEnd = () => (unReg(), resolve());
+          this.on('end', onEnd);
+          this.on('error', onError);
+        })
+      }
     }
     return this.waitForEndPromise;
   }

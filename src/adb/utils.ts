@@ -1,9 +1,10 @@
 import Parser from './parser';
 import Auth from './auth';
 import ExtendedPublicKey from '../models/ExtendedPublicKey';
-import { Duplex } from 'stream';
+import { Duplex, Readable } from 'stream';
 import PromiseDuplex from 'promise-duplex';
 import Debug from 'debug';
+import PromiseReadable from 'promise-readable';
 
 export type CancellablePromise<T> = Promise<T> & { cancel: () => void };
 
@@ -53,17 +54,19 @@ export default class Utils {
    * @returns is the true is duplex is readable
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static async waitforReadable(duplex?: Duplex | PromiseDuplex<Duplex>, timeout = 0, _debugCtxt = ''): Promise<boolean> {
+  public static async waitforReadable(duplex?: Duplex | PromiseDuplex<Duplex> | Readable | PromiseReadable<Readable>, timeout = 0, _debugCtxt = ''): Promise<boolean> {
     // let t0 = Date.now();
     /**
      * prechecks
      */
     if (!duplex)
       throw Error('can not waitforReadable on a null / undefined duplex');
-    const stream: Duplex = (duplex instanceof Duplex) ? duplex : duplex.stream;
+    const stream: Duplex | Readable = (duplex instanceof Duplex || duplex instanceof Readable) ? duplex : duplex.stream;
     if (stream.closed)
       throw Error('can not waitforReadable on a closed duplex');
-
+    // short-cut
+    if (stream.readableLength > 0)
+      return true;
     /**
      * readable is true by default
      */
@@ -72,17 +75,20 @@ export default class Utils {
     /**
      * handle close event
      */
-    let theResolve: (() => void) = () => { /* dummy */ };
-    let onClose = () => { readable = false; };
-    const waitClose = new Promise<void>((resolve) => onClose = resolve)
-    stream.once('close', onClose);
+    let onClose: (() => void) = () => { /* dummy */ };
+    const waitClose = new Promise<void>((resolveAsClosed) => {
+      onClose = resolveAsClosed;
+      stream.on('close', onClose);
+    })
 
     /**
      * Handle readable event
+     * overwrite theResolve
      */
-    const waitRead = new Promise<void>((resolve) => {
-      theResolve = resolve;
-      stream.once('readable', theResolve)
+    let theResolve: (() => void) = () => { /* dummy */ };
+    const waitRead = new Promise<void>((resolveAsReadable) => {
+      theResolve = resolveAsReadable;
+      stream.on('readable', theResolve)
     });
 
     const promises = [waitRead, waitClose];

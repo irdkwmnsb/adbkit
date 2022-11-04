@@ -56,9 +56,17 @@ export default class Connection extends EventEmitter {
     this.socket.on('close', (hadError: boolean) => this.emit('close', hadError));
 
     try {
-      await new Promise((resolve, reject) => {
-        this.socket.once('connect', resolve);
-        this.socket.once('error', reject);
+      await new Promise<void>((resolve, reject) => {
+        const onConnect = () => {
+          this.socket.off('error', onError);
+          resolve();
+        };
+        const onError = (e: Error) => {
+          this.socket.off('connect', onConnect);
+          reject(e)
+        };
+        this.socket.once('connect', onConnect);
+        this.socket.once('error', onError);
       });
     } catch (err) {
       if ((err as { code: string }).code === 'ECONNREFUSED' && !this.triedStarting) {

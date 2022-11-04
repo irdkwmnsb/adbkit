@@ -12,6 +12,7 @@ import { Readable } from 'stream';
 import Stats64 from './sync/stats64';
 import Entry64 from './sync/entry64';
 import Utils from './utils';
+import { PromiseReadable } from "promise-readable";
 
 const TEMP_PATH = '/data/local/tmp';
 const DEFAULT_CHMOD = 0o644;
@@ -59,6 +60,8 @@ export enum AdbSyncStatErrorCode {
 interface IEmissions {
   error: (data: Error) => void
 }
+
+const STREAM_READ_TIMEOUT = 10000;
 
 export default class Sync extends EventEmitter {
   private parser: Parser;
@@ -269,70 +272,39 @@ export default class Sync extends EventEmitter {
     return Sync.temp(path);
   }
 
-  private _writeData(stream: Readable, timeStamp: number, streamName: string): PushTransfer {
+  private async _writeData(stream: Readable, timeStamp: number, streamName: string): Promise<PushTransfer> {
     const transfer = new PushTransfer();
-
-    let readableListener: () => void;
-    let connErrorListener: (err: Error) => void;
-    let endListener: () => void;
-    let errorListener: (err: Error) => void;
-
-    const writeData = () => new Promise<void>((resolve, reject) => {
-
-      const writer = Promise.resolve();
-      endListener = () => {
-        writer.then(async () => {
-          await this.sendCommandWithLength(Protocol.DONE, timeStamp);
-          return resolve(undefined);
-        });
-      };
-      stream.on('end', endListener);
-
-      // const track = () => transfer.pop();
-      const writeAll = async (): Promise<void> => {
-        for (; ;) {
-          const chunk = stream.read(DATA_MAX_LENGTH) || stream.read();
-          if (!chunk) return;
-          await this.sendCommandWithLength(Protocol.DATA, chunk.length);
-          transfer.push(chunk.length);
-          await this.connection.write(chunk);
-          transfer.pop();
-        }
-      };
-
-      readableListener = () => writer.then(writeAll);
-      stream.on('readable', readableListener);
-      errorListener = (err) => reject(new Error(`Source Error: ${err.message} while transfering ${streamName}`));
-      stream.on('error', errorListener);
-      connErrorListener = (err: Error) => {
-        stream.destroy(err);
-        this.connection.end();
-        reject(new Error(`Target Error: ${err.message} while transfering ${streamName}`));
-      };
-      this.connection.on('error', connErrorListener);
-    })
-      .finally(() => {
-        stream.removeListener('end', endListener);
-        stream.removeListener('readable', readableListener);
-        stream.removeListener('error', errorListener);
-        this.connection.removeListener('error', connErrorListener);
-        // writer.cancel();
-      });
-
-    // While I can't think of a case that would break this double-Promise
-    // writer-reader arrangement right now, it's not immediately obvious
-    // that the code is correct and it may or may not have some failing
-    // edge cases. Refactor pending.
-    writeData().catch(err => {
-      transfer.emit('error', err);
-    })
-
-    this.parser.readCode(Protocol.OKAY)
-      .catch((err: Error): void => {
-        transfer.emit('error', err);
-      }).finally(() => {
-        transfer.end();
-      });
+    stream.once('error', (err) => {
+      throw new Error(`Source Error: ${err.message} while transfering ${streamName}`)
+    });
+    this.connection.once('error', (err: Error) => {
+      stream.destroy(err);
+      this.connection.end();
+      throw new Error(`Target Error: ${err.message} while transfering ${streamName}`);
+    });
+    for (let i = 0; ; i++) {
+      if (stream.closed)
+        break;
+      const readable = await Utils.waitforReadable(stream, STREAM_READ_TIMEOUT);
+      if (!readable)
+        break;
+      let chunk: any;
+      // eslint-disable-next-line no-cond-assign
+      while (chunk = (stream.read(DATA_MAX_LENGTH) || stream.read())) {
+        await this.sendCommandWithLength(Protocol.DATA, chunk.length);
+        transfer.push(chunk.length);
+        await this.connection.write(chunk);
+        transfer.pop();
+      }
+    }
+    await this.sendCommandWithLength(Protocol.DONE, timeStamp);
+    try {
+      await this.parser.readCode(Protocol.OKAY)
+    } catch (err) {
+      transfer.emit('error', err as Error);
+    } finally {
+      transfer.end();
+    }
     return transfer;
   }
 
