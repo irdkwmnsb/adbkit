@@ -736,8 +736,11 @@ export default class DeviceClient {
    */
   public async installRemote(apk: string): Promise<boolean> {
     const transport = await this.transport();
-    await new hostCmd.InstallCommand(transport, this.options).execute(apk);
-    await this.execOut(['rm', '-f', apk]);
+    try {
+      await new hostCmd.InstallCommand(transport, this.options).execute(apk);
+    } finally {
+      await this.execOut(['rm', '-f', apk]);
+    }
     return true;
   }
 

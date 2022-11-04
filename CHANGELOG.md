@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## V4.1.12 (2022-11-04)
+* improve file transfert
+* improve install APK
+
 ## v4.1.11 (2022-10-07)
 * fix regression in Scrcpy [issue 9](https://github.com/UrielCh/adbkit/issues/9)
 
