@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## V4.1.17 (2022-11-08)
+* fix typo in code
+
 ## V4.1.16 (2022-11-08)
 * add `args` in interface StartServiceOptions can be a `string` or a `string[]`
 

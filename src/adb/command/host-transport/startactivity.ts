@@ -78,7 +78,7 @@ export default class StartActivityCommand extends Command<boolean> {
     }
     if (options.args) {
       if (typeof options.args === 'string')
-        args.push(this.escape(args));
+        args.push(this.escape(options.args));
       else
         for (const arg of options.args)
           args.push(this.escape(arg));
