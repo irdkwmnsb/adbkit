@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## V4.1.15 (2022-11-08)
+* add `args: string[]` in interface StartServiceOptions
+
 ## V4.1.14 (2022-11-04)
 * rewrite legacy transfer function
 
