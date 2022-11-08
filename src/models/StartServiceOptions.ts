@@ -60,5 +60,5 @@ export default interface StartServiceOptions {
   /**
    * args to append at the end
    */
-  args?: string[];
+  args?: string | string[];
 }

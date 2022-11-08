@@ -77,8 +77,11 @@ export default class StartActivityCommand extends Command<boolean> {
       args.push('-f', this.escape(options.flags));
     }
     if (options.args) {
-      for (const arg of options.args)
-        args.push(this.escape(arg));
+      if (typeof options.args === 'string')
+        args.push(this.escape(args));
+      else
+        for (const arg of options.args)
+          args.push(this.escape(arg));
     }
     return args;
   }
