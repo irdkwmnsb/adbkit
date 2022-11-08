@@ -57,4 +57,8 @@ export default interface StartServiceOptions {
    * Any extra data. (the --e parameter)
    */
   extras?: Extra[] | ExtraObject;
+  /**
+   * args to append at the end
+   */
+  args?: string[];
 }
