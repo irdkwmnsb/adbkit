@@ -750,9 +750,9 @@ export default class DeviceClient {
    * @param pkg The package name. This is NOT the APK.
    * @returns true
    */
-  public async uninstall(pkg: string): Promise<boolean> {
+  public async uninstall(pkg: string, opts?: hostCmd.UninstallCommandOptions): Promise<boolean> {
     const transport = await this.transport();
-    return new hostCmd.UninstallCommand(transport, this.options).execute(pkg);
+    return new hostCmd.UninstallCommand(transport, this.options).execute(pkg, opts);
   }
 
   /**

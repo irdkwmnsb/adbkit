@@ -23,12 +23,12 @@ export { default as SyncCommand } from './sync';
 export { default as TcpCommand } from './tcp';
 export { default as TcpIpCommand } from './tcpip';
 export { default as TrackJdwpCommand } from './trackjdwp';
-export { default as UninstallCommand } from './uninstall';
+export { default as UninstallCommand, type UninstallCommandOptions } from './uninstall';
 export { default as UsbCommand } from './usb';
 export { default as WaitBootCompleteCommand } from './waitbootcomplete';
 export { default as PsCommand, PsEntry, ProcessState } from './ps';
 
-export { default as ServicesListCommand, AdbServiceInfo, KnownServices } from './servicesList';
+export { default as ServicesListCommand, type AdbServiceInfo, type KnownServices } from './servicesList';
 export { default as ServiceCheckCommand } from './serviceCheck';
 // stop re-export for internal usage
 // export { default as ServiceCallCommand, ServiceCallArg, ServiceCallArgNumber, ServiceCallArgNull, ServiceCallArgString, ParcelReader } from './serviceCall';
