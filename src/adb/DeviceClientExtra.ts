@@ -1,6 +1,6 @@
 import DeviceClient from "./DeviceClient";
 import xpath from 'xpath';
-import { DOMParser } from 'xmldom';
+import { DOMParser } from '@xmldom/xmldom';
 import { KeyCodes } from "./keycode";
 import { Utils } from "..";
 
