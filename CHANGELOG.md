@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## V4.1.18 (2023-02-06)
+* update dependencies [fix issue 10](https://github.com/UrielCh/adbkit/issues/10)
+
 ## V4.1.17 (2022-11-08)
 * fix typo in code
 
