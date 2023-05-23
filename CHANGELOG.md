@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## V4.1.19 (2023-05-23)
+* update project shape
+* https://github.com/UrielCh/adbkit/pull/14
+
 ## V4.1.18 (2023-02-06)
 * update dependencies [fix issue 10](https://github.com/UrielCh/adbkit/issues/10)
 
