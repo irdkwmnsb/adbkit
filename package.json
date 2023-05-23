@@ -18,6 +18,7 @@
         "url": "https://github.com/UrielCh/adbkit/issues"
     },
     "license": "Apache-2.0",
+    "funding": "https://github.com/sponsors/urielch",
     "author": {
         "name": "openstf",
         "email": "contact@openstf.io",
