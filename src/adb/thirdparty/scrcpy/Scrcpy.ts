@@ -509,7 +509,8 @@ export default class Scrcpy extends EventEmitter {
 
             const videoConf: H264Configuration = {
               profileIndex, constraintSet, levelIndex, encodedWidth, encodedHeight,
-              cropLeft, cropRight, cropTop, cropBottom, croppedWidth, croppedHeight
+              cropLeft, cropRight, cropTop, cropBottom, croppedWidth, croppedHeight,
+              data: streamChunk
             };
             this.lastConf = videoConf;
             this.emit('config', videoConf);

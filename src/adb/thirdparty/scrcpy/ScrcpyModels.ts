@@ -84,6 +84,8 @@ export interface H264Configuration {
 
     croppedWidth: number;
     croppedHeight: number;
+
+    data: Uint8Array;
 }
 
 
