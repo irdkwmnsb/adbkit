@@ -15,6 +15,12 @@ export interface UninstallCommandOptions {
   versionCode?: string;
 }
 
+class UninstallError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export default class UninstallCommand extends Command<boolean> {
   async execute(pkg: string, opts?: UninstallCommandOptions): Promise<boolean> {
     let cmd = 'shell:pm uninstall';
@@ -30,6 +36,10 @@ export default class UninstallCommand extends Command<boolean> {
       const match = await this.parser.searchLine(/^(Success|Failure.*|.*Unknown package:.*)$/);
       if (match[1] === 'Success') {
         return true;
+      } else if (match[1].includes('DELETE_FAILED_DEVICE_POLICY_MANAGER')) {
+        // @see https://github.com/DeviceFarmer/adbkit/pull/513
+        const reason = match[1];
+        throw new UninstallError(`${pkg} could not be uninstalled [${reason}]`);
       } else {
         // Either way, the package was uninstalled or doesn't exist,
         // which is good enough for us.

@@ -33,6 +33,23 @@ describe('UninstallCommand', () => {
         });
         return cmd.execute('foo');
     });
+    // https://github.com/DeviceFarmer/adbkit/pull/513
+    it("should failed if command responds with 'Failure [DELETE_FAILED_DEVICE_POLICY_MANAGER]'", function (done) {
+        const conn = new MockConnection();
+        const cmd = new UninstallCommand(conn);
+        conn.getSocket().on('write', function (chunk) {
+            return expect(chunk.toString()).to.equal(Protocol.encodeData('shell:pm uninstall foo').toString());
+        });
+        setImmediate(function () {
+            conn.getSocket().causeRead(Protocol.OKAY);
+            conn.getSocket().causeRead('Failure [DELETE_FAILED_DEVICE_POLICY_MANAGER]\r\n');
+            return conn.getSocket().causeEnd();
+        });
+        cmd.execute('foo').catch(function (err) {
+            expect(err.message).includes('Failure [DELETE_FAILED_DEVICE_POLICY_MANAGER]');
+            done();
+        });
+    });
     it("should succeed even if command responds with 'Failure' with info in standard format", () => {
         const conn = new MockConnection();
         const cmd = new UninstallCommand(conn);
