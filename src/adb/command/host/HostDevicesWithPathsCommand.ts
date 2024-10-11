@@ -1,7 +1,7 @@
 import Command from '../../command';
 import DeviceWithPath from '../../../models/DeviceWithPath';
 import DeviceClient from '../../DeviceClient';
-import { DeviceType } from '../../../models/Device';
+import { isDeviceType } from '../../../models/Device';
 
 
 export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[]> {
@@ -18,25 +18,25 @@ export default class HostDevicesWithPathsCommand extends Command<DeviceWithPath[
   }
 
   private _parseDevices(value: string): DeviceWithPath[] {
-    return value
-      .split('\n')
-      .filter((e) => e)
-      .map((line: string) => {
-        // eslint-disable-next-line prefer-const
-        let [id, type, path, product, model, device, transportId] = line.split(/\s+/);
-        model = model.replace('model:', '');
-        product = product.replace('product:', '');
-        transportId = transportId.replace('transport_id:', '');
-        return {
-          id,
-          type: type as DeviceType,
-          path,
-          product,
-          model,
-          device,
-          transportId,
-          getClient: () => new DeviceClient(this.connection.parent, id),
-        };
-      });
+    const regexp = /^([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+product:([^\s]+)\s+model:([^\s]+)\s+device:([^\s]+)\s+transport_id:([^\s]+)$/gm;
+    const devices: DeviceWithPath[] = [];
+    let match;
+    while ((match = regexp.exec(value)) !== null) {
+      const [, id, type, path, product, model, device, transportId] = match;
+      if (!isDeviceType(type)) {
+        continue;
+      }
+      devices.push({
+        id,
+        type,
+        path,
+        product,
+        model,
+        device,
+        transportId,
+        getClient: () => new DeviceClient(this.connection.parent, id),
+      })
+    }
+    return devices;
   }
 }

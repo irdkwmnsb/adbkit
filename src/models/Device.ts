@@ -1,9 +1,13 @@
 import { DeviceClient } from "..";
 
+const deviceTypes = ['emulator', 'device', 'offline', 'unauthorized', 'recovery'] as const;
 /**
  * adb device starts
  */
-export type DeviceType = 'emulator' | 'device' | 'offline' | 'unauthorized' | 'recovery';
+export type DeviceType = typeof deviceTypes[number];
+export function isDeviceType(value: string): value is DeviceType {
+  return deviceTypes.includes(value as DeviceType);
+}
 
 export default interface Device {
   /**
