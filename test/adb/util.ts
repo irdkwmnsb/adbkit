@@ -1,8 +1,8 @@
 import Stream from 'stream';
-import Chai, { expect } from 'chai';
+import { use, expect } from 'chai';
 import simonChai from 'sinon-chai';
-Chai.use(simonChai);
 import { Utils } from '../../src/';
+use(simonChai);
 
 describe('util', () => {
     return describe('readAll(stream)', () => {

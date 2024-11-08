@@ -1,14 +1,14 @@
 import Stream, { Transform } from 'stream';
 import Sinon from 'sinon';
-import Chai, { expect } from 'chai';
+import { use, expect } from 'chai';
 import sinonChai from 'sinon-chai';
-Chai.use(sinonChai);
 import Parser from '../../src/adb/parser';
 import Tracker from '../../src/adb/tracker';
 import Protocol from '../../src/adb/protocol';
 import HostTrackDevicesCommand from '../../src/adb/command/host/HostTrackDevicesCommand';
 import Connection from '../../src/adb/connection';
 import { Device, DeviceClient, Utils } from '../../src';
+use(sinonChai);
 
 const getClient = () => null as unknown as DeviceClient;
 

@@ -1,9 +1,8 @@
 import Fs from 'fs';
 import Stream from 'stream';
 import Sinon from 'sinon';
-import Chai, { expect, assert } from 'chai';
+import { use, expect, assert } from 'chai';
 import simonChai from 'sinon-chai';
-Chai.use(simonChai);
 import Adb, { Client } from '../../src/index';
 import Sync, { ENOENT } from '../../src/adb/sync';
 import Stats from '../../src/adb/sync/stats';
@@ -12,6 +11,7 @@ import PushTransfer from '../../src/adb/sync/pushtransfer';
 import PullTransfer from '../../src/adb/sync/pulltransfer';
 import MockConnection from '../mock/connection';
 import Device from '../../src/models/Device';
+use(simonChai);
 
 // This test suite is a bit special in that it requires a connected Android
 // device (or many devices). All will be tested.

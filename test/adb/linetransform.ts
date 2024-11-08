@@ -1,9 +1,9 @@
 import Stream from 'stream';
-import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
-Chai.use(simonChai);
+import { use, expect } from 'chai';
 import LineTransform from '../../src/adb/linetransform';
 import MockDuplex from '../mock/duplex';
+use(simonChai);
 
 describe('LineTransform', () => {
     it('should implement stream.Transform', (done) => {
