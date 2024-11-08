@@ -1,6 +1,4 @@
 import Client from './adb/client';
-// import { Keycode } from './adb/keycode';
-// import util_ from './adb/util';
 import { ClientOptions } from './models/ClientOptions';
 
 export interface AdbOptions {
@@ -49,4 +47,3 @@ export function createClient(options: AdbOptions = { port: 5037 }): Client {
   }
   return new Client(opts);
 }
-// }

@@ -12,7 +12,6 @@ import { Readable } from 'stream';
 import Stats64 from './sync/stats64';
 import Entry64 from './sync/entry64';
 import Utils from './utils';
-import { PromiseReadable } from "promise-readable";
 
 const TEMP_PATH = '/data/local/tmp';
 const DEFAULT_CHMOD = 0o644;
@@ -217,13 +216,13 @@ export default class Sync extends EventEmitter {
    * @returns See `sync.push()` for details.
    */
   public async pushFile(file: string, path: string, mode = DEFAULT_CHMOD): Promise<PushTransfer> {
-    mode || (mode = DEFAULT_CHMOD);
+    // mode || (mode = DEFAULT_CHMOD);
     try {
       const stats = await fs.promises.stat(file);
       if (stats.isDirectory())
         throw Error(`can not push directory "${file}" only files are supported for now.`);
     } catch (e) {
-      throw Error(`can not read file "${file}"`);
+      throw Error(`can not read file "${file}" Err: ${JSON.stringify(e)}`);
     }
     const stream = fs.createReadStream(file);
     return this.pushStream(stream, path, mode, file);
@@ -288,7 +287,7 @@ export default class Sync extends EventEmitter {
       const readable = await Utils.waitforReadable(stream, STREAM_READ_TIMEOUT);
       if (!readable)
         break;
-      let chunk: any;
+      let chunk: ReturnType<Readable['read']>;
       // eslint-disable-next-line no-cond-assign
       while (chunk = (stream.read(DATA_MAX_LENGTH) || stream.read())) {
         await this.sendCommandWithLength(Protocol.DATA, chunk.length);

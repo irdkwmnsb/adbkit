@@ -2,7 +2,7 @@ import DeviceClient from "./DeviceClient";
 import xpath from 'xpath';
 import { DOMParser } from '@xmldom/xmldom';
 import { KeyCodes } from "./keycode";
-import { Utils } from "..";
+import { Utils } from "../index";
 
 export default class DeviceClientExtra {
   constructor(private deviceClient: DeviceClient) { }

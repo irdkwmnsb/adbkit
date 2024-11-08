@@ -165,7 +165,8 @@ export default class Scrcpy extends EventEmitter {
           errors.push(msg);
           try {
             this.emit('error', Error(msg));
-          } catch (e) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (e: unknown) {
             // emit Error but to not want to Quit Yet
           }
         } else {
@@ -173,7 +174,8 @@ export default class Scrcpy extends EventEmitter {
           break;
         }
       }
-    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e: unknown) {
       //this.emit('error', e as Error);
       //this.setError((e as Error).message);
     }

@@ -71,8 +71,9 @@ export default class Socket extends EventEmitter {
   ) {
     super();
 
-    let base: SocketOptions;
-    (base = this.options).auth || (base.auth = () => Promise.resolve(true));
+    const base: SocketOptions = this.options;
+    if (!base.auth)
+      base.auth = () => Promise.resolve(true);
     this.socket.setNoDelay(true);
     this.reader = new PacketReader(this.socket)
       .on('packet', this._handle.bind(this))
@@ -203,7 +204,7 @@ export default class Socket extends EventEmitter {
           try {
             await this.options.auth(key)
           } catch (e) {
-            debug('Connection rejected by user-defined auth handler');
+            debug('Connection rejected by user-defined auth handler', e);
             throw new Socket.AuthError('Rejected by user-defined handler');
           }
         }

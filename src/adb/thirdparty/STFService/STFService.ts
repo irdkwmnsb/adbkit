@@ -80,7 +80,7 @@ export default class STFService extends EventEmitter {
     try {
       await fs.promises.stat(apk);
     } catch (e) {
-      throw Error(`can not find APK bin/STFService_${version}.apk`);
+      throw Error(`can not find APK bin/STFService_${version}.apk Err: ${JSON.stringify(e)}`);
     }
     this._cachedApkPath = '';
     return this.client.install(apk);

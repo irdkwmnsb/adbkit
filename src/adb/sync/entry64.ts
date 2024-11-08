@@ -2,8 +2,8 @@ import Stats64 from './stats64';
 
 export default class Entry64 extends Stats64 {
   constructor(public name: string, error: number, dev: bigint, ino: bigint,
-     mode: bigint, nlink: bigint, uid: bigint, gid: bigint, size: bigint,
-     atimeNs: bigint, mtimeNs: bigint, ctimeNs: bigint) {
+    mode: bigint, nlink: bigint, uid: bigint, gid: bigint, size: bigint,
+    atimeNs: bigint, mtimeNs: bigint, ctimeNs: bigint) {
     super(error, dev, ino, mode, nlink, uid, gid, size, atimeNs, mtimeNs, ctimeNs);
   }
 
