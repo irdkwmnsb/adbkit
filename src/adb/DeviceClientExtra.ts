@@ -21,6 +21,9 @@ export default class DeviceClientExtra {
     if (!nodes.length)
       throw Error('can not find USB labeled node');
     const switch_widget = xpath.select('./*/node[@class="android.widget.Switch"]', nodes[0]) as Element[];
+    if (!Array.isArray(switch_widget)) {
+      throw Error('no switch on screen.');
+    }
     if (!switch_widget.length)
       throw Error('can not find android.widget.Switch linked to USB label');
     const [checkBox] = switch_widget;
@@ -56,9 +59,12 @@ export default class DeviceClientExtra {
     // xml = xml.replace(/ ([a-z-]+)=""/g, '');
     // xml = xml.replace(/ (checkable|clickable|content-desc|enabled|focused|focusable|index|long-clickable|package|password|resource-id|scrollable|selected)="[^"]*"/g, '');
     const textFilter = (text: string) => text.toLowerCase();
-    const doc = new DOMParser().parseFromString(textFilter(xml))
+    const doc = new DOMParser().parseFromString(textFilter(xml), 'text/xml')
 
     const all_switch_widget = xpath.select(textFilter('//*/node[@class="android.widget.Switch"]'), doc) as Element[];
+    if (!Array.isArray(all_switch_widget)) {
+      throw Error('no switch on screen.');
+    }
     let theSwitch: Element | null = null;
     if (!all_switch_widget.length) {
       throw Error('no switch on screen.');
@@ -66,7 +72,7 @@ export default class DeviceClientExtra {
     for (let i = 0; i < all_switch_widget.length; i++) {
       const nodes = xpath.select('../../*/node[contains(@text,"mode")]', all_switch_widget[i]) as Element[];
       if (nodes.length) {
-        theSwitch = all_switch_widget[i];
+        theSwitch = all_switch_widget[i] as Element;
       }
     }
     if (!theSwitch) {
