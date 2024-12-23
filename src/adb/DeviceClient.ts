@@ -1,4 +1,6 @@
-import { Monkey, Client as MonkeyClient } from '@u4/adbkit-monkey';
+import * as adbkitMonkey from '@u4/adbkit-monkey';
+import { type Monkey as MonkeyClient } from '@u4/adbkit-monkey';
+const { Monkey } = adbkitMonkey;
 import Logcat from '@u4/adbkit-logcat';
 import Connection from './connection';
 import Sync from './sync';

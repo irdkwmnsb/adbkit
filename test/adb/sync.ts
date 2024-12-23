@@ -72,7 +72,8 @@ describe('Sync', () => {
             const sync = new Sync(conn);
             // const stream = new Stream.PassThrough();
             Sinon.stub(sync, 'pushFile');
-            sync.push(__filename, 'foo');
+            // __filename
+            sync.push(import.meta.url, 'foo');
             return expect(sync.pushFile).to.have.been.called;
         });
         // now return a promise
@@ -200,10 +201,11 @@ describe('Sync', () => {
             }).finally(done);
         });
         describe('Stats', () => {
-            it('should implement Fs.Stats', (done) => {
-                expect(new Stats(0, 0, 0)).to.be.an.instanceof(Fs.Stats);
-                done();
-            });
+            // Fs.Stats constructor is now private  and can not be instanciated
+            // it('should implement Fs.Stats', (done) => {
+            //     expect(new Stats(0, 0, 0)).to.be.an.instanceof(Fs.Stats);
+            //     done();
+            // });
             dt('should set the `.mode` property for isFile() etc', (done) => {
                 return forEachSyncDevice(async (sync) => {
                     const stats = await sync.stat(SURELY_EXISTING_FILE);

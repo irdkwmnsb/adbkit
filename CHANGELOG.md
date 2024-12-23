@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## V5.0.0 (2024-12-23)
+* migration to ESM
+
 ## V4.1.19 (2023-05-23)
 * update project shape
 * https://github.com/UrielCh/adbkit/pull/14

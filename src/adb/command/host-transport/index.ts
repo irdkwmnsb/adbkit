@@ -10,7 +10,7 @@ export { default as LocalCommand } from './local';
 export { default as LogCommand } from './log';
 export { default as LogcatCommand } from './logcat';
 export { default as MonkeyCommand } from './monkey';
-export { default as RebootCommand, RebootType } from './reboot';
+export { default as RebootCommand, type RebootType } from './reboot';
 export { default as RemountCommand } from './remount';
 export { default as ReverseCommand } from './reverse';
 export { default as RootCommand } from './root';
@@ -26,7 +26,7 @@ export { default as TrackJdwpCommand } from './trackjdwp';
 export { default as UninstallCommand, type UninstallCommandOptions } from './uninstall';
 export { default as UsbCommand } from './usb';
 export { default as WaitBootCompleteCommand } from './waitbootcomplete';
-export { default as PsCommand, PsEntry, ProcessState } from './ps';
+export { default as PsCommand, type PsEntry, type ProcessState } from './ps';
 
 export { default as ServicesListCommand, type AdbServiceInfo, type KnownServices } from './servicesList';
 export { default as ServiceCheckCommand } from './serviceCheck';

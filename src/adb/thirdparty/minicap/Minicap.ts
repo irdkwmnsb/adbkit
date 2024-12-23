@@ -1,9 +1,12 @@
-import { Duplex, EventEmitter } from 'stream';
+import { EventEmitter } from 'events';
+
+import { Duplex } from 'stream';
 import DeviceClient from '../../DeviceClient';
 import PromiseDuplex from 'promise-duplex';
 import ThirdUtils from "../ThirdUtils";
 import Utils from '../../utils';
 import * as fs from 'fs';
+import Stats from '../../sync/stats';
 
 /**
  * Application binary interface known CPU
@@ -135,7 +138,7 @@ export default class Minicap extends EventEmitter {
     try {
       binFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/bin/${minicapName}`);
     } catch (e) {
-      throw Error(`minicap not found in @devicefarmer/minicap-prebuilt/prebuilt/${abi}/bin/ please install @devicefarmer/minicap-prebuilt to use minicap`);
+      throw Error(`minicap not found in @devicefarmer/minicap-prebuilt/prebuilt/${abi}/bin/ please install @devicefarmer/minicap-prebuilt to use minicap ${e}`);
     }
 
     try {
@@ -145,7 +148,7 @@ export default class Minicap extends EventEmitter {
         soFile = require.resolve(`@devicefarmer/minicap-prebuilt/prebuilt/${abi}/lib/android-${sdkLevel}/minicap.so`);
       }
     } catch (e) {
-      throw Error(`minicap.so for your device check for @devicefarmer/minicap-prebuilt update that support android-${sdkLevel}, ${soFile} is missing`);
+      throw Error(`minicap.so for your device check for @devicefarmer/minicap-prebuilt update that support android-${sdkLevel}, ${soFile} is missing ${e}`);
     }
 
     // only upload minicap binary in tmp filder if file is missing
@@ -160,7 +163,7 @@ export default class Minicap extends EventEmitter {
 
     // only upload minicap.so in tmp filder if file is missing
     const localStats = fs.statSync(soFile);
-    let droidStats: fs.Stats | undefined;
+    let droidStats: Stats | undefined;
     try {
       droidStats = await this.client.stat('/data/local/tmp/minicap.so');
     } catch {

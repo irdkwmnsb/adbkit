@@ -1,24 +1,24 @@
-export { createClient, AdbOptions } from './adb';
-export { ClientOptions } from './models/ClientOptions';
-export { DeviceClientOptions } from './models/DeviceClientOptions';
+export { createClient, type AdbOptions } from './adb';
+export type { ClientOptions } from './models/ClientOptions';
+export type { DeviceClientOptions } from './models/DeviceClientOptions';
 
-export { CpuStats, Loads } from './models/CpuStats';
-export { default as Device, DeviceType } from './models/Device';
+export type { CpuStats, Loads } from './models/CpuStats';
+export type { default as Device, DeviceType } from './models/Device';
 
-export { default as DeviceWithPath } from './models/DeviceWithPath';
-export { default as ExtendedPublicKey } from './models/ExtendedPublicKey';
-export { Features } from './models/Features';
-export { default as Forward } from './models/Forward';
-export { default as FramebufferMeta } from './models/FramebufferMeta';
-export { default as FramebufferStreamWithMeta } from './models/FramebufferStreamWithMeta';
-export { Properties } from './models/Properties';
-export { default as Reverse } from './models/Reverse';
-export { default as SocketOptions } from './models/SocketOptions';
-export { default as StartActivityOptions } from './models/StartActivityOptions';
-export { default as StartServiceOptions, ExtraValue, ExtraObject, Extra } from './models/StartServiceOptions';
-export { default as TrackerChangeSet } from './models/TrackerChangeSet';
-export { default as WithToString } from './models/WithToString';
-export { ColorFormat } from './models/FramebufferMeta'
+export type { default as DeviceWithPath } from './models/DeviceWithPath';
+export type { default as ExtendedPublicKey } from './models/ExtendedPublicKey';
+export type { Features } from './models/Features';
+export type { default as Forward } from './models/Forward';
+export type { default as FramebufferMeta } from './models/FramebufferMeta';
+export type { default as FramebufferStreamWithMeta } from './models/FramebufferStreamWithMeta';
+export type { Properties } from './models/Properties';
+export type { default as Reverse } from './models/Reverse';
+export type { default as SocketOptions } from './models/SocketOptions';
+export type { default as StartActivityOptions } from './models/StartActivityOptions';
+export type { default as StartServiceOptions, ExtraValue, ExtraObject, Extra } from './models/StartServiceOptions';
+export type { default as TrackerChangeSet } from './models/TrackerChangeSet';
+export type { default as WithToString } from './models/WithToString';
+export type { ColorFormat } from './models/FramebufferMeta'
 
 export { default as Service, PrematurePacketError, LateTransportError } from './adb/tcpusb/service';
 export { default as ServiceMap } from './adb/tcpusb/servicemap';
@@ -45,17 +45,21 @@ export { default as Entry } from './adb/sync/entry'
 export { default as Stats64 } from './adb/sync/stats64'
 export { default as Stats } from './adb/sync/stats'
 
-export { default as ProcStat, LoadsWithLine, CpuStatsWithLine, ProcStats } from './adb/proc/stat'
+export { default as ProcStat } from './adb/proc/stat'
+export type { LoadsWithLine, CpuStatsWithLine, ProcStats } from './adb/proc/stat'
 
-export { KeyEvent, KeyEventRequest } from './adb/thirdparty/STFService/STFServiceModel';
+export { KeyEvent } from './adb/thirdparty/STFService/STFServiceModel';
+export type { KeyEventRequest } from './adb/thirdparty/STFService/STFServiceModel';
 
 // export android key enumeration
 export { KeyCodes } from './adb/keycode';
 
 
-export { ShellCommand, RebootType, PsEntry, ProcessState, IpRuleEntry, IpRouteEntry, AdbServiceInfo } from './adb/command/host-transport/';
-export { default as ServiceCallCommand, ServiceCallArg, ParcelReader, ServiceCallArgNumber, ServiceCallArgString, ServiceCallArgNull } from './adb/command/host-transport/serviceCall';
+export type { RebootType, PsEntry, ProcessState, AdbServiceInfo } from './adb/command/host-transport/';
+export { ShellCommand, IpRuleEntry, IpRouteEntry } from './adb/command/host-transport/';
 
+export type { ServiceCallArg, ServiceCallArgNumber, ServiceCallArgString, ServiceCallArgNull } from './adb/command/host-transport/serviceCall';
+export { default as ServiceCallCommand, ParcelReader } from './adb/command/host-transport/serviceCall';
 
 // give access to Utils class ( readAll and parsePublicKey)
 export { default as Utils } from './adb/utils';
@@ -63,14 +67,18 @@ export { default as Utils } from './adb/utils';
 export { default as Scrcpy } from './adb/thirdparty/scrcpy/Scrcpy';
 export { MotionEvent, DeviceMessageType, SurfaceControl, Orientation, KeyEventMeta } from './adb/thirdparty/scrcpy/ScrcpyConst';
 
-export { default as Minicap, MinicapOptions } from './adb/thirdparty/minicap/Minicap';
+export type { MinicapOptions } from './adb/thirdparty/minicap/Minicap';
+export { default as Minicap } from './adb/thirdparty/minicap/Minicap';
 
-export { default as STFService, STFServiceOptions } from './adb/thirdparty/STFService/STFService';
-export { default as STFServiceBuf, MyMessage } from './adb/thirdparty/STFService/STFServiceBuf';
+export { type STFServiceOptions } from './adb/thirdparty/STFService/STFService';
+export { default as STFService } from './adb/thirdparty/STFService/STFService';
+export { type MyMessage } from './adb/thirdparty/STFService/STFServiceBuf';
+export { default as STFServiceBuf } from './adb/thirdparty/STFService/STFServiceBuf';
 
-export { Point, ScrcpyOptions, VideoStreamFramePacket, H264Configuration } from './adb/thirdparty/scrcpy/ScrcpyModels';
+export type { Point, ScrcpyOptions, VideoStreamFramePacket, H264Configuration } from './adb/thirdparty/scrcpy/ScrcpyModels';
 
-export { default as DevicePackage, PackageInfo } from './adb/DevicePackage';
+export { default as DevicePackage, } from './adb/DevicePackage';
+export type { PackageInfo } from './adb/DevicePackage';
 
 /**
  * main entry point
