@@ -24,8 +24,8 @@ export default class RgbTransform extends Stream.Transform {
     this._pixel_bytes = this.meta.bpp / 8;
   }
 
-  _transform(chunk: Buffer, encoding: string, done: TransformCallback): void {
-    if (this._buffer.length) {
+  override _transform(chunk: Buffer, encoding: string, done: TransformCallback): void {
+    if ((this._buffer as unknown as Uint8Array).length) {
       this._buffer = Buffer.concat([this._buffer, chunk], this._buffer.length + chunk.length);
     } else {
       this._buffer = chunk;

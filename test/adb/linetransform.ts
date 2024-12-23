@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import Stream from 'node:stream';
 import simonChai from 'sinon-chai';
 import { use, expect } from 'chai';

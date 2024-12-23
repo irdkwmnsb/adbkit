@@ -9,6 +9,24 @@ import PromiseReadable from 'promise-readable';
 
 export type CancellablePromise<T> = Promise<T> & { cancel: () => void };
 
+/**
+ * Missing from Deno ?
+ */
+export type BufferEncoding = 
+"ascii"
+| "utf8"
+| "utf-8"
+| "utf16le"
+| "utf-16le"
+| "ucs2"
+| "ucs-2"
+| "base64"
+| "base64url"
+| "latin1"
+| "binary"
+| "hex"
+
+
 export default class Utils {
   /**
    * Takes a [`Stream`][node-stream] and reads everything it outputs until the stream ends. Then it resolves with the collected output. Convenient with `client.shell()`.

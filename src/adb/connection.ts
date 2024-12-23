@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 import { ObjectEncodingOptions } from 'node:fs';
 import EventEmitter from 'node:events';
 import { execFile, ExecFileOptions } from 'node:child_process';
+import { Buffer } from 'node:buffer';
 
 import Parser from './parser';
 import dump from './dump';
@@ -139,13 +140,13 @@ export default class Connection extends EventEmitter {
 
       socket.once("error", writeErrorHandler)
 
-      const canWrite = socket.write(enc)
+      const canWrite = socket.write(enc as unknown as Uint8Array)
 
       socket.removeListener("error", writeErrorHandler)
 
       if (canWrite) {
         if (!rejected) {
-          resolve(data.length)
+          resolve((data as unknown as Uint8Array).length)
         }
       } else {
         const errorHandler = (err: Error): void => {
@@ -156,17 +157,17 @@ export default class Connection extends EventEmitter {
 
         const drainHandler = (): void => {
           removeListeners()
-          resolve(data.length)
+          resolve((data as unknown as Uint8Array).length)
         }
 
         const closeHandler = (): void => {
           removeListeners()
-          resolve(data.length)
+          resolve((data as unknown as Uint8Array).length)
         }
 
         const finishHandler = (): void => {
           removeListeners()
-          resolve(data.length)
+          resolve((data as unknown as Uint8Array).length)
         }
 
         const removeListeners = () => {

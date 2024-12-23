@@ -1,4 +1,6 @@
+import { Buffer } from 'node:buffer';
 import { Stream } from 'node:stream';
+import { BufferEncoding } from '../utils';
 
 /**
  * `PullTransfer` is a [`Stream`][node-stream]. Use [`fs.createWriteStream()`][node-fs] to pipe the stream to a file if necessary.
@@ -16,12 +18,12 @@ export default class PullTransfer extends Stream.PassThrough {
     return this.emit('cancel');
   }
 
-  write(
+  override write(
     chunk: Buffer,
     encoding?: BufferEncoding | typeof callback,
     callback?: (error: Error | null | undefined) => void,
   ): boolean {
-    this.stats.bytesTransferred += chunk.length;
+    this.stats.bytesTransferred += (chunk as unknown as Uint8Array).length;
     this.emit('progress', this.stats);
     if (typeof encoding === 'function') {
       return super.write(chunk, encoding);
@@ -33,7 +35,7 @@ export default class PullTransfer extends Stream.PassThrough {
     chunk: Buffer,
     encoding?: BufferEncoding
   ): Promise<void> {
-    this.stats.bytesTransferred += chunk.length;
+    this.stats.bytesTransferred += (chunk as unknown as Uint8Array).length;
     this.emit('progress', this.stats);
     return new Promise<void>((accept, reject) => {
       super.write(chunk, encoding, (err) => {

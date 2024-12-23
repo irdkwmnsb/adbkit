@@ -4,6 +4,7 @@ import { Duplex } from 'node:stream';
 import Protocol from './protocol';
 import { AdbFailError, AdbPrematureEOFError, AdbUnexpectedDataError } from './errors';
 import { AdbError } from './errors';
+import { BufferEncoding } from './utils';
 
 /**
  * helper to read in Duplex stream
@@ -179,7 +180,7 @@ export default class Parser {
           // Try to get the exact amount we need first. If unsuccessful, take
           // whatever is available, which will be less than the needed amount.
           while ((chunk = stream.read(howMany) || stream.read())) {
-            howMany -= chunk.length;
+            howMany -= (chunk as unknown as Uint8Array).length;
             // TODO fix missing backpressuring handling
             targetStream.write(chunk);
             if (howMany === 0) {
@@ -263,10 +264,10 @@ export default class Parser {
     let skipped = Buffer.alloc(0);
     for (; ;) {
       const chunk = await this.readBytes(1);
-      if (chunk[0] === code) {
+      if ((chunk as unknown as Uint8Array)[0] === code) {
         return skipped;
       } else {
-        skipped = Buffer.concat([skipped, chunk]);
+        skipped = Buffer.concat([skipped as unknown as Uint8Array, chunk as unknown as Uint8Array]);
       }
     }
   }

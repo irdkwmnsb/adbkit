@@ -241,8 +241,8 @@ export default class Minicap extends EventEmitter {
       if (!firstChunk) {
         throw Error('Fail to read firstChunk 2 byte Header.');
       }
-      this.setVersion(firstChunk[0]); // == 1
-      const len = firstChunk[1]; // == 24
+      this.setVersion((firstChunk as unknown as Uint8Array)[0]); // == 1
+      const len = (firstChunk as unknown as Uint8Array)[1]; // == 24
       firstChunk = await videoSocket.read(len - 2) as Buffer;
       if (!firstChunk) {
         throw Error('Fail to read firstChunk data.');
@@ -274,13 +274,13 @@ export default class Minicap extends EventEmitter {
         await Utils.waitforReadable(videoSocket);
         chunk = videoSocket.stream.read(len) as Buffer;
         if (chunk) {
-          len -= chunk.length;
+          len -= (chunk as unknown as Uint8Array).length;
           if (!streamChunk)
             streamChunk = chunk;
           else {
-            streamChunk = Buffer.concat([streamChunk, chunk]);
+            streamChunk = Buffer.concat([streamChunk as Uint8Array, chunk as unknown as Uint8Array]);
           }
-          if (streamChunk[0] !== 0xFF || streamChunk[1] !== 0xD8) {
+          if ((streamChunk as unknown as Uint8Array)[0] !== 0xFF || (streamChunk as unknown as Uint8Array)[1] !== 0xD8) {
             console.error('Frame body does not start with JPG header');
             return;
           }

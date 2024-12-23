@@ -28,7 +28,7 @@ export default class ProcStat extends EventEmitter {
   public interval = 1000;
   public stats: ProcStats;
   private readonly _ignore: {[key: string]: string};
-  private readonly _timer: NodeJS.Timeout;
+  private readonly _timer: ReturnType<typeof setInterval>;
 
   constructor(private sync?: Sync) {
     super();

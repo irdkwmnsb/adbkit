@@ -228,19 +228,19 @@ export default class STFService extends EventEmitter {
       const next = await this.servicesSocket.read() as Buffer;
       if (!next) continue;
       if (buffer) {
-        buffer = Buffer.concat([buffer, next]);
+        buffer = Buffer.concat([buffer as unknown as Uint8Array, next as unknown as Uint8Array]);
       } else {
         buffer = next;
       }
       while (buffer) {
-        const reader = Reader.create(buffer);
+        const reader = Reader.create(buffer as unknown as Uint8Array);
         const envelopLen = reader.uint32();
         const bufLen = envelopLen + reader.pos;
         // need mode data to complet envelop
-        if (buffer.length < envelopLen) break;
+        if ((buffer as unknown as Uint8Array).length < envelopLen) break;
 
         let chunk: Buffer;
-        if (bufLen === buffer.length) {
+        if (bufLen === (buffer as unknown as Uint8Array).length) {
           // chunk len match Envelop len should speedup parsing, depending on nodeJS internal Buffer implementation, need to check Buffer.subarray implementation
           chunk = buffer.subarray(reader.pos);
           buffer = null;
@@ -249,7 +249,7 @@ export default class STFService extends EventEmitter {
           buffer = buffer.subarray(bufLen);
         }
         try {
-          const eventObj = this.protoSrv.readEnvelope(chunk);
+          const eventObj = this.protoSrv.readEnvelope(chunk as unknown as Uint8Array);
           const { id, message } = eventObj;
           if (id) {
             const resolv = this.responseHook[id];
@@ -317,13 +317,12 @@ export default class STFService extends EventEmitter {
     }
   }
 
-
   private async startAgentStream(socket: PromiseDuplex<Duplex>): Promise<void> {
     for (; ;) {
       await Utils.waitforReadable(socket);
       const chunk = await socket.read() as Buffer;
       if (chunk) {
-        console.log('agentSocket RCV chunk len:', chunk.length, chunk.toString('hex').substring(0, 80));
+        console.log('agentSocket RCV chunk len:', (chunk as unknown as Uint8Array).length, chunk.toString('hex').substring(0, 80));
       } else {
         return;
       }
@@ -342,12 +341,12 @@ export default class STFService extends EventEmitter {
   /**
    * Generic method to push message to service
    */
-  private pushService(type: STF.MessageType, message: Uint8Array, requestReader?: null): Promise<void>;
-  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader?: ((req: Uint8Array) => T)): Promise<T>;
-  private pushService<T>(type: STF.MessageType, message: Uint8Array, requestReader?: null | ((req: Uint8Array) => T)): Promise<T | void> {
+  private pushService(type: STF.MessageType, message: Uint8Array | Buffer, requestReader?: null): Promise<void>;
+  private pushService<T>(type: STF.MessageType, message: Uint8Array | Buffer, requestReader?: ((req: Uint8Array) => T)): Promise<T>;
+  private pushService<T>(type: STF.MessageType, message: Uint8Array | Buffer, requestReader?: null | ((req: Uint8Array) => T)): Promise<T | void> {
     const id = (this.reqCnt + 1) | 0xFFFFFF;
     this.reqCnt = id;
-    const envelope = { type, message, id };
+    const envelope = { type, message: message as Uint8Array, id };
     let pReject: (error: Error) => void;
     const promise = new Promise<T | void>((resolve, reject) => {
       pReject = reject;
@@ -377,8 +376,8 @@ export default class STFService extends EventEmitter {
   /**
    * Generic method to push message to agent
    */
-  private async pushAgent(type: STF.MessageType, message: Uint8Array): Promise<number> {
-    const envelope = { type, message };
+  private async pushAgent(type: STF.MessageType, message: Uint8Array | Buffer): Promise<number> {
+    const envelope = { type, message: message as Uint8Array };
     // const buf = this.protoAgent.write.Envelope(envelope)
     const buf = this.protoSrv.write.Envelope(envelope)
     const socket = await this.getAgentSocket();
@@ -388,37 +387,37 @@ export default class STFService extends EventEmitter {
   ////////////////////////////
   // public methods
 
-  public async getAccounts(type?: string): Promise<STF.GetAccountsResponse> {
+  public getAccounts(type?: string): Promise<STF.GetAccountsResponse> {
     const message = this.protoSrv.write.GetAccountsRequest({ type });
     return this.pushService<STF.GetAccountsResponse>(STF.MessageType.GET_ACCOUNTS, message, this.protoSrv.read.GetAccountsResponse)
   }
 
-  public async getBrowsers(req = {} as STF.GetBrowsersRequest): Promise<STF.GetBrowsersResponse> {
+  public getBrowsers(req = {} as STF.GetBrowsersRequest): Promise<STF.GetBrowsersResponse> {
     const message = this.protoSrv.write.GetBrowsersRequest(req);
     return this.pushService<STF.GetBrowsersResponse>(STF.MessageType.GET_BROWSERS, message, this.protoSrv.read.GetBrowsersResponse)
   }
 
-  public async getClipboard(type = STF.ClipboardType.TEXT): Promise<STF.GetClipboardResponse> {
+  public getClipboard(type = STF.ClipboardType.TEXT): Promise<STF.GetClipboardResponse> {
     const message = this.protoSrv.write.GetClipboardRequest({ type });
     return this.pushService<STF.GetClipboardResponse>(STF.MessageType.GET_CLIPBOARD, message, this.protoSrv.read.GetClipboardResponse)
   }
 
-  public async getDisplay(id = 0): Promise<STF.GetDisplayResponse> {
+  public getDisplay(id = 0): Promise<STF.GetDisplayResponse> {
     const message = this.protoSrv.write.GetDisplayRequest({ id });
     return this.pushService<STF.GetDisplayResponse>(STF.MessageType.GET_DISPLAY, message, this.protoSrv.read.GetDisplayResponse)
   }
 
-  public async getProperties(properties: string[]): Promise<STF.GetPropertiesResponse> {
+  public getProperties(properties: string[]): Promise<STF.GetPropertiesResponse> {
     const message = this.protoSrv.write.GetPropertiesRequest({ properties });
     return this.pushService<STF.GetPropertiesResponse>(STF.MessageType.GET_PROPERTIES, message, this.protoSrv.read.GetPropertiesResponse)
   }
 
-  public async getRingerMode(req = {} as STF.GetRingerModeRequest): Promise<STF.GetRingerModeResponse> {
+  public getRingerMode(req = {} as STF.GetRingerModeRequest): Promise<STF.GetRingerModeResponse> {
     const message = this.protoSrv.write.GetRingerModeRequest(req);
     return this.pushService<STF.GetRingerModeResponse>(STF.MessageType.GET_RINGER_MODE, message, this.protoSrv.read.GetRingerModeResponse)
   }
 
-  public async getSdStatus(req = {} as STF.GetSdStatusRequest): Promise<STF.GetSdStatusResponse> {
+  public getSdStatus(req = {} as STF.GetSdStatusRequest): Promise<STF.GetSdStatusResponse> {
     const message = this.protoSrv.write.GetSdStatusRequest(req);
     return this.pushService<STF.GetSdStatusResponse>(STF.MessageType.GET_SD_STATUS, message, this.protoSrv.read.GetSdStatusResponse)
   }
@@ -429,75 +428,76 @@ export default class STFService extends EventEmitter {
   //   return this.pushEnvelop<STF.GetVersionResponse>(STF.MessageType.GET_VERSION, message })
   // }
 
-  public async getWifiStatus(req = {} as STF.GetWifiStatusRequest): Promise<STF.GetWifiStatusResponse> {
+  public getWifiStatus(req = {} as STF.GetWifiStatusRequest): Promise<STF.GetWifiStatusResponse> {
     const message = this.protoSrv.write.GetWifiStatusRequest(req);
     return this.pushService<STF.GetWifiStatusResponse>(STF.MessageType.GET_WIFI_STATUS, message, this.protoSrv.read.GetWifiStatusResponse)
   }
 
-  public async getBluetoothStatus(req = {} as STF.GetBluetoothStatusRequest): Promise<STF.GetBluetoothStatusResponse> {
+  public getBluetoothStatus(req = {} as STF.GetBluetoothStatusRequest): Promise<STF.GetBluetoothStatusResponse> {
     const message = this.protoSrv.write.GetBluetoothStatusRequest(req);
     return this.pushService<STF.GetBluetoothStatusResponse>(STF.MessageType.GET_BLUETOOTH_STATUS, message, this.protoSrv.read.GetBluetoothStatusResponse)
   }
 
-  public async getRootStatus(req = {} as STF.GetRootStatusRequest): Promise<STF.GetRootStatusResponse> {
+  public getRootStatus(req = {} as STF.GetRootStatusRequest): Promise<STF.GetRootStatusResponse> {
     const message = this.protoSrv.write.GetRootStatusRequest(req);
     return this.pushService<STF.GetRootStatusResponse>(STF.MessageType.GET_ROOT_STATUS, message, this.protoSrv.read.GetRootStatusResponse)
   }
 
-  public async setClipboard(req: STF.SetClipboardRequest): Promise<STF.SetClipboardResponse> {
+  public setClipboard(req: STF.SetClipboardRequest): Promise<STF.SetClipboardResponse> {
     const message = this.protoSrv.write.SetClipboardRequest(req);
     return this.pushService<STF.SetClipboardResponse>(STF.MessageType.SET_CLIPBOARD, message, this.protoSrv.read.SetClipboardResponse)
   }
 
-  public async setKeyguardState(req: STF.SetKeyguardStateRequest): Promise<STF.SetKeyguardStateResponse> {
+  public setKeyguardState(req: STF.SetKeyguardStateRequest): Promise<STF.SetKeyguardStateResponse> {
     const message = this.protoSrv.write.SetKeyguardStateRequest(req);
     return this.pushService<STF.SetKeyguardStateResponse>(STF.MessageType.SET_KEYGUARD_STATE, message, this.protoSrv.read.SetKeyguardStateResponse)
   }
 
-  public async setRingerMode(req: STF.SetRingerModeRequest): Promise<STF.SetRingerModeResponse> {
+  public setRingerMode(req: STF.SetRingerModeRequest): Promise<STF.SetRingerModeResponse> {
     const message = this.protoSrv.write.SetRingerModeRequest(req);
     return this.pushService<STF.SetRingerModeResponse>(STF.MessageType.SET_RINGER_MODE, message, this.protoSrv.read.SetRingerModeResponse)
   }
 
-  public async setRotationRequest(req: STF.SetRotationRequest): Promise<void> {
+  public setRotationRequest(req: STF.SetRotationRequest): Promise<void> {
     const message = this.protoSrv.write.SetRotationRequest(req);
     return this.pushService(STF.MessageType.SET_ROTATION, message)
   }
 
-  public async setWakeLock(req: STF.SetWakeLockRequest): Promise<STF.GetWifiStatusResponse> {
+  public setWakeLock(req: STF.SetWakeLockRequest): Promise<STF.GetWifiStatusResponse> {
     const message = this.protoSrv.write.SetWakeLockRequest(req);
     return this.pushService<STF.GetWifiStatusResponse>(STF.MessageType.SET_WAKE_LOCK, message, this.protoSrv.read.GetWifiStatusResponse)
   }
 
-  public async setWifiEnabledRequest(req: STF.SetWifiEnabledRequest): Promise<STF.SetWifiEnabledResponse> {
+  public setWifiEnabledRequest(req: STF.SetWifiEnabledRequest): Promise<STF.SetWifiEnabledResponse> {
     const message = this.protoSrv.write.SetWifiEnabledRequest(req);
     return this.pushService<STF.SetWifiEnabledResponse>(STF.MessageType.SET_WIFI_ENABLED, message, this.protoSrv.read.SetWifiEnabledResponse)
   }
 
-  public async setBluetoothEnabledRequest(req: STF.SetBluetoothEnabledRequest): Promise<STF.SetBluetoothEnabledResponse> {
+  public setBluetoothEnabledRequest(req: STF.SetBluetoothEnabledRequest): Promise<STF.SetBluetoothEnabledResponse> {
     const message = this.protoSrv.write.SetBluetoothEnabledRequest(req);
     return this.pushService<STF.SetBluetoothEnabledResponse>(STF.MessageType.SET_BLUETOOTH_ENABLED, message, this.protoSrv.read.SetBluetoothEnabledResponse)
   }
 
-  public async setMasterMute(req: STF.SetMasterMuteRequest): Promise<STF.SetMasterMuteResponse> {
+  public setMasterMute(req: STF.SetMasterMuteRequest): Promise<STF.SetMasterMuteResponse> {
     const message = this.protoSrv.write.SetMasterMuteRequest(req);
-    return this.pushService<STF.SetMasterMuteResponse>(STF.MessageType.SET_MASTER_MUTE, message, this.protoSrv.read.SetMasterMuteResponse)
+    const ret = this.pushService<STF.SetMasterMuteResponse>(STF.MessageType.SET_MASTER_MUTE, message, this.protoSrv.read.SetMasterMuteResponse);
+    return ret;
   }
 
   // Agents
-  public async doKeyEvent(req: STF.KeyEventRequest): Promise<number> {
+  public doKeyEvent(req: STF.KeyEventRequest): Promise<number> {
     const message = this.protoSrv.write.KeyEventRequest(req);
     return this.pushAgent(STF.MessageType.DO_KEYEVENT, message);
   }
-  public async doType(req: STF.DoTypeRequest): Promise<number> {
+  public doType(req: STF.DoTypeRequest): Promise<number> {
     const message = this.protoSrv.write.DoTypeRequest(req);
     return this.pushAgent(STF.MessageType.DO_TYPE, message);
   }
-  public async doWake(req: STF.DoWakeRequest): Promise<number> {
+  public doWake(req: STF.DoWakeRequest): Promise<number> {
     const message = this.protoSrv.write.DoWakeRequest(req);
     return this.pushAgent(STF.MessageType.DO_WAKE, message);
   }
-  public async setRotation(req: STF.SetRotationRequest): Promise<number> {
+  public setRotation(req: STF.SetRotationRequest): Promise<number> {
     const message = this.protoSrv.write.SetRotationRequest(req);
     return this.pushAgent(STF.MessageType.SET_ROTATION, message);
   }
