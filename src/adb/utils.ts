@@ -1,7 +1,8 @@
+import { Buffer } from 'node:buffer';
 import Parser from './parser';
 import Auth from './auth';
 import ExtendedPublicKey from '../models/ExtendedPublicKey';
-import { Duplex, Readable } from 'stream';
+import { Duplex, Readable } from 'node:stream';
 import PromiseDuplex from 'promise-duplex';
 import Debug from 'debug';
 import PromiseReadable from 'promise-readable';
@@ -35,7 +36,7 @@ export default class Utils {
    * @returns void
    */
   public static delay(ms: number): CancellablePromise<void> {
-    let timeout: null | NodeJS.Timeout = null;
+    let timeout: null | ReturnType<typeof setTimeout> = null;
     const promise = new Promise<void>((resolve) => {
       timeout = setTimeout(() => {
         timeout = null;

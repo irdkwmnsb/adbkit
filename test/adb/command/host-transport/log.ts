@@ -1,4 +1,4 @@
-import Stream from 'stream';
+import Stream from 'node:stream';
 import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);

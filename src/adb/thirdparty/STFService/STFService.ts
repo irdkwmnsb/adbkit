@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import { Buffer } from 'node:buffer';
 import { Duplex } from 'node:stream';
 import fs from 'node:fs';
 
@@ -67,10 +68,10 @@ export default class STFService extends EventEmitter {
     this._maxPressure = new Promise<number>((resolve) => this.setMaxPressure = resolve);
   }
 
-  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
-  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
-  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
-  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
+  public override on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public override off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public override once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public override emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   get maxContact(): Promise<number> { return this._maxContact; }
   get width(): Promise<number> { return this._width; }

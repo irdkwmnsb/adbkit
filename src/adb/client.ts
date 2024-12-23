@@ -1,4 +1,4 @@
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
 import Connection from './connection';
 
 import {
@@ -9,7 +9,7 @@ import {
   HostDisconnectCommand,
   HostTrackDevicesCommand,
   HostKillCommand,
-} from './command/host';
+} from './command/host/index';
 import TcpUsbServer from './tcpusb/server';
 import Device from '../models/Device';
 import { ClientOptions } from '../models/ClientOptions';
@@ -54,10 +54,10 @@ export default class Client extends EventEmitter {
     this.options = { host, port, bin };
   }
 
-  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
-  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
-  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
-  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
+  public override on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public override off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public override once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public override emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   public createTcpUsbBridge(serial: string, options: SocketOptions): TcpUsbServer {
     return new TcpUsbServer(this, serial, options);

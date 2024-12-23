@@ -1,12 +1,14 @@
-import EventEmitter from 'events';
-import crypto from 'crypto';
-import { promisify } from 'util';
+import EventEmitter from 'node:events';
+import crypto from 'node:crypto';
+import { promisify } from 'node:util';
+import { Buffer } from 'node:buffer';
+
 import PacketReader from './packetreader';
 import RollingCounter from './rollingcounter';
 import Packet from './packet';
 import Auth from '../auth';
 import Client from '../client';
-import Net from 'net';
+import Net from 'node:net';
 import ServiceMap from './servicemap';
 import Service from './service';
 import SocketOptions from '../../models/SocketOptions';
@@ -87,10 +89,10 @@ export default class Socket extends EventEmitter {
     this.signature = undefined;
   }
 
-  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
-  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
-  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
-  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
+  public override on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public override off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public override once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public override emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   public end(): Socket {
     if (this.ended) {

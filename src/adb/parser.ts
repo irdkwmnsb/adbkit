@@ -1,5 +1,7 @@
+import { Buffer } from 'node:buffer';
+import { Duplex } from 'node:stream';
+
 import Protocol from './protocol';
-import { Duplex } from 'stream';
 import { AdbFailError, AdbPrematureEOFError, AdbUnexpectedDataError } from './errors';
 import { AdbError } from './errors';
 

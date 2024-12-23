@@ -1,12 +1,14 @@
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
+import { Buffer } from 'node:buffer';
+
 import Packet from './packet';
 import Protocol from '../protocol';
 import Client from '../client';
 import Socket from './socket';
-import ReadableStream = NodeJS.ReadableStream;
 import Connection from '../connection';
 import Utils from '../utils';
 const debug = Utils.debug('adb:tcpusb:service');
+type ReadableStream = NodeJS.ReadableStream;
 
 export class PrematurePacketError extends Error {
   constructor(public packet: Packet) {
@@ -55,10 +57,10 @@ export default class Service extends EventEmitter {
     super();
   }
 
-  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
-  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
-  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
-  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
+  public override on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public override off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public override once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public override emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   public end(): this {
     if (this.transport) {

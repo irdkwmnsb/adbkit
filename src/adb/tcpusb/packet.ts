@@ -1,3 +1,5 @@
+import { Buffer } from 'node:buffer';
+
 export default class Packet {
   public static A_SYNC = 0x434e5953;
   public static A_CNXN = 0x4e584e43;

@@ -1,10 +1,10 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import { program } from 'commander';
 import forge from 'node-forge';
 import { createClient } from './adb';
 import Auth from './adb/auth';
 import PacketReader from './adb/tcpusb/packetreader';
-import path from 'path';
+import path from 'node:path';
 import Utils from './adb/utils';
 import { getClientDevice } from './cli-common';
 

@@ -1,11 +1,12 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
+import * as fs from 'node:fs';
+import { Duplex } from 'node:stream';
+import { Buffer } from 'node:buffer';
 
-import { Duplex } from 'stream';
 import DeviceClient from '../../DeviceClient';
 import PromiseDuplex from 'promise-duplex';
 import ThirdUtils from "../ThirdUtils";
 import Utils from '../../utils';
-import * as fs from 'fs';
 import Stats from '../../sync/stats';
 
 /**
@@ -77,10 +78,10 @@ export default class Minicap extends EventEmitter {
     this._firstFrame = new Promise<void>((resolve) => this.setFirstFrame = resolve);
   }
 
-  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
-  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
-  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
-  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
+  public override on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public override off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public override once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public override emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   get version(): Promise<number> { return this._version; }
   get pid(): Promise<number> { return this._pid; }

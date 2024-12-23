@@ -1,4 +1,5 @@
 // generarted by genProto.ts
+import { Buffer } from 'node:buffer';
 import * as protobuf from 'protobufjs';
 import { Message, Root } from 'protobufjs';
 import ThirdUtils from '../ThirdUtils';

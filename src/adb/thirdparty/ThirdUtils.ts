@@ -3,9 +3,9 @@
  */
 
 import PromiseDuplex from 'promise-duplex';
-import { Duplex } from 'stream';
-import { Utils } from '../..';
-import path from 'path';
+import { Duplex } from 'node:stream';
+import Utils from '../../adb/utils';
+import path from 'node:path';
 import DeviceClient from '../DeviceClient';
 
 export default class ThirdUtils {

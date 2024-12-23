@@ -1,6 +1,9 @@
-import fs from 'fs';
-import Path from 'path';
-import EventEmitter from 'events';
+import fs from 'node:fs';
+import Path from 'node:path';
+import EventEmitter from 'node:events';
+import { Readable } from 'node:stream';
+import { Buffer } from 'node:buffer';
+
 import Parser from './parser';
 import Protocol from './protocol';
 import Stats from './sync/stats';
@@ -8,7 +11,6 @@ import Entry from './sync/entry';
 import PushTransfer from './sync/pushtransfer';
 import PullTransfer from './sync/pulltransfer';
 import Connection from './connection';
-import { Readable } from 'stream';
 import Stats64 from './sync/stats64';
 import Entry64 from './sync/entry64';
 import Utils from './utils';
@@ -79,10 +81,10 @@ export default class Sync extends EventEmitter {
     this.parser = this.connection.parser as Parser;
   }
 
-  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
-  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
-  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
-  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
+  public override on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public override off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public override once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public override emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   /**
    * Retrieves information about the given path.

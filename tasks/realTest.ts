@@ -4,8 +4,8 @@ import { IpRouteEntry, IpRuleEntry } from '../src/adb/command/host-transport';
 import Parser from '../src/adb/parser';
 import { KeyEvent } from '../src/adb/thirdparty/STFService/STFServiceModel';
 import ThirdUtils from '../src/adb/thirdparty/ThirdUtils';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import pc from 'picocolors';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // const logRunning = require('why-is-node-running');

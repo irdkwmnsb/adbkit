@@ -1,4 +1,4 @@
-import Stream from 'stream';
+import Stream from 'node:stream';
 import simonChai from 'sinon-chai';
 import { use, expect } from 'chai';
 import LineTransform from '../../src/adb/linetransform';

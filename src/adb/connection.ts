@@ -1,12 +1,13 @@
-import EventEmitter from 'events';
-import { execFile, ExecFileOptions } from 'child_process';
+import { Socket, connect } from 'node:net';
+import { promisify } from 'node:util';
+import { ObjectEncodingOptions } from 'node:fs';
+import EventEmitter from 'node:events';
+import { execFile, ExecFileOptions } from 'node:child_process';
+
 import Parser from './parser';
 import dump from './dump';
-import { Socket, connect } from 'net';
-import { promisify } from 'util';
 import { ClientOptions } from '../models/ClientOptions';
-import { ObjectEncodingOptions } from 'fs';
-import { Client } from '..';
+import Client from '../adb/client';
 import Utils from './utils';
 
 const debug = Utils.debug('adb:connection');
@@ -36,10 +37,10 @@ export default class Connection extends EventEmitter {
     this.triedStarting = false;
   }
 
-  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
-  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
-  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
-  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
+  public override on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public override off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public override once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public override emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   public get parent(): Client {
     return this._parent;

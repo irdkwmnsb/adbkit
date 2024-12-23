@@ -1,4 +1,4 @@
-// import fs from 'fs';
+// import fs from 'node:fs';
 //  implements fs.Stats
 export default class Stats {
   mode: number;

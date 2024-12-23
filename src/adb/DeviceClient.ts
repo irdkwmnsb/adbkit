@@ -1,13 +1,17 @@
+import { Duplex } from 'node:stream';
+import { ReadStream } from 'node:fs';
+
 import * as adbkitMonkey from '@u4/adbkit-monkey';
-import { type Monkey as MonkeyClient } from '@u4/adbkit-monkey';
+// import { type Monkey as MonkeyClient } from '@u4/adbkit-monkey';
 const { Monkey } = adbkitMonkey;
+
 import Logcat from '@u4/adbkit-logcat';
 import Connection from './connection';
 import Sync from './sync';
 import ProcStat from './proc/stat';
 
-import { HostTransportCommand } from './command/host';
-import * as hostCmd from './command/host-transport';
+import { HostTransportCommand } from './command/host/index';
+import * as hostCmd from './command/host-transport/index';
 import {
   ForwardCommand,
   GetDevicePathCommand,
@@ -16,16 +20,14 @@ import {
   KillForwardCommand,
   ListForwardsCommand,
   WaitForDeviceCommand,
-} from './command/host-serial';
+} from './command/host-serial/index';
 import Forward from '../models/Forward';
 import Reverse from '../models/Reverse';
 import StartActivityOptions from '../models/StartActivityOptions';
 import StartServiceOptions from '../models/StartServiceOptions';
-import { Duplex } from 'stream';
 import Stats from './sync/stats';
 import Entry from './sync/entry';
 import PushTransfer from './sync/pushtransfer';
-import { ReadStream } from 'fs';
 import PullTransfer from './sync/pulltransfer';
 import { Properties } from '../models/Properties';
 import { Features } from '../models/Features';
@@ -591,11 +593,11 @@ export default class DeviceClient {
    *
    * @returns The Monkey client. Please see the [adbkit-monkey][adbkit-monkey] documentation for details.
    */
-  public async openMonkey(port = 1080): Promise<MonkeyClient> {
-    const tryConnect = async (times: number): Promise<MonkeyClient> => {
+  public async openMonkey(port = 1080): Promise<ReturnType<typeof Monkey.connectStream>> {
+    const tryConnect = async (times: number): Promise<ReturnType<typeof Monkey.connectStream>> => {
       try {
         const stream: Duplex = await this.openTcp(port);
-        const client: MonkeyClient = Monkey.connectStream(stream);
+        const client: ReturnType<typeof Monkey.connectStream> = Monkey.connectStream(stream);
         return client;
       } catch (err) {
         if ((times -= 1)) {
@@ -683,7 +685,7 @@ export default class DeviceClient {
    * ```ts
    * import Adb from '@u4/adbkit';
    * import request from 'request';
-   * import { Readable } from 'stream';
+   * import { Readable } from 'node:stream';
    * 
    * const client = Adb.createClient();
    * 
@@ -922,7 +924,7 @@ export default class DeviceClient {
    * Pulling a file from all cofnnected devices
    * ```ts
    * import Bluebird from 'bluebird';
-   * import fs from 'fs';
+   * import fs from 'node:fs';
    * import Adb from '@u4/adbkit';
    * const client = Adb.createClient();
    * 

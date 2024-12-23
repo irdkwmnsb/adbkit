@@ -1,6 +1,8 @@
+import { Buffer } from 'node:buffer';
+import { EOL } from 'node:os';
+
 import Command from '../../command';
 import { KnownServices } from './servicesList';
-import { EOL } from 'os';
 import { ParcelVal } from './Parcel';
 
 export type ServiceCallArg = ServiceCallArgNumber | ServiceCallArgString | ServiceCallArgNull;

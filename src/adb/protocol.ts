@@ -1,3 +1,5 @@
+import { Buffer } from 'node:buffer';
+
 /**
  * adb Protocol is a 4 byte prefixed message.
  * the 4 fisrt byte can be on of the 10 predefined Code, of a 4-hexa string indicating the message len.

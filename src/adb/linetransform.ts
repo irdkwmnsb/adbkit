@@ -1,4 +1,4 @@
-import Stream, { TransformCallback, TransformOptions } from 'stream';
+import Stream, { TransformCallback, TransformOptions } from 'node:stream';
 
 interface LineTransformOptions extends TransformOptions {
   autoDetect?: boolean;

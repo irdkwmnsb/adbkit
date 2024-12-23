@@ -1,17 +1,19 @@
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
+import { Buffer } from 'node:buffer';
+import fs from 'node:fs';
+import assert from 'node:assert';
+
 import PromiseDuplex from 'promise-duplex';
 import DeviceClient from '../../DeviceClient';
 import Utils from '../../utils';
-import { Duplex } from 'stream';
+import { Duplex } from 'node:stream';
 import { MotionEvent, Orientation, ControlMessage } from './ScrcpyConst';
 import { KeyCodes } from '../../keycode';
 import { BufWrite } from '../minicap/BufWrite';
 import ThirdUtils from '../ThirdUtils';
-import fs from 'fs';
 import Stats from '../../sync/stats';
 import { parse_sequence_parameter_set } from './sps';
 import { Point, ScrcpyOptions, H264Configuration, VideoStreamFramePacket } from './ScrcpyModels';
-import assert from 'assert';
 
 const debug = Utils.debug('adb:scrcpy');
 
@@ -128,10 +130,10 @@ export default class Scrcpy extends EventEmitter {
     this._firstFrame = new Promise<void>((resolve) => this.setFirstFrame = resolve);
   }
 
-  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
-  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
-  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
-  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
+  public override on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public override off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public override once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public override emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   get name(): Promise<string> { return this._name; }
   get width(): Promise<number> { return this._width; }
@@ -210,6 +212,7 @@ export default class Scrcpy extends EventEmitter {
     const type = chunk.readUInt8();
     switch (type) {
       case 0: // clipboard
+      {
         await Utils.waitforReadable(duplex);
         chunk = (await duplex.read(4)) as Buffer;
         await Utils.waitforReadable(duplex);
@@ -218,6 +221,7 @@ export default class Scrcpy extends EventEmitter {
         chunk = (await duplex.read(len)) as Buffer;
         const text = chunk.toString('utf8');
         return text;
+      }
       default:
         throw Error(`Unsupported message type:${type}`);
     }

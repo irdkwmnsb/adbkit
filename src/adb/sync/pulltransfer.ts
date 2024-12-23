@@ -1,4 +1,4 @@
-import { Stream } from 'stream';
+import { Stream } from 'node:stream';
 
 /**
  * `PullTransfer` is a [`Stream`][node-stream]. Use [`fs.createWriteStream()`][node-fs] to pipe the stream to a file if necessary.

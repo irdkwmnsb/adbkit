@@ -1,6 +1,8 @@
-import EventEmitter from 'events';
+import { Buffer } from 'node:buffer';
+import EventEmitter from 'node:events';
 import Packet from './packet';
-import ReadableStream = NodeJS.ReadableStream;
+
+type ReadableStream = NodeJS.ReadableStream;
 
 export class ChecksumError extends Error {
   constructor(public packet: Packet) {
@@ -47,10 +49,10 @@ export default class PacketReader extends EventEmitter {
     setImmediate(this._tryRead.bind(this));
   }
 
-  public on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
-  public off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
-  public once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
-  public emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
+  public override on = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.on(event, listener)
+  public override off = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.off(event, listener)
+  public override once = <K extends keyof IEmissions>(event: K, listener: IEmissions[K]): this => super.once(event, listener)
+  public override emit = <K extends keyof IEmissions>(event: K, ...args: Parameters<IEmissions[K]>): boolean => super.emit(event, ...args)
 
   private _tryRead(): void {
     while (this._appendChunk()) {
