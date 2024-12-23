@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer';
+import Utils from './utils';
 
 /**
  * adb Protocol is a 4 byte prefixed message.
@@ -55,7 +56,8 @@ export default class Protocol {
     if (!Buffer.isBuffer(data)) {
       data = Buffer.from(data);
     }
-    const len = Protocol.encodeLength(data.length);
-    return Buffer.concat([Buffer.from(len), data]);
+    const len = Protocol.encodeLength((data as unknown as Uint8Array).length);
+    // return Buffer.concat([Buffer.from(len), data]);
+    return Utils.concatBuffer([Buffer.from(len), data]);
   }
 }

@@ -4,6 +4,7 @@ import { EOL } from 'node:os';
 import Command from '../../command';
 import { KnownServices } from './servicesList';
 import { ParcelVal } from './Parcel';
+import { Utils } from '../../../index';
 
 export type ServiceCallArg = ServiceCallArgNumber | ServiceCallArgString | ServiceCallArgNull;
 
@@ -129,7 +130,7 @@ export default class ServiceCallCommand extends Command<ParcelReader> {
       }
     }
     if (data.length) {
-      return Buffer.concat(data);
+      return Utils.concatBuffer(data);
     }
     // sinngle line Parcel
     const m1 = value.match(/Parcel\(([0-9a-f]{8}) ([0-9a-f ]{8})? ([0-9a-f ]{8}) ([0-9a-f ]{8}) '.{16}'\)/);
@@ -140,7 +141,7 @@ export default class ServiceCallCommand extends Command<ParcelReader> {
           break;
         data.push(Buffer.from(chunk, 'hex'));
       }
-      return Buffer.concat(data);
+      return Utils.concatBuffer(data);
     }
     // Read Error Parcel
     const m2 = value.match(/Parcel\(Error: 0x([0-9a-f]+) "(.+)"\)/);
@@ -148,6 +149,6 @@ export default class ServiceCallCommand extends Command<ParcelReader> {
       throw new Error(`0x${m2[1]} ${m2[2]}`);
     }
     throw new Error(`Fail to parse Parcel`);
-    // return Buffer.concat(data);
+    // return Utils.concatBuffer(data);
   }
 }

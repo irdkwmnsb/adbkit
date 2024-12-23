@@ -29,6 +29,12 @@ export type BufferEncoding =
 
 export default class Utils {
   /**
+   * concat buffer to fix deno typing errors.
+   */
+  public static concatBuffer(buffs: Buffer[]): Buffer {
+    return Buffer.concat(buffs as unknown as Uint8Array[]);
+  }
+  /**
    * Takes a [`Stream`][node-stream] and reads everything it outputs until the stream ends. Then it resolves with the collected output. Convenient with `client.shell()`.
    * 
    * @param stream The [`Stream`][node-stream] to read.

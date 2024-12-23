@@ -1,9 +1,10 @@
+import { setImmediate } from "node:timers";
 import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';
-import { WaitForDeviceCommand } from '../../../../src/adb/command/host-serial';
+import { WaitForDeviceCommand } from '../../../../src/adb/command/host-serial/index';
 import Connection from '../../../../src/adb/connection';
 
 describe('WaitForDeviceCommand', () => {

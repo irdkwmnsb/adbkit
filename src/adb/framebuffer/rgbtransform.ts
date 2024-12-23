@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer';
 import Assert from 'node:assert';
 import { Stream, TransformCallback, TransformOptions } from 'node:stream';
 import FramebufferMeta from '../../models/FramebufferMeta';
+import { Utils } from '../../index';
 
 export default class RgbTransform extends Stream.Transform {
   private _buffer = Buffer.from('');
@@ -26,7 +27,7 @@ export default class RgbTransform extends Stream.Transform {
 
   override _transform(chunk: Buffer, encoding: string, done: TransformCallback): void {
     if ((this._buffer as unknown as Uint8Array).length) {
-      this._buffer = Buffer.concat([this._buffer, chunk], this._buffer.length + chunk.length);
+      this._buffer = Utils.concatBuffer([this._buffer, chunk]);
     } else {
       this._buffer = chunk;
     }

@@ -1,5 +1,6 @@
 import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
+import { setImmediate } from "node:timers";
 Chai.use(simonChai);
 import MockConnection from '../../../mock/connection';
 import Protocol from '../../../../src/adb/protocol';

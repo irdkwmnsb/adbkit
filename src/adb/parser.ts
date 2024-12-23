@@ -5,6 +5,7 @@ import Protocol from './protocol';
 import { AdbFailError, AdbPrematureEOFError, AdbUnexpectedDataError } from './errors';
 import { AdbError } from './errors';
 import { BufferEncoding } from './utils';
+import { Utils } from '../index';
 
 /**
  * helper to read in Duplex stream
@@ -70,7 +71,7 @@ export default class Parser {
       tryRead = () => {
         let chunk: Buffer;
         while ((chunk = stream.read())) {
-          all = Buffer.concat([all, chunk]);
+          all = Utils.concatBuffer([all, chunk]);
         }
         if (this.ended) {
           resolve(all);
@@ -267,7 +268,7 @@ export default class Parser {
       if ((chunk as unknown as Uint8Array)[0] === code) {
         return skipped;
       } else {
-        skipped = Buffer.concat([skipped as unknown as Uint8Array, chunk as unknown as Uint8Array]);
+        skipped = Utils.concatBuffer([skipped, chunk]);
       }
     }
   }

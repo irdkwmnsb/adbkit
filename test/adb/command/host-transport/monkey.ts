@@ -1,4 +1,5 @@
 import Stream from 'node:stream';
+import { setImmediate } from "node:timers";
 import Chai, { expect } from 'chai';
 import simonChai from 'sinon-chai';
 Chai.use(simonChai);
