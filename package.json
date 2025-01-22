@@ -1,5 +1,5 @@
 {
-    "name": "@u4/adbkit",
+    "name": "@irdkwmnsb/adbkit",
     "version": "4.1.19",
     "description": "A Typescript client for the Android Debug Bridge.",
     "keywords": [
@@ -29,13 +29,17 @@
             "name": "uriel chemouni",
             "email": "uchemouni@gmail.com",
             "url": "https://urielch.github.io/"
+        },
+        {
+            "name": "Maksim Alzhanov",
+            "email": "me@alzhanov.ru"
         }
     ],
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "repository": {
         "type": "git",
-        "url": "https://github.com/UrielCh/adbkit.git"
+        "url": "https://github.com/irdkwmnsb/adbkit.git"
     },
     "scripts": {
         "clean": "rimraf dist",
