@@ -1,5 +1,5 @@
 {
-    "name": "@irdkwmnsb/adbkit",
+    "name": "@irdk/adbkit",
     "version": "4.1.19",
     "description": "A Typescript client for the Android Debug Bridge.",
     "keywords": [
